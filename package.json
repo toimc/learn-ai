@@ -13,11 +13,24 @@
     "format": "prettier --write \"packages/**/src/**/*.{ts,vue,css}\"",
     "format:check": "prettier --check \"packages/**/src/**/*.{ts,vue,css}\"",
     "type-check": "pnpm -r --filter=\"./packages/core\" --filter=\"./packages/vue\" --filter=\"./packages/markdown\" exec vue-tsc --noEmit -p tsconfig.json",
-    "clean": "pnpm -r exec rm -rf dist"
+    "clean": "pnpm -r exec rm -rf dist",
+    "prepare": "simple-git-hooks"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx --no -- commitlint --edit $1"
+  },
+  "lint-staged": {
+    "*.{ts,vue,css}": [
+      "prettier --write"
+    ],
+    "*.{ts,vue}": [
+      "eslint --fix"
+    ]
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -25,6 +38,8 @@
     ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^10.0.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.10",
@@ -32,7 +47,9 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.9.1",
     "jsdom": "^29.1.0",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.8.3",
+    "simple-git-hooks": "^2.13.1",
     "typescript-eslint": "^8.59.4",
     "vitest": "^4.1.6",
     "vue": "^3.5.34",
