@@ -71,10 +71,48 @@ packages/<pkg>/package.json
 - 每次改动只做被要求的事，不多不少
 - 修改前先阅读相关文件，理解上下文
 
+## Git 分支管理规范
+
+### 分支命名
+
+| 类型 | 格式 | 示例 |
+|------|------|------|
+| 功能开发 | `feat/phase-{N}-{描述}` | `feat/phase-1-chat-adapter` |
+| Bug 修复 | `fix/{描述}` | `fix/stream-abort-race` |
+| 维护配置 | `chore/{描述}` | `chore/update-deps` |
+
+- 功能开发按 Issue #1 的阶段划分，每个阶段拆为独立分支
+- 一个阶段内如有多个子任务，可拆分子分支：`feat/phase-1-01-chat-adapter`
+- 分支名用英文短横线，简洁描述核心内容
+
+### 开发工作流
+
+```
+1. 检查 GitHub Issues → 确认当前阶段任务
+2. 从 master 创建功能分支
+3. 开发 → 提交（Conventional Commits 中文 subject）
+4. 推送到远端 → 创建 PR（关联 Issue、填写摘要和测试计划）
+5. 确认无误后合并到 master → 删除功能分支
+```
+
+### AI 协作职责
+
+- **开发前**：检查 `gh issue list` 和 `gh issue view` 确认当前任务
+- **开发中**：在功能分支上提交，不直接提交到 master
+- **开发后**：
+  1. 推送功能分支到远端
+  2. 用 `gh pr create` 创建 PR，PR body 包含：
+     - Summary：1-3 句变更摘要
+     - Related Issue：`Closes #N` 或 `Part of #N`
+     - Test plan：验证清单
+  3. 合并 PR 后用 `gh pr merge` 合并并删除远端分支
+  4. 本地切换回 master 并拉取最新代码
+- **每个阶段完成后**：更新 Issue #1 的 checklist，勾选已完成项
+
 ## Git 提交规范
 使用 Conventional Commits 格式
 commit message 使用中文 subject
 subject 不超过 59 字
-body 说明“为什么改“而非“改了什么"
+body 说明”为什么改”而非”改了什么”
 scope 使用模块名（button、input、theme、docs）
 当用户要求提交代码的时候，尽可能只提交当前会话中相关的功能代码或者文件
