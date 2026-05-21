@@ -1,15 +1,10 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type {
-  ChatAdapter,
-  ChatOptions,
-  ChatState,
-  Message,
-} from '../types'
+import type { ChatAdapter, ChatOptions, ChatState, Message } from '../types'
 import { createUserMessage, createAssistantMessage } from '../utils'
 
 export function useChat(
   adapter: ChatAdapter,
-  options?: ChatOptions
+  options?: ChatOptions,
 ): UnwrapNestedRefs<ChatState> {
   const state = reactive<ChatState>({
     messages: options?.initialMessages ? [...options.initialMessages] : [],
@@ -24,7 +19,7 @@ export function useChat(
 
   async function send(
     content: string,
-    attachments?: import('../types').Attachment[]
+    attachments?: import('../types').Attachment[],
   ): Promise<void> {
     const userMessage = createUserMessage(content, attachments)
     state.messages.push(userMessage)

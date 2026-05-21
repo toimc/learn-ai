@@ -12,7 +12,10 @@ const rendered = computed(() => {
 function simpleMarkdown(text: string): string {
   let html = text
   html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+  html = html.replace(
+    /```(\w*)\n([\s\S]*?)```/g,
+    '<pre><code class="language-$1">$2</code></pre>',
+  )
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -25,10 +28,7 @@ function simpleMarkdown(text: string): string {
 </script>
 
 <template>
-  <div
-    class="ai-chat-markdown"
-    v-html="rendered"
-  />
+  <div class="ai-chat-markdown" v-html="rendered" />
 </template>
 
 <style>

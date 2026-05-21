@@ -6,10 +6,7 @@ defineProps<{
 </script>
 
 <template>
-  <span
-    class="ai-chat-latex"
-    :class="{ 'ai-chat-latex--display': display }"
-  >
+  <span class="ai-chat-latex" :class="{ 'ai-chat-latex--display': display }">
     {{ formula }}
   </span>
 </template>

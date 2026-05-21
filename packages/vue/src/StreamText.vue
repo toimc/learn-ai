@@ -15,7 +15,7 @@ watch(
       displayText.value = val
       cursorVisible.value = true
     }
-  }
+  },
 )
 
 watch(
@@ -24,17 +24,16 @@ watch(
     if (val === undefined) {
       cursorVisible.value = false
     }
-  }
+  },
 )
 </script>
 
 <template>
   <span class="ai-chat-stream-text">
     {{ displayText }}
-    <span
-      v-if="cursorVisible"
-      class="ai-chat-stream-text__cursor"
-    >&#x2589;</span>
+    <span v-if="cursorVisible" class="ai-chat-stream-text__cursor"
+      >&#x2589;</span
+    >
   </span>
 </template>
 

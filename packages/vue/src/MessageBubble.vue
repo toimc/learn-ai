@@ -7,10 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div
-    class="ai-chat-bubble"
-    :class="[`ai-chat-bubble--${message.role}`]"
-  >
+  <div class="ai-chat-bubble" :class="[`ai-chat-bubble--${message.role}`]">
     <div class="ai-chat-bubble__avatar">
       <slot name="avatar" />
     </div>

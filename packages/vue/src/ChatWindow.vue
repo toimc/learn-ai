@@ -5,10 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div
-    class="ai-chat-window"
-    :style="{ height: height || '100%' }"
-  >
+  <div class="ai-chat-window" :style="{ height: height || '100%' }">
     <div class="ai-chat-window__body">
       <slot />
     </div>

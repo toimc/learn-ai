@@ -6,7 +6,7 @@ export function generateId(): string {
 
 export function createUserMessage(
   content: string,
-  attachments?: import('../types').Attachment[]
+  attachments?: import('../types').Attachment[],
 ): import('../types').Message {
   return {
     id: generateId(),
@@ -19,7 +19,7 @@ export function createUserMessage(
 
 export function createAssistantMessage(
   content = '',
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): import('../types').Message {
   return {
     id: generateId(),

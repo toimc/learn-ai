@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { useChat } from '../composables'
 import type { ChatAdapter, StreamChunk } from '../types'
 
-function createMockAdapter(
-  chunks: StreamChunk[]
-): ChatAdapter {
+function createMockAdapter(chunks: StreamChunk[]): ChatAdapter {
   return {
     async *sendMessage() {
       for (const chunk of chunks) {
@@ -72,9 +70,7 @@ describe('useChat', () => {
   })
 
   it('should clear messages', async () => {
-    const adapter = createMockAdapter([
-      { type: 'done', content: '' },
-    ])
+    const adapter = createMockAdapter([{ type: 'done', content: '' }])
     const state = useChat(adapter)
 
     await state.send('Hi')

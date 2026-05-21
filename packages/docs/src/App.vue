@@ -12,12 +12,9 @@ function handleSend(content: string) {
 </script>
 
 <template>
-  <div style="max-width: 720px; margin: 40px auto; height: 80vh;">
+  <div style="max-width: 720px; margin: 40px auto; height: 80vh">
     <ChatWindow>
-      <MessageList
-        v-slot="{ message }"
-        :messages="chat.messages"
-      >
+      <MessageList v-slot="{ message }" :messages="chat.messages">
         <MessageBubble :message="message">
           <MarkdownRenderer :content="message.content" />
         </MessageBubble>

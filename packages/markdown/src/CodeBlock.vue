@@ -7,10 +7,7 @@ defineProps<{
 
 <template>
   <div class="ai-chat-code-block">
-    <div
-      v-if="language"
-      class="ai-chat-code-block__header"
-    >
+    <div v-if="language" class="ai-chat-code-block__header">
       {{ language }}
     </div>
     <pre class="ai-chat-code-block__pre"><code>{{ code }}</code></pre>
