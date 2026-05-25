@@ -4,7 +4,7 @@
 
 ## 基础用法
 
-<script setup>
+<script setup lang="ts">
 import type { Message } from '@ai-chat/core'
 
 const userMsg: Message = {

@@ -4,7 +4,7 @@
 
 ## 基础用法
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
 const streamingText = ref('正在思考中...')

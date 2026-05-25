@@ -5,18 +5,9 @@
 ## 基础用法
 
 <DemoContainer>
-  <MarkdownRenderer content="# 标题
-
-这是一段 **加粗** 和 _斜体_ 文字。
-
-行内代码：`const x = 1`
-
-```typescript
-function hello(name: string): string {
-  return `Hello, ${name}!`
-}
-```
-" />
+  <MarkdownRenderer
+    content="# 标题\n\n这是一段 **加粗** 和 _斜体_ 文字。\n\n行内代码：`const x = 1`\n\n```typescript\nfunction hello(name: string): string {\n  return `Hello, ${name}!`\n}\n```"
+  />
 </DemoContainer>
 
 ## 在消息中使用

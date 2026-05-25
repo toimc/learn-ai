@@ -4,11 +4,10 @@
 
 ## 基础用法
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import type { Message } from '@ai-chat/core'
 
-const messages = ref<Message[]>([
+const messages = ref([
   { id: '1', role: 'user', content: '你好，请帮我写一段代码', createdAt: new Date() },
   { id: '2', role: 'assistant', content: '好的，这是你要的代码示例。', createdAt: new Date() },
   { id: '3', role: 'user', content: '谢谢！', createdAt: new Date() },
