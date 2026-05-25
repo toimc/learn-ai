@@ -97,4 +97,77 @@ describe('useChat', () => {
     expect(onResponse).toHaveBeenCalledWith({ type: 'text', content: 'A' })
     expect(onResponse).toHaveBeenCalledWith({ type: 'text', content: 'B' })
   })
+
+  it('should handle tool_call and tool_result chunks', async () => {
+    const adapter = createMockAdapter([
+      { type: 'text', content: 'Checking... ' },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 'call_1',
+          toolName: 'get_weather',
+          toolArguments: { city: 'Beijing' },
+        },
+      },
+      {
+        type: 'tool_result',
+        content: '',
+        metadata: {
+          toolCallId: 'call_1',
+          toolName: 'get_weather',
+          toolResult: { temp: 22 },
+          duration: 100,
+        },
+      },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('What is the weather?')
+
+    const assistant = state.messages[1]
+    expect(assistant.toolCalls).toHaveLength(1)
+    expect(assistant.toolCalls![0]).toEqual({
+      id: 'call_1',
+      name: 'get_weather',
+      arguments: { city: 'Beijing' },
+      result: { temp: 22 },
+      status: 'completed',
+      duration: 100,
+      error: undefined,
+    })
+  })
+
+  it('should handle tool_result with error', async () => {
+    const adapter = createMockAdapter([
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 'call_e',
+          toolName: 'fail_tool',
+          toolArguments: {},
+        },
+      },
+      {
+        type: 'tool_result',
+        content: '',
+        metadata: {
+          toolCallId: 'call_e',
+          toolName: 'fail_tool',
+          toolError: 'timeout',
+          duration: 50,
+        },
+      },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('test')
+
+    const tc = state.messages[1].toolCalls![0]
+    expect(tc.status).toBe('error')
+    expect(tc.error).toBe('timeout')
+  })
 })
