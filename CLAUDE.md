@@ -47,6 +47,13 @@ pnpm clean        # 清理所有 dist
 - 导出三格式：ESM (.mjs) + CJS (.cjs) + 类型声明 (.d.ts)
 - 包之间用 `workspace:*` 引用
 
+### CSS/UI 经验
+
+- 同一区域多个交互元素（按钮/输入框/列表项）用固定 `height` 保持高度一致，不依赖 padding 撑开
+- hover 显示/隐藏元素用 `visibility: hidden/visible` 而非 `display: none/flex`，避免布局跳动
+- 需兼容明暗主题的 hover 背景用中性 `rgba(128,128,128,0.15)`，不用 white/black 系 rgba
+- 主题相关的颜色值（focus 背景、active 状态等）必须用 CSS Variables，不硬编码具体色值
+
 ## 目录约定
 
 ```
