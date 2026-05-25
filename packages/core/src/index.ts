@@ -1,6 +1,7 @@
 export type {
   Message,
   Attachment,
+  ToolCallInfo,
   StreamChunk,
   ChatAdapter,
   SendMessageOptions,

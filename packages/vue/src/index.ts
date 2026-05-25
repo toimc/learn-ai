@@ -39,6 +39,25 @@ export {
   PromptInputHeader,
 } from './prompt-input'
 
+// Attachment series
+export {
+  Attachments,
+  Attachment,
+  AttachmentPreview,
+  AttachmentInfo,
+  AttachmentRemove,
+  AttachmentEmpty,
+} from './attachment'
+
+// ToolCall series
+export {
+  ToolCall,
+  ToolCallHeader,
+  ToolCallContent,
+  ToolCallInput,
+  ToolCallOutput,
+} from './tool-call'
+
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */
 export { default as ChatWindow } from './ChatWindow.vue'

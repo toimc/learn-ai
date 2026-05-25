@@ -7,7 +7,7 @@ defineProps<{
 }>()
 
 defineEmits<{
-  click: []
+  click: [event: Event]
 }>()
 </script>
 

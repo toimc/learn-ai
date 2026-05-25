@@ -13,7 +13,7 @@ const abort = inject<() => void>('promptAbort')!
 <template>
   <button
     class="ai-chat-prompt-submit"
-    :disabled="disabled"
+    :disabled="disabled()"
     @click="status === 'streaming' ? abort() : submit()"
   >
     <svg v-if="status === 'ready'" viewBox="0 0 24 24" fill="currentColor">
