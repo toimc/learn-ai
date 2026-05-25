@@ -20,6 +20,13 @@ export default tseslint.config(
     },
   },
   {
+    files: ['packages/docs/.vitepress/**/*.{ts,vue}'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+      'vue/no-reserved-component-names': 'off',
+    },
+  },
+  {
     ignores: [
       '**/dist/**',
       '**/node_modules/**',

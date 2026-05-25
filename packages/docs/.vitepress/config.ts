@@ -1,0 +1,83 @@
+import { defineConfig } from 'vitepress'
+import { resolve } from 'path'
+
+const root = resolve(__dirname, '..')
+
+export default defineConfig({
+  lang: 'zh-CN',
+  title: 'AI Chat UI',
+  description: '后端无关的 AI 聊天界面组件库',
+
+  vite: {
+    resolve: {
+      alias: {
+        '@ai-chat/core': resolve(root, '../core/src/index.ts'),
+        '@ai-chat/vue': resolve(root, '../vue/src/index.ts'),
+        '@ai-chat/markdown': resolve(root, '../markdown/src/index.ts'),
+      },
+    },
+  },
+
+  themeConfig: {
+    siteTitle: 'AI Chat UI',
+
+    nav: [
+      { text: '指南', link: '/guide/getting-started' },
+      { text: '组件', link: '/components/chat-window' },
+      {
+        text: 'Composables',
+        items: [{ text: 'useChat', link: '/composables/use-chat' }],
+      },
+      { text: 'Playground', link: '/playground' },
+    ],
+
+    sidebar: {
+      '/guide/': [
+        {
+          text: '开发指南',
+          items: [
+            { text: '快速开始', link: '/guide/getting-started' },
+            { text: '安装', link: '/guide/installation' },
+            { text: '使用指南', link: '/guide/usage' },
+            { text: '主题定制', link: '/guide/theming' },
+          ],
+        },
+      ],
+      '/components/': [
+        {
+          text: '基础组件',
+          items: [
+            { text: 'ChatWindow', link: '/components/chat-window' },
+            { text: 'MessageList', link: '/components/message-list' },
+            { text: 'MessageBubble', link: '/components/message-bubble' },
+            { text: 'InputArea', link: '/components/input-area' },
+            { text: 'StreamText', link: '/components/stream-text' },
+            { text: 'Button', link: '/components/button' },
+          ],
+        },
+        {
+          text: 'Markdown 渲染',
+          items: [
+            { text: 'MarkdownRenderer', link: '/components/markdown-renderer' },
+            { text: 'CodeBlock', link: '/components/code-block' },
+            { text: 'LatexBlock', link: '/components/latex-block' },
+          ],
+        },
+      ],
+      '/composables/': [
+        {
+          text: 'Composables',
+          items: [{ text: 'useChat', link: '/composables/use-chat' }],
+        },
+      ],
+    },
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/ai-chat-ui/ai-chat-ui' },
+    ],
+
+    search: {
+      provider: 'local',
+    },
+  },
+})

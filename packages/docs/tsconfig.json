@@ -7,7 +7,12 @@
       "@ai-chat/core": ["../core/src"],
       "@ai-chat/vue": ["../vue/src"],
       "@ai-chat/markdown": ["../markdown/src"]
-    }
+    },
+    "types": ["vitepress"]
   },
-  "include": ["src/**/*.ts", "src/**/*.vue"]
+  "include": [
+    ".vitepress/**/*.ts",
+    ".vitepress/**/*.vue",
+    "**/*.md"
+  ]
 }
