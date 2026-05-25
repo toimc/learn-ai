@@ -23,7 +23,7 @@ export default defineConfig({
 
     nav: [
       { text: '指南', link: '/guide/getting-started' },
-      { text: '组件', link: '/components/chat-window' },
+      { text: '组件', link: '/components/conversation' },
       {
         text: 'Composables',
         items: [{ text: 'useChat', link: '/composables/use-chat' }],
@@ -45,7 +45,27 @@ export default defineConfig({
       ],
       '/components/': [
         {
-          text: '基础组件',
+          text: '对话容器',
+          items: [{ text: 'Conversation', link: '/components/conversation' }],
+        },
+        {
+          text: '消息组件',
+          items: [{ text: 'Message', link: '/components/message' }],
+        },
+        {
+          text: '输入组件',
+          items: [{ text: 'PromptInput', link: '/components/prompt-input' }],
+        },
+        {
+          text: '附件与工具调用',
+          items: [
+            { text: 'Attachments', link: '/components/attachments' },
+            { text: 'ToolCall', link: '/components/tool-call' },
+            { text: 'Shimmer', link: '/components/shimmer' },
+          ],
+        },
+        {
+          text: '旧版组件',
           items: [
             { text: 'ChatWindow', link: '/components/chat-window' },
             { text: 'MessageList', link: '/components/message-list' },

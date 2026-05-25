@@ -2,14 +2,16 @@
 
 后端无关的 AI 聊天界面组件库，基于 Vue 3 + TypeScript。
 
-## 已完成功能
+## 特性
 
-- **Core 核心层**：`ChatAdapter` 接口 + `useChat` composable + 流式处理 + 消息工厂函数
-- **Vue 组件层**：ChatWindow / MessageList / MessageBubble / InputArea / StreamText / Button 共 6 个组件
-- **Markdown 渲染层**：MarkdownRenderer / CodeBlock / LatexBlock 组件（Shiki 代码高亮 + KaTeX 公式）
-- **文档站点**：VitePress 文档站，含组件文档、使用指南、Playground 交互演示
-- **工程化配置**：ESLint + Prettier + Vitest + simple-git-hooks + commitlint + Conventional Commits
-- **容器化部署**：多阶段构建 Dockerfile（Node 构建 → Nginx 部署）
+- **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端
+- **29 个可组合组件**：Conversation / Message / PromptInput / Attachment / ToolCall 五大系列
+- **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
+- **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
+- **AsyncGenerator 流式渲染**：`sendMessage` 返回 `AsyncGenerator<StreamChunk>`，原生支持流式输出
+- **零 CSS 框架依赖**：不绑定 Tailwind / UnoCSS 等框架
+- **Monorepo 按需安装**：每个包独立发布，只装需要的
+- **provide/inject 状态管理**：支持同一页面多个独立对话实例
 
 ## 技术栈
 
@@ -20,21 +22,7 @@
 | 构建 | Vite | ^8.0 |
 | 包管理 | pnpm workspace | ^9.0 |
 | 测试 | Vitest + @vue/test-utils | ^4.1 / ^2.4 |
-| 代码规范 | ESLint + Prettier | ^10.4 / ^3.8 |
-| Git Hooks | simple-git-hooks + lint-staged + commitlint | - |
 | 文档站 | VitePress | ^1.6 |
-| 代码高亮 | Shiki | - |
-| 数学公式 | KaTeX | - |
-| 容器化 | Docker + Nginx | - |
-
-### 技术特点
-
-- **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端（OpenAI / Claude / 自建 API）
-- **AsyncGenerator 流式渲染**：`sendMessage` 返回 `AsyncGenerator<StreamChunk>`，原生支持流式输出
-- **零 CSS 框架依赖**：CSS Variables（`--ai-chat-*`）主题定制，不绑定 Tailwind / UnoCSS 等框架
-- **Monorepo 按需安装**：每个包独立发布，只装需要的
-- **provide/inject 状态管理**：组件级状态管理，支持同一页面多个独立对话实例
-- **三格式导出**：ESM (`.mjs`) + CJS (`.cjs`) + 类型声明 (`.d.ts`)
 
 ## 项目结构
 
@@ -42,94 +30,30 @@
 ai-chat-ui/
 ├── packages/
 │   ├── core/                  # @ai-chat/core — 核心类型与 composables（零外部依赖）
-│   │   ├── src/
-│   │   │   ├── types/         # Message, StreamChunk, ChatAdapter 等核心接口
-│   │   │   ├── composables/   # useChat composable（响应式状态 + 流式消费）
-│   │   │   ├── utils/         # generateId, createUserMessage, createAssistantMessage
-│   │   │   └── adapter/       # Adapter 相关工具
-│   │   ├── vite.config.ts
-│   │   └── package.json
+│   │   ├── src/types/         # Message, StreamChunk, ChatAdapter, ToolCallInfo
+│   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
+│   │   └── src/utils/         # generateId, createUserMessage, createAssistantMessage
 │   │
-│   ├── vue/                   # @ai-chat/vue — Vue 3 UI 组件（依赖 core，peer 依赖 vue）
-│   │   ├── src/
-│   │   │   ├── ChatWindow.vue     # 聊天窗口布局容器
-│   │   │   ├── MessageList.vue    # 消息列表（作用域 slot）
-│   │   │   ├── MessageBubble.vue  # 消息气泡（用户/助手样式区分）
-│   │   │   ├── InputArea.vue      # 输入区域（发送/中断切换）
-│   │   │   ├── StreamText.vue     # 流式文本（光标动画）
-│   │   │   └── Button.vue         # 通用按钮组件
-│   │   ├── vite.config.ts
-│   │   └── package.json
+│   ├── vue/                   # @ai-chat/vue — 29 个 Vue 3 组件
+│   │   └── src/
+│   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
+│   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
+│   │       ├── message/       # Message / Content / Actions / Action / Attachments
+│   │       ├── prompt-input/  # PromptInput / Textarea / Submit / Footer / Tools / Button / Header
+│   │       ├── attachment/    # Attachments / Attachment / Preview / Info / Remove / Empty
+│   │       ├── tool-call/     # ToolCall / Header / Content / Input / Output
+│   │       ├── shared/        # StreamText / Button / Shimmer
+│   │       ├── composables/   # useScrollAnchor
+│   │       └── utils/         # media.ts + format.ts
 │   │
-│   ├── markdown/              # @ai-chat/markdown — Markdown 渲染（依赖 core + vue）
-│   │   ├── src/
-│   │   │   ├── MarkdownRenderer.vue  # Markdown 渲染器
-│   │   │   ├── CodeBlock.vue         # 代码块（Shiki 高亮）
-│   │   │   └── LatexBlock.vue        # 数学公式（KaTeX）
-│   │   ├── vite.config.ts
-│   │   └── package.json
+│   ├── markdown/              # @ai-chat/markdown — Markdown 渲染
+│   │   └── src/               # MarkdownRenderer / CodeBlock / LatexBlock
 │   │
-│   └── docs/                  # @ai-chat/docs — VitePress 文档站（私有包）
-│       ├── .vitepress/
-│       │   ├── config.ts          # VitePress 配置（导航 + 侧边栏）
-│       │   ├── theme/             # 自定义主题
-│       │   ├── components/        # DemoContainer 等文档组件
-│       │   └── utils/             # mock-adapter 演示用适配器
-│       ├── guide/                 # 使用指南文档
-│       ├── components/            # 组件 API 文档
-│       ├── composables/           # Composable 文档
-│       ├── public/
-│       │   └── playground.html    # 交互式 Playground
-│       └── package.json
-│
-├── CLAUDE.md                  # AI 开发规范（编码约定 + Git 规范）
-├── Dockerfile                 # 多阶段构建（Node 构建 → Nginx 部署）
-├── vitest.config.ts           # Vitest 测试配置（jsdom 环境）
-├── eslint.config.js           # ESLint Flat Config
-├── commitlint.config.js       # Commit 信息规范（Conventional Commits，subject ≤59 字）
-├── tsconfig.base.json         # TypeScript 基础配置
-├── pnpm-workspace.yaml        # pnpm workspace 定义
-└── package.json               # 根 package.json（脚本 + Git Hooks）
-```
-
-### 包依赖关系
-
-```
-@ai-chat/core (无外部依赖)
-    ↑
-@ai-chat/vue (依赖 core，peer 依赖 vue ^3.5)
-    ↑
-@ai-chat/markdown (依赖 core + vue，peer 依赖 vue ^3.5)
-
-@ai-chat/docs (依赖 core + vue + markdown，私有包不发布)
-```
-
-### 后续目录规划
-
-按照组件库工程化实践，后续将按需新增以下目录结构：
-
-```
-packages/
-├── theme/                    # @ai-chat/theme — 主题预设包
-│   └── src/
-│       ├── tokens/           # Design Tokens（原始/语义/组件三层）
-│       ├── presets/          # 内置主题预设（默认蓝/优雅紫/自然绿/暖橙）
-│       └── dark/             # 暗色模式变量定义
-│
-├── agents/                   # @ai-chat/agents — 模型调用层（零外部依赖）
-│   └── src/
-│       ├── adapters/         # OpenAI / Anthropic / Google 模型适配器
-│       └── registry/         # ModelRegistry 多模型注册
-│
-├── tools/                    # @ai-chat/tools — 工具集成层（零外部依赖）
-│   └── src/
-│       ├── definitions/      # 工具类型定义
-│       └── executor/         # ToolExecutor + ToolRegistry
-│
-└── server/                   # @ai-chat/server — HTTP 服务层
-    └── src/
-        ├── routes/           # API 路由（POST /api/chat SSE）
-        └── middleware/       # CORS / 认证 / 限流 / 日志
+│   └── docs/                  # @ai-chat/docs — VitePress 文档站
+│       └── .vitepress/
+│           ├── components/    # PlaygroundDemo（完整 Playground）
+│           ├── theme/         # 全局组件注册
+│           └── utils/         # mock-adapter（支持 tool_call）
 ```
 
 ## 快速开始
@@ -145,52 +69,118 @@ pnpm add @ai-chat/core @ai-chat/vue @ai-chat/markdown
 ```vue
 <script setup lang="ts">
 import { useChat } from '@ai-chat/core'
-import { ChatWindow, MessageList, MessageBubble, InputArea } from '@ai-chat/vue'
-import { MarkdownRenderer } from '@ai-chat/markdown'
-import type { ChatAdapter, SendMessageOptions, StreamChunk } from '@ai-chat/core'
+import {
+  Conversation, ConversationContent, ConversationEmpty,
+  Message, MessageContent, MessageActions, MessageAction,
+  PromptInput, PromptInputTextarea, PromptInputSubmit,
+  PromptInputFooter, PromptInputTools,
+} from '@ai-chat/vue'
+import type { ChatAdapter } from '@ai-chat/core'
 
-// 1. 实现 ChatAdapter 接口
 const adapter: ChatAdapter = {
-  async *sendMessage({ messages, signal }: SendMessageOptions): AsyncGenerator<StreamChunk> {
+  async *sendMessage({ messages, signal }) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages }),
       signal,
     })
-
     const reader = res.body!.getReader()
     const decoder = new TextDecoder()
-
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
       yield { type: 'text', content: decoder.decode(value, { stream: true }) }
     }
-
     yield { type: 'done', content: '' }
   },
 }
 
-// 2. 使用 useChat composable
-const { messages, isStreaming, send, abort } = useChat(adapter)
+const chat = useChat(adapter)
 </script>
 
 <template>
-  <ChatWindow>
-    <MessageList :messages="messages" v-slot="{ message }">
-      <MessageBubble :message="message">
-        <MarkdownRenderer :content="message.content" />
-      </MessageBubble>
-    </MessageList>
-    <InputArea
-      :disabled="isStreaming"
-      @send="send"
-      @abort="abort"
-    />
-  </ChatWindow>
+  <Conversation>
+    <ConversationContent>
+      <ConversationEmpty v-if="chat.messages.length === 0">
+        <h3>有什么可以帮你的？</h3>
+      </ConversationEmpty>
+
+      <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+        <MessageContent>{{ msg.content }}</MessageContent>
+      </Message>
+    </ConversationContent>
+
+    <PromptInput>
+      <PromptInputTextarea @send="(t) => chat.send(t)" />
+      <PromptInputSubmit />
+    </PromptInput>
+  </Conversation>
 </template>
 ```
+
+## 组件一览
+
+### Conversation 系列（对话容器）
+
+| 组件 | 说明 |
+|------|------|
+| Conversation | 根容器，provide 滚动上下文 |
+| ConversationContent | 可滚动消息区，max-width 768px |
+| ConversationEmpty | 欢迎屏空状态 |
+| ConversationScrollBtn | 回到底部浮动按钮 |
+
+### Message 系列（消息渲染）
+
+| 组件 | 说明 |
+|------|------|
+| Message | 消息项，avatar + body 布局 |
+| MessageContent | 消息正文容器 |
+| MessageActions | 操作按钮容器（hover 显示） |
+| MessageAction | 单个操作按钮（30px 方形） |
+| MessageAttachments | 附件容器 |
+
+### PromptInput 系列（输入系统）
+
+| 组件 | 说明 |
+|------|------|
+| PromptInput | 外层容器，provide 输入上下文 |
+| PromptInputTextarea | 自适应输入框（Enter 发送 / Shift+Enter 换行） |
+| PromptInputSubmit | 发送/停止切换按钮 |
+| PromptInputBody | 输入行容器 |
+| PromptInputFooter | 底部工具栏 |
+| PromptInputTools | 工具按钮组 |
+| PromptInputButton | 单个工具按钮 |
+| PromptInputHeader | 附件预览区域 |
+
+### Attachment 系列（附件展示）
+
+| 组件 | 说明 |
+|------|------|
+| Attachments | 容器（grid / inline / list 布局） |
+| Attachment | 单附件，provide 数据 |
+| AttachmentPreview | 图片缩略图 / 文件图标 |
+| AttachmentInfo | 文件名 + 类型 + 大小 |
+| AttachmentRemove | hover 删除按钮 |
+| AttachmentEmpty | 空状态 |
+
+### ToolCall 系列（工具调用）
+
+| 组件 | 说明 |
+|------|------|
+| ToolCall | 可折叠容器（details/summary） |
+| ToolCallHeader | 状态图标 + 工具名 + 耗时 |
+| ToolCallContent | 展开内容 |
+| ToolCallInput | 格式化参数 JSON |
+| ToolCallOutput | 结果或错误 |
+
+### Shared（通用组件）
+
+| 组件 | 说明 |
+|------|------|
+| StreamText | 流式文本（光标动画） |
+| Button | 通用按钮 |
+| Shimmer | 微光扫过动画 |
 
 ## 核心 API
 
@@ -198,10 +188,10 @@ const { messages, isStreaming, send, abort } = useChat(adapter)
 
 | 导出 | 类型 | 说明 |
 |------|------|------|
-| `useChat(adapter, options?)` | Composable | 返回响应式 `ChatState`（messages / isStreaming / error / send / abort / clear） |
-| `generateId()` | 函数 | 生成 `msg_{timestamp}_{counter}` 格式唯一 ID |
-| `createUserMessage(content, attachments?)` | 函数 | 创建用户消息对象 |
-| `createAssistantMessage(content?, metadata?)` | 函数 | 创建助手消息对象 |
+| `useChat(adapter, options?)` | Composable | 返回 ChatState（messages / isStreaming / send / abort / clear） |
+| `generateId()` | 函数 | 生成唯一 ID |
+| `createUserMessage(content, attachments?)` | 函数 | 创建用户消息 |
+| `createAssistantMessage()` | 函数 | 创建助手消息 |
 
 ### 核心类型
 
@@ -211,150 +201,52 @@ interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   attachments?: Attachment[]
+  toolCalls?: ToolCallInfo[]
   metadata?: Record<string, unknown>
   createdAt: Date
 }
 
+interface ToolCallInfo {
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+  result?: unknown
+  error?: string
+  status: 'calling' | 'completed' | 'error'
+  duration?: number
+}
+
 interface StreamChunk {
-  type: 'text' | 'tool_call' | 'thinking' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'done'
   content: string
   metadata?: Record<string, unknown>
 }
 
 interface ChatAdapter {
   sendMessage(options: SendMessageOptions): AsyncGenerator<StreamChunk>
-  abort?(requestId: string): void
-  getHistory?(options: HistoryOptions): Promise<Message[]>
 }
 ```
 
-### @ai-chat/vue 组件
-
-| 组件 | Props | 说明 |
-|------|-------|------|
-| `ChatWindow` | - | 聊天窗口布局容器 |
-| `MessageList` | `messages: Message[]` | 消息列表，作用域 slot 暴露 `{ message }` |
-| `MessageBubble` | `message: Message` | 消息气泡，区分用户/助手样式 |
-| `InputArea` | `disabled: boolean` | 输入区域，emit `send` / `abort` 事件 |
-| `StreamText` | - | 流式文本渲染，带光标动画 |
-| `Button` | - | 通用按钮组件 |
-
-### @ai-chat/markdown 组件
-
-| 组件 | Props | 说明 |
-|------|-------|------|
-| `MarkdownRenderer` | `content: string` | Markdown 渲染器 |
-| `CodeBlock` | - | 代码块，Shiki 语法高亮 |
-| `LatexBlock` | - | LaTeX 数学公式，KaTeX 渲染 |
-
 ## 开发
 
-### 环境要求
-
-- Node.js >= 18.0.0
-- pnpm >= 9.0.0
-
-### 常用命令
-
 ```bash
-# 安装依赖
-pnpm install
-
-# 启动文档站（VitePress，含组件演示和 Playground）
-pnpm dev
-
-# 构建所有库包（core → vue → markdown 按依赖顺序）
-pnpm build
-
-# 运行测试（Vitest，jsdom 环境）
-pnpm test
-
-# 监听模式测试
-pnpm test:watch
-
-# 代码检查
-pnpm lint
-
-# 自动修复代码问题
-pnpm lint:fix
-
-# 格式化代码
-pnpm format
-
-# 检查格式
-pnpm format:check
-
-# 类型检查（core + vue + markdown 三个包）
-pnpm type-check
-
-# 清理所有构建产物
-pnpm clean
+pnpm install        # 安装依赖
+pnpm dev            # 启动文档站
+pnpm build          # 构建所有包
+pnpm test           # 运行测试
+pnpm lint           # 代码检查
+pnpm type-check     # 类型检查
+pnpm clean          # 清理构建产物
 ```
 
-### Git Hooks
+## 包状态
 
-项目配置了 `simple-git-hooks`，提交时自动执行：
-
-- **pre-commit**：lint-staged 运行 Prettier 格式化 + ESLint 修复
-- **commit-msg**：commitlint 校验提交信息（Conventional Commits 格式，subject 不超过 59 字）
-
-### 提交规范
-
-```
-type(scope): subject
-
-feat(vue): 添加 Button 示例组件
-fix(core): 修复 useChat abort 时状态未重置
-docs(docs): 更新组件 API 文档
-chore: 升级 vite 到 8.0
-```
-
-## 部署
-
-### Docker 部署（推荐）
-
-项目已包含多阶段构建的 Dockerfile：
-
-```bash
-# 构建镜像
-docker build -t ai-chat-ui-docs .
-
-# 运行容器
-docker run -d -p 8080:80 ai-chat-ui-docs
-```
-
-构建流程：
-
-1. **Stage 1 (Builder)**：Node 22 Alpine + pnpm 9，安装依赖后按依赖顺序构建 core → vue → markdown → docs
-2. **Stage 2 (Production)**：Nginx Alpine，托管 docs 构建产物，配置 SPA 路由 fallback 和静态资源缓存
-
-### 手动部署文档站
-
-```bash
-# 构建所有库包
-pnpm build
-
-# 构建文档站
-pnpm -C packages/docs run build
-
-# 预览构建结果
-pnpm -C packages/docs run preview
-```
-
-构建产物位于 `packages/docs/dist`，可部署到 Vercel / GitHub Pages / Nginx 等任意静态托管。
-
-## 包状态总览
-
-| 包 | npm 包名 | 版本 | 状态 |
-|------|------|------|------|
-| core | `@ai-chat/core` | 0.0.1 | MVP — ChatAdapter 接口 + useChat + 工具函数 |
-| vue | `@ai-chat/vue` | 0.0.1 | MVP — 6 个 Vue 3 组件 |
-| markdown | `@ai-chat/markdown` | 0.0.1 | MVP — Markdown 渲染 + 代码高亮 + 公式 |
-| docs | `@ai-chat/docs` | - (私有) | MVP — VitePress 文档站 + Playground |
-| theme | `@ai-chat/theme` | - | 规划中 — Design Token 体系 + 暗色模式 + 主题预设 |
-| agents | `@ai-chat/agents` | - | 规划中 — 多模型适配器 + Agent 调度 |
-| tools | `@ai-chat/tools` | - | 规划中 — 工具注册 + 执行器 |
-| server | `@ai-chat/server` | - | 规划中 — Hono HTTP 服务 + SSE |
+| 包 | 版本 | 状态 |
+|------|------|------|
+| @ai-chat/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
+| @ai-chat/vue | 0.0.1 | 29 个 Vue 3 组件 + Design Token |
+| @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX |
+| @ai-chat/docs | 私有 | VitePress 文档站 + Playground |
 
 ## License
 

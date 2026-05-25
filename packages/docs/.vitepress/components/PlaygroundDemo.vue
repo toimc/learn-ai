@@ -1,0 +1,968 @@
+<script setup lang="ts">
+import { ref, nextTick, watch } from 'vue'
+import { useChat } from '@ai-chat/core'
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmpty,
+  ConversationScrollBtn,
+  Message,
+  MessageContent,
+  MessageActions,
+  MessageAction,
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputSubmit,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputButton,
+  ToolCall,
+} from '@ai-chat/vue'
+import { mockAdapter } from '../utils/mock-adapter'
+
+const chat = useChat(mockAdapter)
+
+const sidebarOpen = ref(false)
+const theme = ref<'dark' | 'light'>('dark')
+const chatAreaRef = ref<HTMLElement>()
+const isAtBottom = ref(true)
+
+const conversations = ref([
+  { id: '1', title: 'Vue 3 组件库架构设计', active: true },
+  { id: '2', title: 'CSS Variables 主题系统', active: false },
+  { id: '3', title: 'StreamText 流式渲染优化', active: false },
+  { id: '4', title: 'Vitest 单元测试覆盖率', active: false },
+  { id: '5', title: 'Markdown 渲染与代码高亮', active: false },
+  { id: '6', title: 'pnpm workspace 最佳实践', active: false },
+])
+
+const suggestions = [
+  '帮我设计一个 Vue 3 组件库的架构方案，包含 Monorepo 结构',
+  '解释 CSS Variables 如何实现主题切换和暗色模式',
+  '写一个 AsyncGenerator 实现的流式消息处理函数',
+  '如何用 Vitest 测试 Vue 3 的 composable 函数',
+]
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+function selectConversation(id: string) {
+  conversations.value.forEach((c) => (c.active = c.id === id))
+  if (window.innerWidth <= 768) sidebarOpen.value = false
+}
+
+function newChat() {
+  chat.clear()
+  if (window.innerWidth <= 768) sidebarOpen.value = false
+}
+
+function useSuggestion(text: string) {
+  chat.send(text)
+}
+
+function toggleTheme() {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (chatAreaRef.value) {
+      chatAreaRef.value.scrollTop = chatAreaRef.value.scrollHeight
+    }
+  })
+}
+
+function handleScroll() {
+  if (!chatAreaRef.value) return
+  const el = chatAreaRef.value
+  isAtBottom.value = el.scrollHeight - el.scrollTop - el.clientHeight < 50
+}
+
+watch(() => chat.messages.length, scrollToBottom)
+</script>
+
+<template>
+  <div class="pg-app" :data-theme="theme === 'light' ? 'light' : undefined">
+    <!-- Sidebar -->
+    <aside class="pg-sidebar" :class="{ open: sidebarOpen }">
+      <div class="pg-sidebar-header">
+        <div class="pg-sidebar-logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+          AI Chat UI
+        </div>
+        <button class="pg-btn-icon" title="收起侧边栏" @click="toggleSidebar">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+        </button>
+      </div>
+
+      <button class="pg-btn-new-chat" @click="newChat">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+        </svg>
+        <span>新对话</span>
+        <span class="pg-shortcut">⌘K</span>
+      </button>
+
+      <div class="pg-sidebar-search">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" placeholder="搜索对话..." />
+      </div>
+
+      <div class="pg-sidebar-scroll">
+        <div class="pg-section-title">今天</div>
+        <div
+          v-for="conv in conversations.slice(0, 3)"
+          :key="conv.id"
+          class="pg-conv-item"
+          :class="{ active: conv.active }"
+          @click="selectConversation(conv.id)"
+        >
+          <svg
+            class="pg-conv-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            />
+          </svg>
+          <span class="pg-conv-text">{{ conv.title }}</span>
+        </div>
+        <div class="pg-section-title">过去 7 天</div>
+        <div
+          v-for="conv in conversations.slice(3)"
+          :key="conv.id"
+          class="pg-conv-item"
+          :class="{ active: conv.active }"
+          @click="selectConversation(conv.id)"
+        >
+          <svg
+            class="pg-conv-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            />
+          </svg>
+          <span class="pg-conv-text">{{ conv.title }}</span>
+        </div>
+      </div>
+
+      <div class="pg-sidebar-footer">
+        <div class="pg-user-profile">
+          <div class="pg-user-avatar">U</div>
+          <div class="pg-user-info">
+            <div class="pg-user-name">User</div>
+            <div class="pg-user-plan">Free Plan</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div
+      class="pg-mobile-overlay"
+      :class="{ open: sidebarOpen }"
+      @click="toggleSidebar"
+    />
+
+    <!-- Main -->
+    <main class="pg-main">
+      <header class="pg-main-header">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button class="pg-btn-icon pg-sidebar-toggle" @click="toggleSidebar">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <button class="pg-model-selector">
+            AI Chat UI
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+        <div class="pg-header-actions">
+          <button class="pg-btn-icon" title="切换主题" @click="toggleTheme">
+            <svg
+              v-if="theme === 'dark'"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg
+              v-else
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <Conversation>
+        <ConversationContent ref="chatAreaRef" @scroll="handleScroll">
+          <!-- Welcome screen -->
+          <ConversationEmpty v-if="chat.messages.length === 0">
+            <div class="pg-welcome">
+              <div class="pg-welcome-logo">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <h1 class="pg-welcome-title">有什么可以帮你的？</h1>
+              <p class="pg-welcome-subtitle">
+                选择一个话题开始，或直接输入你的问题
+              </p>
+              <div class="pg-suggestions">
+                <button
+                  v-for="(s, i) in suggestions"
+                  :key="i"
+                  class="pg-suggestion-card"
+                  @click="useSuggestion(s)"
+                >
+                  {{ s }}
+                </button>
+              </div>
+            </div>
+          </ConversationEmpty>
+
+          <!-- Messages -->
+          <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+            <MessageContent>
+              <div v-if="msg.role === 'assistant'" v-html="msg.content" />
+              <template v-else>{{ msg.content }}</template>
+            </MessageContent>
+
+            <!-- ToolCalls -->
+            <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
+
+            <MessageActions v-if="msg.role === 'assistant'">
+              <MessageAction title="复制">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path
+                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                  />
+                </svg>
+              </MessageAction>
+              <MessageAction title="重新生成">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+              </MessageAction>
+            </MessageActions>
+          </Message>
+
+          <!-- Typing indicator -->
+          <div
+            v-if="
+              chat.isStreaming &&
+              !chat.messages[chat.messages.length - 1]?.content
+            "
+            class="pg-message"
+          >
+            <div class="pg-avatar-assistant">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <div class="pg-message-body">
+              <div class="pg-message-role">AI Chat UI</div>
+              <div class="pg-typing"><span /><span /><span /></div>
+            </div>
+          </div>
+        </ConversationContent>
+
+        <ConversationScrollBtn
+          v-if="!isAtBottom && chat.messages.length > 0"
+          @click="scrollToBottom"
+        />
+
+        <!-- Input -->
+        <div class="pg-input-area">
+          <PromptInput>
+            <PromptInputTextarea
+              placeholder="给 AI Chat UI 发送消息..."
+              @send="(text: string) => chat.send(text)"
+            />
+            <PromptInputSubmit />
+            <template #footer>
+              <PromptInputFooter>
+                <template #tools>
+                  <PromptInputTools>
+                    <PromptInputButton title="上传文件">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                        />
+                      </svg>
+                    </PromptInputButton>
+                    <PromptInputButton title="网页搜索">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path
+                          d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                        />
+                      </svg>
+                    </PromptInputButton>
+                    <PromptInputButton title="代码解释器">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                      </svg>
+                    </PromptInputButton>
+                    <PromptInputButton title="图片生成">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    </PromptInputButton>
+                  </PromptInputTools>
+                </template>
+                <template #hint>
+                  <span class="pg-input-hint"
+                    >Enter 发送，Shift+Enter 换行</span
+                  >
+                </template>
+              </PromptInputFooter>
+            </template>
+          </PromptInput>
+          <p class="pg-disclaimer">
+            AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性
+          </p>
+        </div>
+      </Conversation>
+    </main>
+  </div>
+</template>
+
+<style>
+/* ===== Playground Layout ===== */
+.pg-app {
+  display: flex;
+  width: 100%;
+  height: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--ai-chat-color-border);
+  font-family: var(--ai-chat-font-sans);
+  background: var(--ai-chat-color-bg-primary);
+  color: var(--ai-chat-color-text-primary);
+  position: relative;
+}
+
+/* ===== Sidebar ===== */
+.pg-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ai-chat-color-bg-sidebar);
+  border-right: 1px solid var(--ai-chat-color-border);
+  overflow: hidden;
+}
+
+.pg-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ai-chat-color-border);
+}
+
+.pg-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-sidebar-logo svg {
+  width: 20px;
+  height: 20px;
+  color: var(--ai-chat-color-accent);
+}
+
+.pg-btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-chat-color-text-secondary);
+  cursor: pointer;
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-btn-icon:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.pg-btn-new-chat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 16px 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ai-chat-color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-btn-new-chat svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pg-btn-new-chat:hover {
+  background: var(--ai-chat-color-bg-sidebar-hover);
+}
+
+.pg-shortcut {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
+}
+
+.pg-sidebar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 16px 12px;
+  padding: 6px 10px;
+  background: var(--ai-chat-color-bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--ai-chat-color-border);
+}
+
+.pg-sidebar-search svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ai-chat-color-text-muted);
+  flex-shrink: 0;
+}
+
+.pg-sidebar-search input {
+  border: none;
+  background: transparent;
+  color: var(--ai-chat-color-text-primary);
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+}
+
+.pg-sidebar-search input::placeholder {
+  color: var(--ai-chat-color-text-muted);
+}
+
+.pg-sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px;
+}
+
+.pg-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ai-chat-color-text-muted);
+  padding: 8px 8px 4px;
+  letter-spacing: 0.5px;
+}
+
+.pg-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ai-chat-color-text-secondary);
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-conv-item:hover {
+  background: var(--ai-chat-color-bg-sidebar-hover);
+}
+
+.pg-conv-item.active {
+  background: var(--ai-chat-color-bg-sidebar-active);
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-conv-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.pg-conv-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pg-sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--ai-chat-color-border);
+}
+
+.pg-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pg-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.pg-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.pg-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-user-plan {
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
+}
+
+/* ===== Main ===== */
+.pg-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+.pg-main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--ai-chat-color-border);
+}
+
+.pg-sidebar-toggle {
+  display: none;
+}
+
+.pg-model-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-chat-color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pg-model-selector svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pg-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+/* ===== Welcome Screen ===== */
+.pg-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  width: 100%;
+}
+
+.pg-welcome-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #6366f1, #a78bfa, #c084fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.pg-welcome-logo svg {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+}
+
+.pg-welcome-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.pg-welcome-subtitle {
+  font-size: 14px;
+  color: var(--ai-chat-color-text-muted);
+  margin-bottom: 24px;
+}
+
+.pg-suggestions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.pg-suggestion-card {
+  padding: 12px 16px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ai-chat-color-text-secondary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+  line-height: 1.4;
+}
+
+.pg-suggestion-card:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+/* ===== Typing Indicator ===== */
+.pg-message {
+  display: flex;
+  gap: 16px;
+  padding: 20px 0;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.pg-avatar-assistant {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ai-chat-color-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--ai-chat-color-border);
+}
+
+.pg-avatar-assistant svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ai-chat-color-accent);
+}
+
+.pg-message-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pg-message-role {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.pg-typing {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.pg-typing span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ai-chat-color-text-muted);
+  animation: typing 1.2s infinite;
+}
+
+.pg-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.pg-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Input Area ===== */
+.pg-input-area {
+  max-width: 768px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px 16px;
+}
+
+.pg-input-hint {
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
+}
+
+.pg-disclaimer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
+  margin-top: 8px;
+}
+
+/* ===== Mobile ===== */
+.pg-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+.pg-mobile-overlay.open {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .pg-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .pg-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .pg-sidebar-toggle {
+    display: flex;
+  }
+
+  .pg-suggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-input-area {
+    padding: 0 12px 12px;
+  }
+}
+</style>

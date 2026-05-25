@@ -32,8 +32,14 @@ export default tseslint.config(
   },
   {
     files: ['packages/docs/.vitepress/**/*.{ts,vue}'],
+    languageOptions: {
+      globals: {
+        window: 'readonly',
+      },
+    },
     rules: {
       'vue/no-reserved-component-names': 'off',
+      'vue/multi-word-component-names': 'off',
     },
   },
   {
