@@ -5,6 +5,18 @@ import './styles/animations.css'
 // Shared components
 export { default as StreamText } from './shared/StreamText.vue'
 export { default as Button } from './shared/Button.vue'
+export { default as Shimmer } from './shared/Shimmer.vue'
+
+// Conversation series
+export {
+  Conversation,
+  ConversationContent,
+  ConversationEmpty,
+  ConversationScrollBtn,
+} from './conversation'
+
+// Composables
+export { useScrollAnchor } from './composables/useScrollAnchor'
 
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */

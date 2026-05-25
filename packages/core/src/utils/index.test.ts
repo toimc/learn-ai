@@ -24,14 +24,14 @@ describe('createUserMessage', () => {
 
   it('should create a user message with attachments', () => {
     const attachment = {
-      type: 'image' as const,
+      id: 'att_1',
       url: 'https://example.com/img.png',
       name: 'img.png',
-      mimeType: 'image/png',
+      mediaType: 'image/png',
     }
     const msg = createUserMessage('Look at this', [attachment])
     expect(msg.attachments).toHaveLength(1)
-    expect(msg.attachments![0].type).toBe('image')
+    expect(msg.attachments![0].mediaType).toBe('image/png')
   })
 })
 

@@ -14,15 +14,21 @@ export default tseslint.config(
       parserOptions: {
         parser: tseslint.parser,
       },
+      globals: {
+        HTMLElement: 'readonly',
+        MutationObserver: 'readonly',
+        ResizeObserver: 'readonly',
+        requestAnimationFrame: 'readonly',
+      },
     },
     rules: {
       'vue/no-v-html': 'off',
+      'vue/multi-word-component-names': 'off',
     },
   },
   {
     files: ['packages/docs/.vitepress/**/*.{ts,vue}'],
     rules: {
-      'vue/multi-word-component-names': 'off',
       'vue/no-reserved-component-names': 'off',
     },
   },
