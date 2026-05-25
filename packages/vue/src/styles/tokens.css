@@ -1,0 +1,145 @@
+/*
+ * ai-chat-ui Design Tokens
+ *
+ * 从 playground.html 提取的视觉基准，作为所有组件的样式基础。
+ * 三层结构：原始令牌 → 语义令牌 → 组件令牌（组件内定义）
+ */
+
+/* ===== 暗色（默认） ===== */
+:root {
+  /* -- 主色调 -- */
+  --ai-chat-color-accent: #6366f1;
+  --ai-chat-color-accent-hover: #818cf8;
+  --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.15);
+
+  /* -- 侧边栏 -- */
+  --ai-chat-sidebar-bg: #171717;
+  --ai-chat-sidebar-hover: #262626;
+  --ai-chat-sidebar-active: #2a2a2a;
+  --ai-chat-sidebar-border: #2e2e2e;
+  --ai-chat-sidebar-text: #a1a1aa;
+  --ai-chat-sidebar-text-active: #fafafa;
+
+  /* -- 主区域背景 -- */
+  --ai-chat-color-bg-primary: #212121;
+  --ai-chat-color-bg-secondary: #1a1a1a;
+  --ai-chat-color-bg-chat: #212121;
+
+  /* -- 消息 -- */
+  --ai-chat-msg-user-bg: #2f2f2f;
+  --ai-chat-msg-assistant-bg: transparent;
+
+  /* -- 输入框 -- */
+  --ai-chat-input-bg: #2f2f2f;
+  --ai-chat-input-border: #404040;
+  --ai-chat-input-focus-border: #6366f1;
+
+  /* -- 文本 -- */
+  --ai-chat-color-text-primary: #fafafa;
+  --ai-chat-color-text-secondary: #a1a1aa;
+  --ai-chat-color-text-muted: #71717a;
+
+  /* -- 边框 & 滚动条 -- */
+  --ai-chat-color-border: #2e2e2e;
+  --ai-chat-scrollbar-thumb: #404040;
+  --ai-chat-scrollbar-track: transparent;
+
+  /* -- 代码块 -- */
+  --ai-chat-code-bg: #1a1a1a;
+  --ai-chat-code-inline-bg: rgba(255, 255, 255, 0.06);
+
+  /* -- 中性 hover -- */
+  --ai-chat-hover-neutral: rgba(128, 128, 128, 0.15);
+
+  /* -- 圆角 -- */
+  --ai-chat-radius-sm: 6px;
+  --ai-chat-radius-md: 8px;
+  --ai-chat-radius-lg: 12px;
+  --ai-chat-radius-xl: 16px;
+
+  /* -- 字体 -- */
+  --ai-chat-font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ai-chat-font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* -- 动画 -- */
+  --ai-chat-duration-fast: 0.12s;
+  --ai-chat-duration-normal: 0.2s;
+  --ai-chat-easing: ease;
+
+  /* -- 尺寸 -- */
+  --ai-chat-sidebar-width: 260px;
+  --ai-chat-content-max-width: 768px;
+  --ai-chat-input-max-height: 200px;
+  --ai-chat-avatar-size: 30px;
+  --ai-chat-btn-icon-size: 36px;
+  --ai-chat-btn-tool-size: 32px;
+  --ai-chat-msg-gap: 16px;
+  --ai-chat-msg-padding-y: 20px;
+
+  /* -- 旧组件兼容（逐步废弃） -- */
+  --ai-chat-border-color: var(--ai-chat-color-border);
+  --ai-chat-radius: var(--ai-chat-radius-md);
+  --ai-chat-bg: var(--ai-chat-color-bg-primary);
+  --ai-chat-padding: 16px;
+  --ai-chat-primary: var(--ai-chat-color-accent);
+  --ai-chat-danger: #ef4444;
+  --ai-chat-message-gap: 12px;
+  --ai-chat-bubble-radius: var(--ai-chat-radius-lg);
+  --ai-chat-user-bg: var(--ai-chat-msg-user-bg);
+  --ai-chat-user-color: var(--ai-chat-color-text-primary);
+  --ai-chat-assistant-bg: var(--ai-chat-color-bg-secondary);
+  --ai-chat-assistant-color: var(--ai-chat-color-text-primary);
+  --ai-chat-input-bg: var(--ai-chat-input-bg);
+  --ai-chat-input-color: var(--ai-chat-color-text-primary);
+}
+
+/* ===== 亮色主题 ===== */
+[data-theme='light'] {
+  --ai-chat-sidebar-bg: #f9fafb;
+  --ai-chat-sidebar-hover: #f3f4f6;
+  --ai-chat-sidebar-active: #e5e7eb;
+  --ai-chat-sidebar-border: #e5e7eb;
+  --ai-chat-sidebar-text: #6b7280;
+  --ai-chat-sidebar-text-active: #111827;
+
+  --ai-chat-color-bg-primary: #ffffff;
+  --ai-chat-color-bg-secondary: #f9fafb;
+  --ai-chat-color-bg-chat: #ffffff;
+
+  --ai-chat-msg-user-bg: #f3f4f6;
+
+  --ai-chat-input-bg: #f3f4f6;
+  --ai-chat-input-border: #d1d5db;
+
+  --ai-chat-color-text-primary: #111827;
+  --ai-chat-color-text-secondary: #4b5563;
+  --ai-chat-color-text-muted: #9ca3af;
+
+  --ai-chat-color-border: #e5e7eb;
+  --ai-chat-scrollbar-thumb: #d1d5db;
+
+  --ai-chat-code-bg: #f3f4f6;
+  --ai-chat-code-inline-bg: rgba(0, 0, 0, 0.06);
+
+  --ai-chat-assistant-bg: #f3f4f6;
+}
+
+/* ===== 全局基础 ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 自定义滚动条 */
+.ai-chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.ai-chat-scrollbar::-webkit-scrollbar-track {
+  background: var(--ai-chat-scrollbar-track);
+}
+.ai-chat-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--ai-chat-scrollbar-thumb);
+  border-radius: 3px;
+}

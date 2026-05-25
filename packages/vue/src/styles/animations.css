@@ -1,0 +1,80 @@
+/*
+ * ai-chat-ui Animations
+ *
+ * 从 playground.html 提取的动画效果。
+ */
+
+/* 消息入场：淡入上移 */
+@keyframes ai-chat-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-chat-animate-fade-in-up {
+  animation: ai-chat-fade-in-up 0.3s ease-out;
+}
+
+/* 打字指示器：三点跳动 */
+@keyframes ai-chat-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ai-chat-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ai-chat-color-text-muted);
+  display: inline-block;
+  animation: ai-chat-typing 1.2s infinite;
+}
+.ai-chat-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ai-chat-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* 光标闪烁 */
+@keyframes ai-chat-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 微光扫过（Shimmer） */
+@keyframes ai-chat-shimmer {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
+
+.ai-chat-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ai-chat-color-text-secondary) 0%,
+    var(--ai-chat-color-text-primary) 50%,
+    var(--ai-chat-color-text-secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: ai-chat-shimmer 2s linear infinite;
+  background-clip: text;
+  color: transparent;
+}

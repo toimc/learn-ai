@@ -1,9 +1,19 @@
 export interface Attachment {
-  type: 'image' | 'file' | 'audio'
-  url: string
+  id: string
+  url?: string
   name: string
-  mimeType: string
+  mediaType: string
   size?: number
+}
+
+export interface ToolCallInfo {
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+  result?: unknown
+  error?: string
+  status: 'calling' | 'completed' | 'error'
+  duration?: number
 }
 
 export interface Message {
@@ -11,14 +21,23 @@ export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   attachments?: Attachment[]
+  toolCalls?: ToolCallInfo[]
   metadata?: Record<string, unknown>
   createdAt: Date
 }
 
 export interface StreamChunk {
-  type: 'text' | 'tool_call' | 'thinking' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'done'
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+    toolCallId?: string
+    toolName?: string
+    toolArguments?: Record<string, unknown>
+    toolResult?: unknown
+    toolError?: string
+    duration?: number
+    [key: string]: unknown
+  }
 }
 
 export interface SendMessageOptions {

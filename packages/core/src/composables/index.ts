@@ -51,6 +51,29 @@ export function useChat(
           assistantMessage.content += chunk.content
         }
 
+        if (chunk.type === 'tool_call') {
+          if (!assistantMessage.toolCalls) assistantMessage.toolCalls = []
+          assistantMessage.toolCalls.push({
+            id: (chunk.metadata?.toolCallId as string) || '',
+            name: (chunk.metadata?.toolName as string) || 'unknown',
+            arguments:
+              (chunk.metadata?.toolArguments as Record<string, unknown>) || {},
+            status: 'calling',
+          })
+        }
+
+        if (chunk.type === 'tool_result') {
+          const tc = assistantMessage.toolCalls?.find(
+            (t) => t.id === chunk.metadata?.toolCallId,
+          )
+          if (tc) {
+            tc.status = chunk.metadata?.toolError ? 'error' : 'completed'
+            tc.result = chunk.metadata?.toolResult
+            tc.error = chunk.metadata?.toolError as string | undefined
+            tc.duration = chunk.metadata?.duration as number | undefined
+          }
+        }
+
         options?.onResponse?.(chunk)
       }
     } catch (err) {
