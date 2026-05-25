@@ -16,9 +16,13 @@ export default tseslint.config(
       },
       globals: {
         HTMLElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
         MutationObserver: 'readonly',
         ResizeObserver: 'readonly',
         requestAnimationFrame: 'readonly',
+        File: 'readonly',
+        Event: 'readonly',
+        KeyboardEvent: 'readonly',
       },
     },
     rules: {

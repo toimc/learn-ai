@@ -27,6 +27,18 @@ export {
   MessageAttachments,
 } from './message'
 
+// PromptInput series
+export {
+  PromptInput,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputButton,
+  PromptInputSubmit,
+  PromptInputHeader,
+} from './prompt-input'
+
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */
 export { default as ChatWindow } from './ChatWindow.vue'
