@@ -18,6 +18,15 @@ export {
 // Composables
 export { useScrollAnchor } from './composables/useScrollAnchor'
 
+// Message series
+export {
+  Message,
+  MessageContent,
+  MessageActions,
+  MessageAction,
+  MessageAttachments,
+} from './message'
+
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */
 export { default as ChatWindow } from './ChatWindow.vue'
