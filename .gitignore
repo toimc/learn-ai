@@ -4,3 +4,9 @@ dist
 *.local
 .env
 packages/docs/.vitepress/cache/
+
+# Claude Code 本地配置和缓存
+.claude/settings.local.json
+
+# Playwright MCP 测试日志和截图
+.playwright-mcp/
