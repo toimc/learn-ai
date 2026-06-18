@@ -5,7 +5,7 @@
 ## 特性
 
 - **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端
-- **29 个可组合组件**：Conversation / Message / PromptInput / Attachment / ToolCall 五大系列
+- **31 个可组合组件**：Conversation / Message / PromptInput / Attachment / ToolCall / Shared 六大系列
 - **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
 - **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
 - **AsyncGenerator 流式渲染**：`sendMessage` 返回 `AsyncGenerator<StreamChunk>`，原生支持流式输出
@@ -34,7 +34,7 @@ ai-chat-ui/
 │   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
 │   │   └── src/utils/         # generateId, createUserMessage, createAssistantMessage
 │   │
-│   ├── vue/                   # @ai-chat/vue — 29 个 Vue 3 组件
+│   ├── vue/                   # @ai-chat/vue — 31 个 Vue 3 组件
 │   │   └── src/
 │   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
 │   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
@@ -239,12 +239,27 @@ pnpm type-check     # 类型检查
 pnpm clean          # 清理构建产物
 ```
 
+## 开发工作流
+
+本项目采用 Git Flow + Worktree 工作流，完整规则见 [`.claude/rules/git-flow-worktree.md`](.claude/rules/git-flow-worktree.md)。
+
+| 分支 | 职责 |
+|------|------|
+| `master` | 生产分支，只接收合并与发版，不写业务代码 |
+| `dev` | 集成分支，所有 feature 的合并目标 |
+| `feat/*` | 新功能，从 `dev` 开 |
+| `fix/*` | 生产紧急修复，从 `master` 开 |
+
+- 所有功能开发在 worktree 内隔离进行，主目录只做合并 / 发版
+- feature 从 `dev` 开、合 `dev`；`dev` 领先 `master` 时在 `master` 上集中发版
+- 生产部署通过 `.claude/run/deploy.lock` 文件锁互斥，避免并发
+
 ## 包状态
 
 | 包 | 版本 | 状态 |
 |------|------|------|
 | @ai-chat/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
-| @ai-chat/vue | 0.0.1 | 29 个 Vue 3 组件 + Design Token |
+| @ai-chat/vue | 0.0.1 | 31 个 Vue 3 组件 + Design Token |
 | @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX |
 | @ai-chat/docs | 私有 | VitePress 文档站 + Playground |
 
