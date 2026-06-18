@@ -46,6 +46,7 @@
 
   /* -- 代码块 -- */
   --ai-chat-code-bg: #1a1a1a;
+  --ai-chat-code-header-bg: #242427;
   --ai-chat-code-inline-bg: rgba(255, 255, 255, 0.06);
 
   /* -- 中性 hover -- */
@@ -119,6 +120,7 @@
   --ai-chat-scrollbar-thumb: #d1d5db;
 
   --ai-chat-code-bg: #f3f4f6;
+  --ai-chat-code-header-bg: #eceef1;
   --ai-chat-code-inline-bg: rgba(0, 0, 0, 0.06);
 
   --ai-chat-assistant-bg: #f3f4f6;

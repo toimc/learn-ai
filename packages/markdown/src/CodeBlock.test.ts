@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import CodeBlock from './CodeBlock.vue'
@@ -22,20 +22,22 @@ async function flushAsync(): Promise<void> {
 }
 
 describe('CodeBlock', () => {
-  it('渲染语言头部标签', () => {
+  it('渲染语言头部标签与复制按钮', () => {
     const wrapper = mount(CodeBlock, {
       props: { code: 'const a = 1', language: 'javascript' },
     })
-    expect(wrapper.find('.ai-chat-code-block__header').text()).toBe(
-      'javascript',
-    )
+    expect(wrapper.find('.ai-chat-code-block__lang').text()).toBe('javascript')
+    expect(wrapper.find('.ai-chat-code-block__copy').exists()).toBe(true)
   })
 
-  it('无 language 时不渲染头部', () => {
+  it('无 language 时仍渲染头部承载复制按钮，但不显示语言标签', () => {
     const wrapper = mount(CodeBlock, {
       props: { code: 'const a = 1' },
     })
-    expect(wrapper.find('.ai-chat-code-block__header').exists()).toBe(false)
+    // 复制按钮需在每一个代码块可用 → 头部始终渲染
+    expect(wrapper.find('.ai-chat-code-block__header').exists()).toBe(true)
+    expect(wrapper.find('.ai-chat-code-block__lang').exists()).toBe(false)
+    expect(wrapper.find('.ai-chat-code-block__copy').exists()).toBe(true)
   })
 
   it('未知语言渲染为纯文本 pre（FR-2.6）', async () => {
@@ -87,13 +89,27 @@ describe('CodeBlock', () => {
     expect(wrapper.html()).toContain('let b = 2'.slice(0, 3))
   })
 
-  it('保留主题 css 变量与等宽字体变量', () => {
+  it('pre 不携带内联 color，避免遮蔽 token span 的双主题色', () => {
     const wrapper = mount(CodeBlock, {
       props: { code: 'x', language: 'javascript' },
     })
     const style = wrapper.find('.ai-chat-code-block__pre').attributes('style')
-    // pre 应携带 --ai-chat-code-* 与 --ai-chat-font-mono 变量引用
-    expect(style ?? '').toMatch(/--ai-chat-code-color/)
-    expect(style ?? '').toMatch(/--ai-chat-font-mono/)
+    // 关键不变量：pre 不得有内联 color，否则会盖住 token span 自身的 --shiki-* 变量
+    expect(style ?? '').not.toMatch(/color/i)
+  })
+
+  it('点击复制按钮写入剪贴板并切换为已复制态', async () => {
+    const writeText = vi.fn(() => Promise.resolve())
+    Object.assign(navigator, { clipboard: { writeText } })
+    const wrapper = mount(CodeBlock, {
+      props: { code: 'const a = 1', language: 'javascript' },
+    })
+    const btn = wrapper.find('.ai-chat-code-block__copy')
+    await btn.trigger('click')
+    await flushAsync()
+    expect(writeText).toHaveBeenCalledWith('const a = 1')
+    expect(btn.classes()).toContain('is-copied')
+    // 已复制态渲染对勾图标
+    expect(wrapper.html()).toContain('polyline')
   })
 })
