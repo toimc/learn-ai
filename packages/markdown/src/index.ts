@@ -1,3 +1,6 @@
 export { default as MarkdownRenderer } from './MarkdownRenderer.vue'
 export { default as CodeBlock } from './CodeBlock.vue'
 export { default as LatexBlock } from './LatexBlock.vue'
+export { default as MermaidBlock } from './MermaidBlock.vue'
+export { useStreamingMarkdown } from './composables/useStreamingMarkdown'
+export { extractCompleteMarkdown } from './utils/extractCompleteMarkdown'

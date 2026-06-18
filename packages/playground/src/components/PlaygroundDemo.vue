@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useChat } from '@ai-chat/core'
-import { MarkdownRenderer } from '@ai-chat/markdown'
 import { mockMessages } from '../mock/mock-messages'
 import {
   Conversation,
@@ -447,12 +446,12 @@ watch(() => chat.messages.length, scrollToBottom)
 
           <!-- Messages -->
           <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
-            <MessageContent>
-              <MarkdownRenderer
-                v-if="msg.role === 'assistant'"
-                :content="msg.content"
-              />
-              <template v-else>{{ msg.content }}</template>
+            <MessageContent
+              v-if="msg.role === 'assistant'"
+              :content="msg.content"
+            />
+            <MessageContent v-else>
+              {{ msg.content }}
             </MessageContent>
 
             <!-- ToolCalls -->
