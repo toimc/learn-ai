@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
+import { effectScope, nextTick } from 'vue'
 import { useStreamingMarkdown } from './useStreamingMarkdown'
 
 describe('useStreamingMarkdown', () => {
@@ -48,5 +48,19 @@ describe('useStreamingMarkdown', () => {
     setContent('```js\n未闭合')
     await flushRaf()
     expect(html.value).not.toContain('<code')
+  })
+  it('卸载时取消待执行的 rAF 不抛错', async () => {
+    const scope = effectScope()
+    let api: ReturnType<typeof useStreamingMarkdown> | undefined
+    scope.run(() => {
+      api = useStreamingMarkdown()
+    })
+    api!.setContent('# 未渲染')
+    // dispose while rAF is pending
+    expect(() => scope.stop()).not.toThrow()
+    // flushing remaining queued rAF callbacks after stop should not throw
+    const cbs = [...rafCbs]
+    rafCbs = []
+    expect(() => cbs.forEach((cb) => cb(0))).not.toThrow()
   })
 })

@@ -1,4 +1,4 @@
-import { shallowRef } from 'vue'
+import { onScopeDispose, shallowRef } from 'vue'
 import DOMPurify from 'dompurify'
 import { useMarkdownIt } from './useMarkdownIt'
 import { extractCompleteMarkdown } from '../utils/extractCompleteMarkdown'
@@ -30,6 +30,11 @@ export function useStreamingMarkdown() {
     rafId = 0
     renderNow()
   }
+
+  onScopeDispose(() => {
+    if (rafId) cancelAnimationFrame(rafId)
+    rafId = 0
+  })
 
   return { html, setContent, flush }
 }
