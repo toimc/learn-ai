@@ -21,6 +21,7 @@
 3. **feature 从 `dev` 开、做完合 `dev`**
 4. **`dev` 领先 `master` 就合 `master` + 单一 bump 发版**（在 `master` 上做一次集中发版）
 5. **hotfix 从 `master` 开、直合 `master` + bump 后反向同步回 `dev`**
+6. **feature / hotfix 合并后立即删除该分支** —— 本地 `git branch -D` + 远端 `git push origin --delete`，合并即清理，不保留已合并分支（用 `-D` 而非 `-d`：分支合并进 dev/master 后其远端跟踪多为旧指针，`-d` 会误报「未完全合并」）
 
 ## Worktree 隔离
 
@@ -44,7 +45,7 @@
 2. 开 worktree + feature 分支（基于 dev）
 3. 在 worktree 内开发 → 提交（中文 Conventional Commits）
 4. worktree 内跑通：pnpm test / pnpm type-check / pnpm lint
-5. 合并回 dev（PR 或直接 merge）→ 删除 worktree
+5. 合并回 dev（PR 或直接 merge）→ 删除 worktree → 删除 feature 分支（本地 `git branch -D` + 远端 `git push origin --delete`）
 ```
 
 ### B. 发版（dev → master，单一 bump）
@@ -66,7 +67,7 @@
 3. 修复 → 提交 → 测试
 4. 合并回 master → bump → 发布（同 B 的 3-5）
 5. 反向同步：git checkout dev && git merge master
-6. 删除 worktree
+6. 删除 worktree → 删除 hotfix 分支（本地 `git branch -D` + 远端 `git push origin --delete`）
 ```
 
 ## 部署临界区（文件锁互斥）
