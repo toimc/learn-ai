@@ -30,6 +30,9 @@
     "markdown-it-texmath": "^1.0.0",
     "shiki": "^4.2.0"
   },
+  "optionalDependencies": {
+    "mermaid": "^11.0.0"
+  },
   "peerDependencies": {
     "vue": "^3.5.0"
   },

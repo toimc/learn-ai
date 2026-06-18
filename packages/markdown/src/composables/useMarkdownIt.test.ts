@@ -55,4 +55,27 @@ describe('useMarkdownIt', () => {
     expect(out).toContain('前置文本')
     expect(out).toContain('后置文本')
   })
+
+  it('FR-4.1：mermaid fence 输出占位 div 并编码源码（Phase 5 替换为 <MermaidBlock>）', () => {
+    const md = useMarkdownIt()
+    const out = md.render('```mermaid\nflowchart LR\nA-->B\n```')
+    // 占位 div + 类名 + data-mermaid 属性
+    expect(out).toContain('ai-chat-mermaid-placeholder')
+    expect(out).toContain('data-mermaid=')
+    // 内容被 encodeURIComponent 编码（不含原始明文 A-->B）
+    expect(out).not.toContain('A-->B')
+    // 解码后还原源码
+    const match = out.match(/data-mermaid="([^"]*)"/)
+    expect(match).not.toBeNull()
+    expect(decodeURIComponent(match![1])).toContain('flowchart LR')
+    expect(decodeURIComponent(match![1])).toContain('A-->B')
+  })
+
+  it('FR-4.1 回归：普通代码 fence 仍走默认渲染（输出 <pre>，不被 mermaid 占位吞掉）', () => {
+    const md = useMarkdownIt()
+    const out = md.render('```js\nconst x = 1\n```')
+    expect(out).toContain('<pre')
+    expect(out).not.toContain('ai-chat-mermaid-placeholder')
+    expect(out).toContain('const x = 1')
+  })
 })

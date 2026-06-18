@@ -23,6 +23,20 @@ export function useMarkdownIt(): MarkdownIt {
       engine: katex,
       delimiters: 'dollars',
     })
+
+  // FR-4.1：覆盖 fence —— mermaid 块输出占位 div（Phase 5 由 MarkdownRenderer 替换为 <MermaidBlock>），普通块走默认渲染
+  const defaultFence = instance.renderer.rules.fence!.bind(
+    instance.renderer.rules,
+  )
+  instance.renderer.rules.fence = (tokens, idx, options, env, self) => {
+    const token = tokens[idx]
+    if (token.info.trim() === 'mermaid') {
+      const encoded = encodeURIComponent(token.content)
+      return `<div class="ai-chat-mermaid-placeholder" data-mermaid="${encoded}"></div>`
+    }
+    return defaultFence(tokens, idx, options, env, self)
+  }
+
   return instance
 }
 
