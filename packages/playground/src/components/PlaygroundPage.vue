@@ -4,7 +4,9 @@ import PlaygroundDemo from './PlaygroundDemo.vue'
 
 <template>
   <div class="playground-page">
-    <PlaygroundDemo />
+    <ClientOnly>
+      <PlaygroundDemo />
+    </ClientOnly>
   </div>
 </template>
 

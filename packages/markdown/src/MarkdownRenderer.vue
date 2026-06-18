@@ -22,28 +22,38 @@ async function mountSubComponents() {
   const el = root.value
   if (!el) return
 
-  // 代码围栏：把 markdown-it 的 <pre><code class="language-x"> 替换为挂载的 CodeBlock
-  el.querySelectorAll('pre > code[class*="language-"]').forEach((codeEl) => {
-    const pre = codeEl.parentElement!
-    const lang = /language-(\w+)/.exec(codeEl.className)?.[1] ?? 'text'
-    const code = codeEl.textContent ?? ''
-    const host = document.createElement('div')
-    pre.replaceWith(host)
-    const app = createApp(CodeBlock, {
-      code,
-      language: lang,
-      streaming: props.streaming,
-    })
-    app.mount(host)
-    mountedApps.push(app)
+  // 代码围栏：把 markdown-it 的 <pre><code> 替换为挂载的 CodeBlock
+  // 选择 pre > code（含无 language- 类的纯文本围栏），inline code 为 :not(pre) > code 不受影响
+  el.querySelectorAll('pre > code').forEach((codeEl) => {
+    const pre = codeEl.parentElement
+    if (!pre) return
+    try {
+      const lang = /language-(\w+)/.exec(codeEl.className)?.[1] ?? 'text'
+      const code = codeEl.textContent ?? ''
+      const host = document.createElement('div')
+      const app = createApp(CodeBlock, {
+        code,
+        language: lang,
+        streaming: props.streaming,
+      })
+      app.mount(host) // 先挂载到游离 host，成功后再替换进 DOM
+      pre.replaceWith(host)
+      mountedApps.push(app)
+    } catch {
+      // 单块挂载失败（如高亮异常）：保留原 pre>code，继续处理其余块
+    }
   })
 
   // mermaid 占位 div → MermaidBlock（直接挂载到占位元素本身）
   el.querySelectorAll('[data-mermaid]').forEach((ph) => {
-    const code = decodeURIComponent(ph.getAttribute('data-mermaid') ?? '')
-    const app = createApp(MermaidBlock, { code })
-    app.mount(ph as HTMLElement)
-    mountedApps.push(app)
+    try {
+      const code = decodeURIComponent(ph.getAttribute('data-mermaid') ?? '')
+      const app = createApp(MermaidBlock, { code })
+      app.mount(ph as HTMLElement)
+      mountedApps.push(app)
+    } catch {
+      // mermaid 自身已处理渲染异常，此处仅兜底：保留占位，继续处理其余块
+    }
   })
 }
 
