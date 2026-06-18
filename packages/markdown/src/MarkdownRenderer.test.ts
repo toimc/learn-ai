@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 
@@ -28,5 +28,26 @@ describe('MarkdownRenderer', () => {
     })
     await nextTick()
     expect(wrapper.find('.ai-chat-markdown').exists()).toBe(true)
+  })
+
+  // CodeBlock 经 createApp 单独挂载，不在测试 wrapper 组件树内，
+  // 故用 DOM 结构断言（原 language-js 占位被替换）而非 findAllComponents
+  it('代码块被 CodeBlock 接管（原 pre/code 占位被替换）', async () => {
+    const wrapper = mount(MarkdownRenderer, {
+      props: { content: '```js\nconst a = 1\n```' },
+    })
+    await flushPromises()
+    await flushPromises()
+    expect(wrapper.html()).not.toContain('class="language-js"')
+    expect(wrapper.find('.ai-chat-code-block').exists()).toBe(true)
+  })
+
+  it('mermaid 占位被 MermaidBlock 接管', async () => {
+    const wrapper = mount(MarkdownRenderer, {
+      props: { content: '```mermaid\nflowchart LR\nA-->B\n```' },
+    })
+    await flushPromises()
+    await flushPromises()
+    expect(wrapper.find('.ai-chat-mermaid').exists()).toBe(true)
   })
 })

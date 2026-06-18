@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watchEffect } from 'vue'
+import { createApp, type App } from 'vue'
+import CodeBlock from './CodeBlock.vue'
+import MermaidBlock from './MermaidBlock.vue'
 import { useStreamingMarkdown } from './composables/useStreamingMarkdown'
 
 const props = defineProps<{
@@ -8,6 +11,41 @@ const props = defineProps<{
 }>()
 
 const { html, setContent, flush } = useStreamingMarkdown()
+const root = ref<HTMLElement | null>(null)
+const mountedApps: App[] = []
+
+// 流式期间每次 html 更新会重建子组件挂载；增量着色优化留待后续
+async function mountSubComponents() {
+  mountedApps.forEach((a) => a.unmount())
+  mountedApps.length = 0
+  await nextTick()
+  const el = root.value
+  if (!el) return
+
+  // 代码围栏：把 markdown-it 的 <pre><code class="language-x"> 替换为挂载的 CodeBlock
+  el.querySelectorAll('pre > code[class*="language-"]').forEach((codeEl) => {
+    const pre = codeEl.parentElement!
+    const lang = /language-(\w+)/.exec(codeEl.className)?.[1] ?? 'text'
+    const code = codeEl.textContent ?? ''
+    const host = document.createElement('div')
+    pre.replaceWith(host)
+    const app = createApp(CodeBlock, {
+      code,
+      language: lang,
+      streaming: props.streaming,
+    })
+    app.mount(host)
+    mountedApps.push(app)
+  })
+
+  // mermaid 占位 div → MermaidBlock（直接挂载到占位元素本身）
+  el.querySelectorAll('[data-mermaid]').forEach((ph) => {
+    const code = decodeURIComponent(ph.getAttribute('data-mermaid') ?? '')
+    const app = createApp(MermaidBlock, { code })
+    app.mount(ph as HTMLElement)
+    mountedApps.push(app)
+  })
+}
 
 watchEffect(() => {
   setContent(props.content)
@@ -15,10 +53,17 @@ watchEffect(() => {
 watchEffect(() => {
   if (!props.streaming) flush()
 })
+watchEffect(() => {
+  if (html.value) mountSubComponents()
+})
+
+onBeforeUnmount(() => {
+  mountedApps.forEach((a) => a.unmount())
+})
 </script>
 
 <template>
-  <div class="ai-chat-markdown" v-html="html" />
+  <div ref="root" class="ai-chat-markdown" v-html="html" />
 </template>
 
 <style>
