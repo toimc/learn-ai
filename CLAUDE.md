@@ -155,3 +155,5 @@ scope 使用模块名（button、input、theme、docs）
 - `docs/01-Vue生态大模型实时流Markdown渲染方案调研.md`（Phase 调研）
 - `docs/superpowers/spec/01-Markdown渲染组件需求-20260618.md`
 - `docs/superpowers/plans/01-Markdown渲染组件实施计划-20260618.md`
+
+**实施状态**：`@ai-chat/markdown` 流式渲染组件已实现并 `--no-ff` 合并至 `dev`（merge `d0dd151`）。5 阶段全部完成（解析内核 markdown-it+DOMPurify → Shiki 流式高亮 → KaTeX 公式 → Mermaid 沙箱图表 → 集成 + provide/inject 接入）。88/88 测试通过，markdown 包覆盖率 95/81/90/97，docs SSR 构建零警告。后续可优化项：流式增量着色（当前每块全量重挂载）、DOMPurify svg 白名单实为空操作可移除。
