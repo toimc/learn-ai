@@ -9,13 +9,23 @@ const rendered = computed(() => {
   return simpleMarkdown(props.content)
 })
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 function simpleMarkdown(text: string): string {
-  let html = text
-  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  html = html.replace(
-    /```(\w*)\n([\s\S]*?)```/g,
-    '<pre><code class="language-$1">$2</code></pre>',
-  )
+  // 先把代码块提取为占位符，避免后续全局换行替换（\n → <br>）穿透进 <pre>
+  // 造成代码块行距双倍的问题。用 Unicode 私用区字符 U+E000 作占位边界，
+  // 正常 Markdown 文本不会出现该字符。
+  const codeBlocks: string[] = []
+  let html = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    codeBlocks.push(
+      `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre>`,
+    )
+    return `${codeBlocks.length - 1}`
+  })
+
+  html = escapeHtml(html)
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -23,7 +33,8 @@ function simpleMarkdown(text: string): string {
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>')
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>')
   html = html.replace(/\n/g, '<br>')
-  return html
+
+  return html.replace(/(\d+)/g, (_, i) => codeBlocks[Number(i)]!)
 }
 </script>
 
