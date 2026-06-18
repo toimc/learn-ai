@@ -90,7 +90,6 @@
   --ai-chat-user-color: var(--ai-chat-color-text-primary);
   --ai-chat-assistant-bg: var(--ai-chat-color-bg-secondary);
   --ai-chat-assistant-color: var(--ai-chat-color-text-primary);
-  --ai-chat-input-bg: var(--ai-chat-input-bg);
   --ai-chat-input-color: var(--ai-chat-color-text-primary);
 }
 

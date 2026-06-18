@@ -34,8 +34,8 @@ const abort = inject<() => void>('promptAbort')!
   margin: 6px 8px;
   border-radius: 10px;
   border: none;
-  background: var(--ai-chat-color-text-primary);
-  color: var(--ai-chat-color-bg-primary);
+  background: var(--ai-chat-input-bg);
+  color: var(--ai-chat-color-text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -52,7 +52,7 @@ const abort = inject<() => void>('promptAbort')!
 }
 
 .ai-chat-prompt-submit:not(:disabled):hover {
-  background: var(--ai-chat-color-accent-hover);
+  background: var(--ai-chat-hover-neutral);
 }
 
 .ai-chat-prompt-submit svg {
