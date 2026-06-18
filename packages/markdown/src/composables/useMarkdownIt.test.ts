@@ -14,4 +14,9 @@ describe('useMarkdownIt', () => {
   it('单例：多次调用返回同一实例', () => {
     expect(useMarkdownIt()).toBe(useMarkdownIt())
   })
+  it('GFM 任务列表渲染复选框', () => {
+    const md = useMarkdownIt()
+    const out = md.render('- [ ] todo\n- [x] done')
+    expect(out).toContain('task-list-item')
+  })
 })
