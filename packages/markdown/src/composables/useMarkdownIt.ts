@@ -31,6 +31,7 @@ export function useMarkdownIt(): MarkdownIt {
   instance.renderer.rules.fence = (tokens, idx, options, env, self) => {
     const token = tokens[idx]
     if (token.info.trim() === 'mermaid') {
+      // encode 防止源码中的引号/尖括号注入 data-mermaid 属性
       const encoded = encodeURIComponent(token.content)
       return `<div class="ai-chat-mermaid-placeholder" data-mermaid="${encoded}"></div>`
     }

@@ -13,18 +13,39 @@ const srcdoc = computed(
     `<!doctype html><body style="margin:0;display:flex;justify-content:center">${svg.value}</body>`,
 )
 
+// mermaid 单例懒加载：去重动态 import + 只 initialize 一次（全实例共享，避免 mermaid 重复 init 警告）
+let mermaidPromise: Promise<(typeof import('mermaid'))['default']> | null = null
+function loadMermaid() {
+  if (!mermaidPromise) {
+    mermaidPromise = import('mermaid').then((m) => {
+      m.default.initialize({ startOnLoad: false, securityLevel: 'strict' })
+      return m.default
+    })
+  }
+  return mermaidPromise
+}
+
+// 竞态守卫：仅最后一次 run 的结果可写入，避免更慢的旧渲染覆盖最新结果（与 CodeBlock 一致）
+let runId = 0
+// 实例内 id 计数：替代 Math.random，廉价且全实例无碰撞
+let mmdSeq = 0
+
 async function render() {
+  const myId = ++runId
   status.value = 'loading'
   try {
-    const mermaid = (await import('mermaid')).default
-    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' })
-    const id = `mmd-${Math.random().toString(36).slice(2)}`
+    const mermaid = await loadMermaid()
+    const id = `mmd-${++mmdSeq}`
     const { svg: out } = await mermaid.render(id, props.code)
-    svg.value = out
-    status.value = 'done'
+    if (myId === runId) {
+      svg.value = out
+      status.value = 'done'
+    }
   } catch (e) {
-    errorText.value = e instanceof Error ? e.message : String(e)
-    status.value = 'error'
+    if (myId === runId) {
+      errorText.value = e instanceof Error ? e.message : String(e)
+      status.value = 'error'
+    }
   }
 }
 
