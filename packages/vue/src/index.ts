@@ -17,6 +17,11 @@ export {
 
 // Composables
 export { useScrollAnchor } from './composables/useScrollAnchor'
+export {
+  markdownRendererKey,
+  provideMarkdownRenderer,
+  useMarkdownRenderer,
+} from './composables/useMarkdownRenderer'
 
 // Message series
 export {

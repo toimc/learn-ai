@@ -1,6 +1,18 @@
+<script setup lang="ts">
+import { useMarkdownRenderer } from '../composables/useMarkdownRenderer'
+
+const props = defineProps<{ content?: string }>()
+const renderer = useMarkdownRenderer()
+</script>
+
 <template>
   <div class="ai-chat-message-content">
-    <slot />
+    <component
+      :is="renderer"
+      v-if="renderer && props.content !== undefined"
+      :content="props.content"
+    />
+    <slot v-else />
   </div>
 </template>
 
