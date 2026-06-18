@@ -25,6 +25,9 @@ export default tseslint.config(
         MutationObserver: 'readonly',
         ResizeObserver: 'readonly',
         requestAnimationFrame: 'readonly',
+        navigator: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
         File: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly',
@@ -51,6 +54,7 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       '**/node_modules/**',
+      '**/.vitepress/cache/**',
       '**/*.d.ts',
     ],
   },
