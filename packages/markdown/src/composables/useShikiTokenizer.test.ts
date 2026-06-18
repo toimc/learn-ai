@@ -12,19 +12,19 @@ function textOf(html: string): string {
 
 describe('renderCodeStreaming', () => {
   it('空代码返回空字符串', async () => {
-    const html = await renderCodeStreaming('', 'javascript', true)
+    const html = await renderCodeStreaming('', 'javascript')
     expect(html).toBe('')
   })
 
   it('未知语言降级为转义纯文本（FR-2.6，不抛错）', async () => {
-    const html = await renderCodeStreaming('const a = <b>', 'brainfuck', true)
+    const html = await renderCodeStreaming('const a = <b>', 'brainfuck')
     // 应转义 < >，且不含高亮 span 的 style（纯文本）
     expect(html).toContain('&lt;b&gt;')
     expect(html).not.toContain('style="')
   })
 
   it('已知语言产出含源码文本的高亮 span', async () => {
-    const html = await renderCodeStreaming('const a = 1', 'javascript', true)
+    const html = await renderCodeStreaming('const a = 1', 'javascript')
     // 至少包含源码字符
     expect(html).toContain('const')
     expect(html).toContain('<span')
@@ -34,14 +34,14 @@ describe('renderCodeStreaming', () => {
   })
 
   it('别名归一（js → javascript）正常高亮', async () => {
-    const html = await renderCodeStreaming('const a = 1', 'js', true)
+    const html = await renderCodeStreaming('const a = 1', 'js')
     expect(html).toContain('const')
     expect(html).toContain('--shiki-light')
   })
 
   it('多行代码 grammar-state 连续不报错（FR-2.2）', async () => {
     const code = 'function add(a, b) {\n  return a + b\n}\n'
-    const html = await renderCodeStreaming(code, 'typescript', true)
+    const html = await renderCodeStreaming(code, 'typescript')
     // 包含全部源码字符（跨行）
     expect(html).toContain('function')
     expect(html).toContain('return')
