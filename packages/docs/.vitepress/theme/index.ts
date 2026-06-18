@@ -43,6 +43,8 @@ import {
   ToolCallOutput,
   // Shared
   Shimmer,
+  // Markdown renderer inject key
+  markdownRendererKey,
 } from '@ai-chat/vue'
 import { MarkdownRenderer, CodeBlock, LatexBlock } from '@ai-chat/markdown'
 
@@ -106,6 +108,8 @@ export default {
     app.component('MarkdownRenderer', MarkdownRenderer)
     app.component('CodeBlock', CodeBlock)
     app.component('LatexBlock', LatexBlock)
+    // 经 app.provide 注入，MessageContent 收到 content prop 即自动走 MarkdownRenderer
+    app.provide(markdownRendererKey, MarkdownRenderer)
 
     // Docs
     app.component('DemoContainer', DemoContainer)
