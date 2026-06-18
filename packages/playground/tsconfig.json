@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@ai-chat/core": ["../core/src"],
+      "@ai-chat/vue": ["../vue/src"],
+      "@ai-chat/markdown": ["../markdown/src"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}

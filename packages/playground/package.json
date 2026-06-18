@@ -1,0 +1,12 @@
+{
+  "name": "@ai-chat/playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ai-chat/core": "workspace:*",
+    "@ai-chat/vue": "workspace:*",
+    "@ai-chat/markdown": "workspace:*",
+    "vue": "^3.5.0"
+  }
+}

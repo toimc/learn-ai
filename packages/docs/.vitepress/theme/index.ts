@@ -47,8 +47,7 @@ import {
 import { MarkdownRenderer, CodeBlock, LatexBlock } from '@ai-chat/markdown'
 
 import DemoContainer from '../components/DemoContainer.vue'
-import PlaygroundDemo from '../components/PlaygroundDemo.vue'
-import PlaygroundPage from '../components/PlaygroundPage.vue'
+import { PlaygroundPage } from '@ai-chat/playground'
 
 import './style.css'
 
@@ -110,7 +109,6 @@ export default {
 
     // Docs
     app.component('DemoContainer', DemoContainer)
-    app.component('PlaygroundDemo', PlaygroundDemo)
     app.component('PlaygroundPage', PlaygroundPage)
   },
 } satisfies Theme

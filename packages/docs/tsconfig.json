@@ -6,7 +6,8 @@
     "paths": {
       "@ai-chat/core": ["../core/src"],
       "@ai-chat/vue": ["../vue/src"],
-      "@ai-chat/markdown": ["../markdown/src"]
+      "@ai-chat/markdown": ["../markdown/src"],
+      "@ai-chat/playground": ["../playground/src"]
     },
     "types": ["vitepress"]
   },

@@ -80,6 +80,9 @@ importers:
       '@ai-chat/markdown':
         specifier: workspace:*
         version: link:../markdown
+      '@ai-chat/playground':
+        specifier: workspace:*
+        version: link:../playground
       '@ai-chat/vue':
         specifier: workspace:*
         version: link:../vue
@@ -130,6 +133,21 @@ importers:
       vue-tsc:
         specifier: ^3.3.0
         version: 3.3.0(typescript@6.0.3)
+
+  packages/playground:
+    dependencies:
+      '@ai-chat/core':
+        specifier: workspace:*
+        version: link:../core
+      '@ai-chat/markdown':
+        specifier: workspace:*
+        version: link:../markdown
+      '@ai-chat/vue':
+        specifier: workspace:*
+        version: link:../vue
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.34(typescript@6.0.3)
 
   packages/vue:
     dependencies:

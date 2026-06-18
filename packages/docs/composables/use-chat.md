@@ -48,7 +48,7 @@ interface ChatAdapter {
 <script setup>
 import { ref } from 'vue'
 import { useChat } from '@ai-chat/core'
-import { mockAdapter } from '../.vitepress/utils/mock-adapter'
+import { mockAdapter } from '@ai-chat/playground'
 
 const chat = useChat(mockAdapter)
 const errorInfo = ref('')

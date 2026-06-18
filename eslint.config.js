@@ -16,6 +16,7 @@ export default tseslint.config(
       },
       globals: {
         document: 'readonly',
+        window: 'readonly',
         HTMLElement: 'readonly',
         HTMLInputElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
