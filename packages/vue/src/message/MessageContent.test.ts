@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
 import MessageContent from './MessageContent.vue'
 import { markdownRendererKey } from '../composables/useMarkdownRenderer'
 
 const FakeRenderer = defineComponent({
-  props: ['content'],
-  setup: (p: any) => () => h('div', { class: 'fake-renderer' }, `rendered:${p.content}`),
+  props: { content: { type: String, default: '' } },
+  setup: (p: { content: string }) => () =>
+    h('div', { class: 'fake-renderer' }, `rendered:${p.content}`),
 })
 
 describe('MessageContent', () => {
@@ -18,8 +19,10 @@ describe('MessageContent', () => {
   it('有注入 + content prop 时用 renderer', () => {
     const wrapper = mount(MessageContent, {
       props: { content: '# 标题' },
-      global: { provide: { [markdownRendererKey as symbol]: FakeRenderer } },
-    } as any)
+      global: {
+        provide: { [markdownRendererKey as symbol]: FakeRenderer as Component },
+      },
+    })
     expect(wrapper.find('.fake-renderer').exists()).toBe(true)
     expect(wrapper.text()).toContain('rendered:# 标题')
   })
