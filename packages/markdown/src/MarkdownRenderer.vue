@@ -76,7 +76,9 @@ onBeforeUnmount(() => {
   <div ref="root" class="ai-chat-markdown" v-html="html" />
 </template>
 
-<style>
+<!-- 必须 scoped：:deep() 才能穿透到 v-html 注入的 ul/table/code 等子节点。
+     非 scoped 下 :deep() 是非法选择器，整条规则会被丢弃，导致列表/表格等无样式。 -->
+<style scoped>
 .ai-chat-markdown {
   font-size: 14px;
   line-height: 1.7;
