@@ -10,3 +10,7 @@ packages/docs/.vitepress/cache/
 
 # Playwright MCP 测试日志和截图
 .playwright-mcp/
+
+# Git Flow worktree 与部署锁
+.claude/worktrees/
+.claude/run/

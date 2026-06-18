@@ -81,6 +81,9 @@ packages/<pkg>/package.json
 
 ## Git 分支管理规范
 
+> ⚠️ **本节已升级为 Git Flow + Worktree 规则**。开发新功能前**必读**：[`.claude/rules/git-flow-worktree.md`](.claude/rules/git-flow-worktree.md)。
+> 下方旧的「从 master 创建功能分支 / 合并到 master」描述已**废弃**，改为：所有任务开 worktree 隔离；feature 从 `dev` 开、合 `dev`；`dev` 领先 `master` 则合 `master` + 单一 bump 发版；hotfix 从 `master` 开、合 `master` 后回流 `dev`；主目录只做合并/发版，生产部署用 `.claude/run/deploy.lock` 文件锁互斥。
+
 ### 分支命名
 
 | 类型 | 格式 | 示例 |
