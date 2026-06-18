@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useChat } from '@ai-chat/core'
+import { MarkdownRenderer } from '@ai-chat/markdown'
+import { mockMessages } from '../utils/mock-messages'
 import {
   Conversation,
   ConversationContent,
@@ -20,20 +22,63 @@ import {
 } from '@ai-chat/vue'
 import { mockAdapter } from '../utils/mock-adapter'
 
-const chat = useChat(mockAdapter)
+const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 
 const sidebarOpen = ref(false)
-const theme = ref<'dark' | 'light'>('dark')
+// 默认跟随系统；首屏按亮色渲染（systemIsDark 初值 false），
+// 挂载后读取 prefers-color-scheme 再切换，避免暗色闪现
+const theme = ref<'system' | 'light' | 'dark'>('system')
+const systemIsDark = ref(false)
+const resolvedTheme = computed<'light' | 'dark'>(() =>
+  theme.value === 'system'
+    ? systemIsDark.value
+      ? 'dark'
+      : 'light'
+    : theme.value,
+)
+let mql: MediaQueryList | null = null
+function onSystemChange(e: MediaQueryListEvent) {
+  systemIsDark.value = e.matches
+}
+onMounted(() => {
+  mql = window.matchMedia('(prefers-color-scheme: dark)')
+  systemIsDark.value = mql.matches
+  mql.addEventListener('change', onSystemChange)
+})
+onUnmounted(() => {
+  mql?.removeEventListener('change', onSystemChange)
+})
 const chatAreaRef = ref<HTMLElement>()
 const isAtBottom = ref(true)
 
-const conversations = ref([
-  { id: '1', title: 'Vue 3 组件库架构设计', active: true },
-  { id: '2', title: 'CSS Variables 主题系统', active: false },
-  { id: '3', title: 'StreamText 流式渲染优化', active: false },
-  { id: '4', title: 'Vitest 单元测试覆盖率', active: false },
-  { id: '5', title: 'Markdown 渲染与代码高亮', active: false },
-  { id: '6', title: 'pnpm workspace 最佳实践', active: false },
+interface PlaygroundConv {
+  id: string
+  title: string
+  group: 'today' | 'week'
+  active: boolean
+}
+
+const conversations = ref<PlaygroundConv[]>([
+  { id: '1', title: 'Vue 3 组件库架构设计', group: 'today', active: true },
+  { id: '2', title: 'CSS Variables 主题系统', group: 'today', active: false },
+  { id: '3', title: 'StreamText 流式渲染优化', group: 'today', active: false },
+  { id: '4', title: 'Vitest 单元测试覆盖率', group: 'week', active: false },
+  { id: '5', title: 'Markdown 渲染与代码高亮', group: 'week', active: false },
+  { id: '6', title: 'pnpm workspace 最佳实践', group: 'week', active: false },
+])
+
+const editingId = ref<string | null>(null)
+const editingTitle = ref('')
+
+const groupedConversations = computed(() => [
+  {
+    label: '今天',
+    items: conversations.value.filter((c) => c.group === 'today'),
+  },
+  {
+    label: '过去 7 天',
+    items: conversations.value.filter((c) => c.group === 'week'),
+  },
 ])
 
 const suggestions = [
@@ -57,12 +102,48 @@ function newChat() {
   if (window.innerWidth <= 768) sidebarOpen.value = false
 }
 
+function startEdit(conv: PlaygroundConv) {
+  editingId.value = conv.id
+  editingTitle.value = conv.title
+  nextTick(() => {
+    const input = document.querySelector<HTMLInputElement>('.pg-conv-input')
+    input?.focus()
+    input?.select()
+  })
+}
+
+function saveTitle() {
+  if (editingId.value === null) return
+  const conv = conversations.value.find((c) => c.id === editingId.value)
+  const title = editingTitle.value.trim()
+  if (conv && title) conv.title = title
+  editingId.value = null
+  editingTitle.value = ''
+}
+
+function cancelEdit() {
+  editingId.value = null
+  editingTitle.value = ''
+}
+
+function removeConversation(id: string) {
+  const conv = conversations.value.find((c) => c.id === id)
+  if (!conv) return
+  if (!window.confirm(`确定删除「${conv.title}」吗？`)) return
+  const wasActive = conv.active
+  conversations.value = conversations.value.filter((c) => c.id !== id)
+  // 删除的是当前选中项：把高亮转移到剩余列表的第一项
+  if (wasActive && conversations.value.length) {
+    conversations.value.forEach((c, i) => (c.active = i === 0))
+  }
+}
+
 function useSuggestion(text: string) {
   chat.send(text)
 }
 
 function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  theme.value = resolvedTheme.value === 'dark' ? 'light' : 'dark'
 }
 
 function scrollToBottom() {
@@ -83,7 +164,10 @@ watch(() => chat.messages.length, scrollToBottom)
 </script>
 
 <template>
-  <div class="pg-app" :data-theme="theme === 'light' ? 'light' : undefined">
+  <div
+    class="pg-app"
+    :data-theme="resolvedTheme === 'light' ? 'light' : undefined"
+  >
     <!-- Sidebar -->
     <aside class="pg-sidebar" :class="{ open: sidebarOpen }">
       <div class="pg-sidebar-header">
@@ -150,52 +234,89 @@ watch(() => chat.messages.length, scrollToBottom)
       </div>
 
       <div class="pg-sidebar-scroll">
-        <div class="pg-section-title">今天</div>
-        <div
-          v-for="conv in conversations.slice(0, 3)"
-          :key="conv.id"
-          class="pg-conv-item"
-          :class="{ active: conv.active }"
-          @click="selectConversation(conv.id)"
-        >
-          <svg
-            class="pg-conv-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <template v-for="group in groupedConversations" :key="group.label">
+          <div v-if="group.items.length" class="pg-section-title">
+            {{ group.label }}
+          </div>
+          <div
+            v-for="conv in group.items"
+            :key="conv.id"
+            class="pg-conv-item"
+            :class="{ active: conv.active, editing: editingId === conv.id }"
+            @click="selectConversation(conv.id)"
           >
-            <path
-              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            <svg
+              class="pg-conv-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              />
+            </svg>
+            <input
+              v-if="editingId === conv.id"
+              v-model="editingTitle"
+              class="pg-conv-input"
+              @click.stop
+              @keydown.enter="saveTitle"
+              @keydown.esc="cancelEdit"
+              @blur="saveTitle"
             />
-          </svg>
-          <span class="pg-conv-text">{{ conv.title }}</span>
-        </div>
-        <div class="pg-section-title">过去 7 天</div>
-        <div
-          v-for="conv in conversations.slice(3)"
-          :key="conv.id"
-          class="pg-conv-item"
-          :class="{ active: conv.active }"
-          @click="selectConversation(conv.id)"
-        >
-          <svg
-            class="pg-conv-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-            />
-          </svg>
-          <span class="pg-conv-text">{{ conv.title }}</span>
-        </div>
+            <span v-else class="pg-conv-text">{{ conv.title }}</span>
+            <div
+              v-if="editingId !== conv.id"
+              class="pg-conv-actions"
+              @click.stop
+            >
+              <button
+                class="pg-conv-action"
+                title="重命名"
+                @click="startEdit(conv)"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                  />
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                  />
+                </svg>
+              </button>
+              <button
+                class="pg-conv-action"
+                title="删除"
+                @click="removeConversation(conv.id)"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </template>
+        <div v-if="!conversations.length" class="pg-conv-empty">暂无对话</div>
       </div>
 
       <div class="pg-sidebar-footer">
@@ -253,7 +374,7 @@ watch(() => chat.messages.length, scrollToBottom)
         <div class="pg-header-actions">
           <button class="pg-btn-icon" title="切换主题" @click="toggleTheme">
             <svg
-              v-if="theme === 'dark'"
+              v-if="resolvedTheme === 'dark'"
               width="18"
               height="18"
               viewBox="0 0 24 24"
@@ -327,7 +448,10 @@ watch(() => chat.messages.length, scrollToBottom)
           <!-- Messages -->
           <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
             <MessageContent>
-              <div v-if="msg.role === 'assistant'" v-html="msg.content" />
+              <MarkdownRenderer
+                v-if="msg.role === 'assistant'"
+                :content="msg.content"
+              />
               <template v-else>{{ msg.content }}</template>
             </MessageContent>
 
@@ -404,11 +528,10 @@ watch(() => chat.messages.length, scrollToBottom)
 
         <!-- Input -->
         <div class="pg-input-area">
-          <PromptInput>
-            <PromptInputTextarea
-              placeholder="给 AI Chat UI 发送消息..."
-              @send="(text: string) => chat.send(text)"
-            />
+          <PromptInput
+            @send="(payload: { text: string }) => chat.send(payload.text)"
+          >
+            <PromptInputTextarea placeholder="给 AI Chat UI 发送消息..." />
             <PromptInputSubmit />
             <template #footer>
               <PromptInputFooter>
@@ -488,9 +611,6 @@ watch(() => chat.messages.length, scrollToBottom)
               </PromptInputFooter>
             </template>
           </PromptInput>
-          <p class="pg-disclaimer">
-            AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性
-          </p>
         </div>
       </Conversation>
     </main>
@@ -502,10 +622,8 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-app {
   display: flex;
   width: 100%;
-  height: 600px;
-  border-radius: 12px;
+  height: 100%;
   overflow: hidden;
-  border: 1px solid var(--ai-chat-color-border);
   font-family: var(--ai-chat-font-sans);
   background: var(--ai-chat-color-bg-primary);
   color: var(--ai-chat-color-text-primary);
@@ -668,9 +786,72 @@ watch(() => chat.messages.length, scrollToBottom)
 }
 
 .pg-conv-text {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pg-conv-item.editing {
+  cursor: default;
+}
+
+.pg-conv-input {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--ai-chat-color-accent);
+  border-radius: 4px;
+  background: var(--ai-chat-color-bg-primary);
+  color: var(--ai-chat-color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.pg-conv-actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  visibility: hidden;
+}
+
+.pg-conv-item:hover .pg-conv-actions {
+  visibility: visible;
+}
+
+.pg-conv-action {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ai-chat-color-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--ai-chat-duration-fast) var(--ai-chat-easing),
+    color var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-conv-action svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pg-conv-action:hover {
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-conv-empty {
+  padding: 16px 8px;
+  font-size: 13px;
+  color: var(--ai-chat-color-text-muted);
+  text-align: center;
 }
 
 .pg-sidebar-footer {
@@ -916,13 +1097,6 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-input-hint {
   font-size: 12px;
   color: var(--ai-chat-color-text-muted);
-}
-
-.pg-disclaimer {
-  text-align: center;
-  font-size: 12px;
-  color: var(--ai-chat-color-text-muted);
-  margin-top: 8px;
 }
 
 /* ===== Mobile ===== */

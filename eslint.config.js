@@ -15,8 +15,12 @@ export default tseslint.config(
         parser: tseslint.parser,
       },
       globals: {
+        document: 'readonly',
         HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
+        MediaQueryList: 'readonly',
+        MediaQueryListEvent: 'readonly',
         MutationObserver: 'readonly',
         ResizeObserver: 'readonly',
         requestAnimationFrame: 'readonly',

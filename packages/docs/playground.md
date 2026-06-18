@@ -1,6 +1,4 @@
 ---
-layout: page
+layout: PlaygroundPage
 title: Playground
 ---
-
-<PlaygroundDemo />
