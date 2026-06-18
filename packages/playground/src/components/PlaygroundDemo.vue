@@ -2,7 +2,7 @@
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useChat } from '@ai-chat/core'
 import { MarkdownRenderer } from '@ai-chat/markdown'
-import { mockMessages } from '../utils/mock-messages'
+import { mockMessages } from '../mock/mock-messages'
 import {
   Conversation,
   ConversationContent,
@@ -20,7 +20,7 @@ import {
   PromptInputButton,
   ToolCall,
 } from '@ai-chat/vue'
-import { mockAdapter } from '../utils/mock-adapter'
+import { mockAdapter } from '../mock/mock-adapter'
 
 const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 

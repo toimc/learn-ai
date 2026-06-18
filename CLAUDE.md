@@ -17,12 +17,13 @@ Provider 抽象层模式：组件与 AI 后端完全解耦，通过 `ChatAdapter
 - `core` — 无外部依赖，纯 TypeScript，定义所有核心类型和 composables
 - `vue` — 依赖 `core`，peer 依赖 `vue ^3.5.0`
 - `markdown` — 依赖 `vue`，使用 Shiki + KaTeX
-- `docs` — Vite 开发服务器 playground，依赖上述三个包
+- `playground` — 私有演示包，承载 Playground 页面与 mock 数据，依赖上述三个包
+- `docs` — VitePress 文档站，依赖上述三个包与 `playground`
 
 ## 常用命令
 
 ```bash
-pnpm dev          # 启动 docs playground
+pnpm dev          # 启动 docs（VitePress 文档站 + Playground）
 pnpm build        # 构建所有包
 pnpm test         # 运行全部测试
 pnpm test:watch   # 监听模式

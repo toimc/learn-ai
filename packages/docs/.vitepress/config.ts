@@ -14,6 +14,7 @@ export default defineConfig({
         '@ai-chat/core': resolve(root, '../core/src/index.ts'),
         '@ai-chat/vue': resolve(root, '../vue/src/index.ts'),
         '@ai-chat/markdown': resolve(root, '../markdown/src/index.ts'),
+        '@ai-chat/playground': resolve(root, '../playground/src/index.ts'),
       },
     },
   },

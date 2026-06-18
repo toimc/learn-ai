@@ -12,6 +12,7 @@
     "@ai-chat/core": "workspace:*",
     "@ai-chat/vue": "workspace:*",
     "@ai-chat/markdown": "workspace:*",
+    "@ai-chat/playground": "workspace:*",
     "vue": "^3.5.0"
   },
   "devDependencies": {
