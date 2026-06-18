@@ -43,9 +43,9 @@ describe('useMarkdownIt', () => {
   it('$$ 与 $ 共存时块级优先（同一文档同时含块级与行内）', () => {
     const md = useMarkdownIt()
     const out = md.render('行内 $a$ 文本\n\n$$b^2$$\n')
-    // 两处都应被 katex 渲染（至少出现两次 katex 根类）
+    // 两处都应被 katex 渲染（恰好出现两次 katex 根类）
     const count = (out.match(/class="katex"/g) || []).length
-    expect(count).toBeGreaterThanOrEqual(2)
+    expect(count).toBe(2)
   })
 
   it('非法公式不中断渲染（texmath 内部 throwOnError 默认 false）', () => {

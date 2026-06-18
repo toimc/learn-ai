@@ -16,8 +16,8 @@ export function useMarkdownIt(): MarkdownIt {
     typographer: true,
   })
     .use(taskLists, { enabled: true, label: true })
-    // FR-3.2：texmath `dollars` 预设同时注册块级 `$$...$$` 与行内 `$...$` 规则，
-    // 块级规则在 markdown-it 的 `fence` 之前注入，天然保证「块级先于行内」的匹配顺序。
+    // FR-3.2：texmath `dollars` 预设同时注册块级 `math_block`（`$$…$$`）与行内 `math_inline`（`$…$`）规则。
+    // 二者是各自独立的规则，块级优先级确保 `$$` 不被行内 `$` 规则抢先吞掉。
     // KaTeX 引擎由我们显式注入，texmath 内部默认 throwOnError:false，语法错误不会中断渲染。
     .use(texmath, {
       engine: katex,

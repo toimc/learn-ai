@@ -13,22 +13,33 @@ const props = defineProps<{
  * 这样任何语法错误都展示原始公式，不会让整条消息渲染崩溃。
  * `output: 'htmlAndMathml'` 同时产出可访问的 MathML 与视觉 HTML。
  */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const html = computed(() => {
   try {
     return katex.renderToString(props.formula, {
       throwOnError: true,
-      displayMode: !!props.display,
+      displayMode: props.display,
       output: 'htmlAndMathml',
     })
   } catch {
-    return props.formula
+    // 错误分支：源文本可能含 `<`/`>`，逐字符转义避免注入。
+    return escapeHtml(props.formula)
   }
 })
 </script>
 
 <template>
   <span class="ai-chat-latex" :class="{ 'ai-chat-latex--display': display }">
-    <!-- KaTeX 已对输出做 HTML 转义；此处仅渲染其产物，不可触发用户脚本 -->
+    <!-- KaTeX 成功路径已对输出做 HTML 转义；错误分支经 escapeHtml 转义源文本，
+         因此本组件自包含安全。整条消息渲染时 MarkdownRenderer 上游另叠一层 DOMPurify。 -->
     <span v-html="html" />
   </span>
 </template>

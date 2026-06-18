@@ -13,11 +13,13 @@ describe('LatexBlock', () => {
     expect(wrapper.html()).toContain('a')
   })
 
-  it('块级公式 display=true 仍走 katex 渲染（FR-3.2）', () => {
+  it('块级公式 display=true 走 katex 渲染', () => {
     const wrapper = mount(LatexBlock, {
       props: { formula: '\\int_0^1 x^2 dx', display: true },
     })
     expect(wrapper.html()).toContain('katex')
+    // 块级 display 模式由 KaTeX 加 katex-display 类标记
+    expect(wrapper.html()).toContain('katex-display')
     // 块级容器带 --display 修饰类
     expect(wrapper.find('.ai-chat-latex--display').exists()).toBe(true)
   })
