@@ -119,4 +119,99 @@ onBeforeUnmount(() => {
 .ai-chat-markdown :deep(strong) {
   font-weight: 600;
 }
+
+/* 段落：纵向节奏，首尾不留白 */
+.ai-chat-markdown :deep(p) {
+  margin: 8px 0;
+}
+.ai-chat-markdown :deep(p:first-child) {
+  margin-top: 0;
+}
+.ai-chat-markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+/* 标题层级：在现有 margin 基础上补字号与字重 */
+.ai-chat-markdown :deep(h1) {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+.ai-chat-markdown :deep(h2) {
+  font-size: 1.3em;
+  font-weight: 600;
+}
+.ai-chat-markdown :deep(h3) {
+  font-size: 1.12em;
+  font-weight: 600;
+}
+
+/* 列表：统一缩进与间距，marker 用弱化色避免抢焦 */
+.ai-chat-markdown :deep(ul),
+.ai-chat-markdown :deep(ol) {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.ai-chat-markdown :deep(ul) {
+  list-style: disc;
+}
+.ai-chat-markdown :deep(ol) {
+  list-style: decimal;
+}
+.ai-chat-markdown :deep(li) {
+  margin: 3px 0;
+}
+.ai-chat-markdown :deep(li)::marker {
+  color: var(--ai-chat-color-text-muted, #71717a);
+}
+/* 嵌套列表收紧 */
+.ai-chat-markdown :deep(li > ul),
+.ai-chat-markdown :deep(li > ol) {
+  margin: 3px 0 0;
+}
+
+/* 引用块：左侧强调边线 + 弱化底色 */
+.ai-chat-markdown :deep(blockquote) {
+  margin: 10px 0;
+  padding: 4px 14px;
+  border-left: 3px solid var(--ai-chat-color-border, #2e2e2e);
+  background: var(--ai-chat-hover-neutral, rgba(128, 128, 128, 0.08));
+  color: var(--ai-chat-color-text-secondary, #a1a1aa);
+}
+.ai-chat-markdown :deep(blockquote p) {
+  margin: 4px 0;
+}
+
+/* 表格：边框 + 表头 + 斑马纹；display:block 配合 overflow-x 实现宽表横向滚动 */
+/* 中性 rgba 兼容明暗双主题，符合项目 hover 中性色约定 */
+.ai-chat-markdown :deep(table) {
+  display: block;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+  overflow-x: auto;
+}
+.ai-chat-markdown :deep(th),
+.ai-chat-markdown :deep(td) {
+  border: 1px solid var(--ai-chat-color-border, #2e2e2e);
+  padding: 8px 12px;
+  text-align: left;
+  white-space: normal;
+}
+.ai-chat-markdown :deep(th) {
+  font-weight: 600;
+  background: rgba(128, 128, 128, 0.12);
+}
+.ai-chat-markdown :deep(tr:nth-child(2n) td) {
+  background: rgba(128, 128, 128, 0.06);
+}
+
+/* 链接：主题强调色，hover 下划线 */
+.ai-chat-markdown :deep(a) {
+  color: var(--ai-chat-color-accent, #6366f1);
+  text-decoration: none;
+}
+.ai-chat-markdown :deep(a:hover) {
+  text-decoration: underline;
+}
 </style>
