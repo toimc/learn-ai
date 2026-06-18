@@ -17,6 +17,9 @@ const props = defineProps<{
 /** 高亮后的 HTML（token 级 span 串），异步填充 */
 const highlighted = ref<string>('')
 
+// 流式竞态守卫：仅最后一次 run 的结果可写入，避免旧 token 覆盖新结果
+let runId = 0
+
 // watchEffect 自动追踪 props 依赖；async 内部 await，异常时回退空串
 watchEffect(async () => {
   const { code, language, streaming } = props
@@ -24,14 +27,16 @@ watchEffect(async () => {
     highlighted.value = ''
     return
   }
+  const myId = ++runId
   try {
-    highlighted.value =
+    const html =
       streaming === false
         ? await renderCodeFinal(code, language ?? '')
         : await renderCodeStreaming(code, language ?? '')
+    if (myId === runId) highlighted.value = html
   } catch {
     // 降级：清空高亮，保留 pre/code 结构
-    highlighted.value = ''
+    if (myId === runId) highlighted.value = ''
   }
 })
 </script>
