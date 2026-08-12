@@ -65,7 +65,7 @@ watch(() => props.code, render)
     <iframe
       v-else
       class="ai-chat-mermaid__frame"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts"
       :srcdoc="srcdoc"
     />
   </div>
