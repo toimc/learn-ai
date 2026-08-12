@@ -38,8 +38,7 @@ async function render() {
     const id = `mmd-${++mmdSeq}`
     const { svg: out } = await mermaid.render(id, props.code)
     if (myId === runId) {
-      // FR-4.5: 沙箱 iframe 不开 allow-scripts,剔除 mermaid SVG 内联 <script>,避免 blocked script 告警
-      svg.value = out.replace(/<script[\s\S]*?<\/script>/gi, '')
+      svg.value = out
       status.value = 'done'
     }
   } catch (e) {
@@ -66,7 +65,7 @@ watch(() => props.code, render)
     <iframe
       v-else
       class="ai-chat-mermaid__frame"
-      sandbox="allow-same-origin"
+      sandbox="allow-scripts allow-same-origin"
       :srcdoc="srcdoc"
     />
   </div>
