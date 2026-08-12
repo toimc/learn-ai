@@ -106,3 +106,24 @@ pnpm type-check
 
 - `$dependency-updater`：检查、分类并安全更新依赖；主要版本更新必须先获得用户确认。
 - `$dowhat`：只读汇总当前分支、提交、改动、Issue/PR 和后续事项。
+
+
+<claude-mem-context>
+# Memory Context
+
+# [ai-chat-ui] recent context, 2026-08-12 9:44pm GMT+8
+
+Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
+Format: ID TIME TYPE TITLE
+Fetch details: get_observations([IDs]) | Search: mem-search skill
+
+Stats: 0 obs (0t read) | 0t work
+
+**Investigated**: 通过 Playwright 自动化测试和浏览器控制台分析，深入调查了 MermaidBlock 组件中的 iframe sandbox 配置问题。检查了从 allow-same-origin 到 allow-scripts allow-same-origin 再到仅 allow-scripts 的三种配置效果，验证了每种方案对 Mermaid 图表渲染和安全性的影响。
+
+**Learned**: 了解到浏览器向 sandbox iframe 注入脚本的机制，以及 allow-same-origin 与 allow-scripts 组合会导致"can escape its sandboxing"警告的原因。掌握了通过移除 allow-same-origin 使 iframe 变为 opaque origin 来增强隔离的技术方案，同时确认 Mermaid 静态 SVG 不依赖同源策略。
+
+**Completed**: 完成了 MermaidBlock 组件安全策略的三次迭代优化，最终确定使用 `sandbox="allow-scripts"` 的配置。进行了完整的构建-测试-验证循环，包括重新构建 markdown 包、重启 VitePress 开发服务器、Playwright 自动化测试验证。所有修改已提交到 git（三个 commit：0bc5e0f 最终方案，c7e8990 添加 allow-scripts，6cf0455 已回退的错误方案）。
+
+**Next Steps**: 用户需要在浏览器中手动验证最终效果：访问 http://localhost:5173/playground.html 刷新页面，确认 blocked script 告警已彻底消失。之后应该回到原始任务：分析项目依赖包的更新需求，按照语义化版本规则制定依赖升级计划。
+</claude-mem-context>
