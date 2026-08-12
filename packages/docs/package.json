@@ -10,13 +10,13 @@
   },
   "dependencies": {
     "@ai-chat/core": "workspace:*",
-    "@ai-chat/vue": "workspace:*",
     "@ai-chat/markdown": "workspace:*",
     "@ai-chat/playground": "workspace:*",
-    "vue": "^3.5.0"
+    "@ai-chat/vue": "workspace:*",
+    "vue": "^3.5.41"
   },
   "devDependencies": {
-    "vitepress": "^1.6.0",
-    "typescript": "^6.0.0"
+    "typescript": "^6.0.3",
+    "vitepress": "^1.6.4"
   }
 }
