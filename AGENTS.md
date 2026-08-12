@@ -85,8 +85,19 @@ pnpm type-check
 
 - 修改前阅读相关实现、测试、入口文件和下游调用方。
 - 复杂多文件功能先明确需求、方案和验收标准；用户确认后连续执行，不重复逐步确认。
-- 不主动创建 README、CHANGELOG 或额外设计文档，除非任务明确要求。
+- 不主动创建新的 README、CHANGELOG 或额外设计文档，除非任务明确要求；但代码变化影响现有公开 API、组件行为、安装方式、示例或主题能力时，必须同步更新已有 README/VitePress 文档。
 - 回复用户使用中文。
+
+## 代码与文档同步
+
+- 修改 `packages/core` 的公共类型、适配器、composable 或导出时，同步 `README.md`、`packages/docs/composables/use-chat.md` 或对应使用指南。
+- 修改 `packages/vue` 的组件、props、events、slots、交互或导出时，同步 `packages/docs/components/` 下对应组件页面；必要时同时更新 README 的组件清单与示例。
+- 修改 `packages/markdown` 的渲染能力、组件 API 或导出时，同步 MarkdownRenderer、CodeBlock、LatexBlock 等对应文档和示例。
+- 修改安装包、peer dependency、Node/pnpm 要求或安装命令时，同步 README 和安装文档。
+- 修改 Playground 用户可见流程或示例时，同步 `packages/docs/playground.md`。
+- 纯测试、内部重构或不改变用户可见行为的修复可以不改文档，但必须明确判断原因，不能默认跳过。
+- 项目通过 `.codex/hooks.json` 自动提示并检查文档同步。若确认无需更新，运行 `python3 .codex/hooks/documentation_sync.py acknowledge --reason "具体原因"` 记录本次判断。
+- 提交前可手动运行 `python3 .codex/hooks/documentation_sync.py check`；公开代码变化没有对应文档或豁免理由时，不得结束任务。
 
 ## Git 工作流
 
@@ -106,7 +117,6 @@ pnpm type-check
 
 - `$dependency-updater`：检查、分类并安全更新依赖；主要版本更新必须先获得用户确认。
 - `$dowhat`：只读汇总当前分支、提交、改动、Issue/PR 和后续事项。
-
 
 <claude-mem-context>
 # Memory Context
