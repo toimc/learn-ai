@@ -1,0 +1,4 @@
+interface:
+  display_name: '项目进度回顾'
+  short_description: '汇总当前分支、提交、改动、Issue 与后续工作状态'
+  default_prompt: '使用 $dowhat 回顾当前项目进度并给出下一步。'
