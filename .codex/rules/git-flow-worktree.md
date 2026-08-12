@@ -46,11 +46,14 @@ git worktree add .codex/worktrees/fix-example -b fix/example master
 按改动风险选择验证范围：
 
 ```bash
+python3 .codex/hooks/documentation_sync.py check
 pnpm test
 pnpm type-check
 pnpm lint
 pnpm build
 ```
+
+公共 API、组件行为、安装方式或示例发生变化时，提交必须同时包含 README/VitePress 对应文档。若确认没有文档影响，使用 `documentation_sync.py acknowledge` 记录具体理由，再执行检查。
 
 提交格式：
 
