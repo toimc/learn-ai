@@ -16,3 +16,7 @@ packages/docs/.vitepress/dist/
 # Git Flow worktree 与部署锁
 .claude/worktrees/
 .claude/run/
+
+# Codex 项目工作区与部署锁
+.codex/worktrees/
+.codex/run/

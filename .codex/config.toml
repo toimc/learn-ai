@@ -1,0 +1,7 @@
+# 项目级 Codex 配置。模型和服务商沿用用户全局设置。
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+project_doc_max_bytes = 32768
+
+[sandbox_workspace_write]
+network_access = true
