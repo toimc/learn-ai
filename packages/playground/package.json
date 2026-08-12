@@ -5,8 +5,8 @@
   "type": "module",
   "dependencies": {
     "@ai-chat/core": "workspace:*",
-    "@ai-chat/vue": "workspace:*",
     "@ai-chat/markdown": "workspace:*",
-    "vue": "^3.5.0"
+    "@ai-chat/vue": "workspace:*",
+    "vue": "^3.5.41"
   }
 }
