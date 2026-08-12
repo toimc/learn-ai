@@ -17,8 +17,8 @@
     "prepare": "simple-git-hooks"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=9.0.0"
+    "node": "^22.18.0 || >=24.12.0",
+    "pnpm": ">=10.0.0"
   },
   "packageManager": "pnpm@11.21.0",
   "simple-git-hooks": {
