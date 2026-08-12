@@ -24,7 +24,7 @@
     "@ai-chat/vue": "workspace:*",
     "@shikijs/stream": "^4.4.3",
     "dompurify": "^3.4.13",
-    "katex": "^0.17.0",
+    "katex": "^0.18.4",
     "markdown-it": "^14.3.0",
     "markdown-it-task-lists": "^2.1.1",
     "markdown-it-texmath": "^1.0.0",
