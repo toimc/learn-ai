@@ -20,3 +20,7 @@ packages/docs/.vitepress/dist/
 # Codex 项目工作区与部署锁
 .codex/worktrees/
 .codex/run/
+
+# Python hook 缓存
+__pycache__/
+*.pyc
