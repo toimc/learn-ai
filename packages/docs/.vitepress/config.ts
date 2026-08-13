@@ -8,6 +8,15 @@ export default defineConfig({
   title: 'AI Chat UI',
   description: '后端无关的 AI 聊天界面组件库',
 
+  head: [
+    // 首屏防闪：在 Vue 挂载前同步读取 localStorage 设 data-theme，避免亮暗闪屏
+    [
+      'script',
+      {},
+      `(function(){try{var t=localStorage.getItem('ai-chat-theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`,
+    ],
+  ],
+
   vite: {
     resolve: {
       alias: {
@@ -30,6 +39,7 @@ export default defineConfig({
         items: [{ text: 'useChat', link: '/composables/use-chat' }],
       },
       { text: 'Playground', link: '/playground' },
+      { text: '主题配置器', link: '/theme-builder' },
     ],
 
     sidebar: {
@@ -41,6 +51,7 @@ export default defineConfig({
             { text: '安装', link: '/guide/installation' },
             { text: '使用指南', link: '/guide/usage' },
             { text: '主题定制', link: '/guide/theming' },
+            { text: '主题配置器', link: '/theme-builder' },
           ],
         },
       ],
