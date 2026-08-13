@@ -13,7 +13,7 @@
   /* 主色色阶 */
   --ai-chat-color-accent-500: #6366f1;
   --ai-chat-color-accent-600: #4f46e5;
-  --ai-chat-color-accent-hover: #818cf8;
+  --ai-chat-color-accent-400: #818cf8;
 
   /* 中性灰阶（亮→暗） */
   --ai-chat-neutral-0: #ffffff;
@@ -64,7 +64,7 @@
 :root {
   /* 强调 */
   --ai-chat-color-accent: var(--ai-chat-color-accent-500);
-  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-hover);
+  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-400);
   --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.15);
 
   /* 背景 */
@@ -117,7 +117,7 @@
 [data-theme='dark'] {
   /* 强调 */
   --ai-chat-color-accent: var(--ai-chat-color-accent-500);
-  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-hover);
+  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-400);
   --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.2);
 
   /* 背景 */

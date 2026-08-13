@@ -23,8 +23,8 @@ describe('Conversation 主题 Props', () => {
     expect(el.style.getPropertyValue('--ai-chat-color-accent-500')).toBe(
       presets.purple.vars['--ai-chat-color-accent-500'],
     )
-    expect(el.style.getPropertyValue('--ai-chat-color-accent-hover')).toBe(
-      presets.purple.vars['--ai-chat-color-accent-hover'],
+    expect(el.style.getPropertyValue('--ai-chat-color-accent-400')).toBe(
+      presets.purple.vars['--ai-chat-color-accent-400'],
     )
     wrapper.unmount()
   })
