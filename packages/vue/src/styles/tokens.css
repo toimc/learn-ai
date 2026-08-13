@@ -1,74 +1,53 @@
 /*
  * ai-chat-ui Design Tokens
  *
- * 从 playground.html 提取的视觉基准，作为所有组件的样式基础。
- * 三层结构：原始令牌 → 语义令牌 → 组件令牌（组件内定义）
+ * 三层结构：原始令牌(Primitive) → 语义令牌(Semantic) → 组件令牌(Component)
+ * 默认 = 亮色（:root）；暗色通过 [data-theme='dark'] 仅翻转语义层。
+ * 命名：--ai-chat-{category}-{property}[-{variant}]
  */
 
-/* ===== 暗色（默认） ===== */
+/* ============================================================
+ * 原始令牌 / Primitive —— 主题无关的原材料（不进 [data-theme]）
+ * ============================================================ */
 :root {
-  /* -- 主色调 -- */
-  --ai-chat-color-accent: #6366f1;
+  /* 主色色阶 */
+  --ai-chat-color-accent-500: #6366f1;
+  --ai-chat-color-accent-600: #4f46e5;
   --ai-chat-color-accent-hover: #818cf8;
-  --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.15);
 
-  /* -- 侧边栏 -- */
-  --ai-chat-sidebar-bg: #171717;
-  --ai-chat-sidebar-hover: #262626;
-  --ai-chat-sidebar-active: #2a2a2a;
-  --ai-chat-sidebar-border: #2e2e2e;
-  --ai-chat-sidebar-text: #a1a1aa;
-  --ai-chat-sidebar-text-active: #fafafa;
+  /* 中性灰阶（亮→暗） */
+  --ai-chat-neutral-0: #ffffff;
+  --ai-chat-neutral-50: #f9fafb;
+  --ai-chat-neutral-100: #f3f4f6;
+  --ai-chat-neutral-200: #e5e7eb;
+  --ai-chat-neutral-300: #d1d5db;
+  --ai-chat-neutral-500: #6b7280;
+  --ai-chat-neutral-600: #4b5563;
+  --ai-chat-neutral-700: #404040;
+  --ai-chat-neutral-800: #262626;
+  --ai-chat-neutral-900: #171717;
+  --ai-chat-neutral-950: #0a0a0a;
 
-  /* -- 主区域背景 -- */
-  --ai-chat-color-bg-primary: #212121;
-  --ai-chat-color-bg-secondary: #1a1a1a;
-  --ai-chat-color-bg-chat: #212121;
+  /* 功能色 */
+  --ai-chat-color-danger-500: #ef4444;
 
-  /* -- 消息 -- */
-  --ai-chat-msg-user-bg: #2f2f2f;
-  --ai-chat-msg-assistant-bg: transparent;
-
-  /* -- 输入框 -- */
-  --ai-chat-input-bg: #2f2f2f;
-  --ai-chat-input-border: #404040;
-  --ai-chat-input-focus-border: #6366f1;
-
-  /* -- 文本 -- */
-  --ai-chat-color-text-primary: #fafafa;
-  --ai-chat-color-text-secondary: #a1a1aa;
-  --ai-chat-color-text-muted: #71717a;
-
-  /* -- 边框 & 滚动条 -- */
-  --ai-chat-color-border: #2e2e2e;
-  --ai-chat-scrollbar-thumb: #404040;
-  --ai-chat-scrollbar-track: transparent;
-
-  /* -- 代码块 -- */
-  --ai-chat-code-bg: #1a1a1a;
-  --ai-chat-code-header-bg: #242427;
-  --ai-chat-code-inline-bg: rgba(255, 255, 255, 0.06);
-
-  /* -- 中性 hover -- */
-  --ai-chat-hover-neutral: rgba(128, 128, 128, 0.15);
-
-  /* -- 圆角 -- */
+  /* 圆角阶梯 */
   --ai-chat-radius-sm: 6px;
   --ai-chat-radius-md: 8px;
   --ai-chat-radius-lg: 12px;
   --ai-chat-radius-xl: 16px;
 
-  /* -- 字体 -- */
+  /* 字体 */
   --ai-chat-font-sans:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --ai-chat-font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
 
-  /* -- 动画 -- */
+  /* 动画 */
   --ai-chat-duration-fast: 0.12s;
   --ai-chat-duration-normal: 0.2s;
   --ai-chat-easing: ease;
 
-  /* -- 尺寸 -- */
+  /* 尺寸 */
   --ai-chat-sidebar-width: 260px;
   --ai-chat-content-max-width: 768px;
   --ai-chat-input-max-height: 200px;
@@ -77,53 +56,114 @@
   --ai-chat-btn-tool-size: 32px;
   --ai-chat-msg-gap: 16px;
   --ai-chat-msg-padding-y: 20px;
-
-  /* -- 旧组件兼容（逐步废弃） -- */
-  --ai-chat-border-color: var(--ai-chat-color-border);
-  --ai-chat-radius: var(--ai-chat-radius-md);
-  --ai-chat-bg: var(--ai-chat-color-bg-primary);
-  --ai-chat-padding: 16px;
-  --ai-chat-primary: var(--ai-chat-color-accent);
-  --ai-chat-danger: #ef4444;
-  --ai-chat-message-gap: 12px;
-  --ai-chat-bubble-radius: var(--ai-chat-radius-lg);
-  --ai-chat-user-bg: var(--ai-chat-msg-user-bg);
-  --ai-chat-user-color: var(--ai-chat-color-text-primary);
-  --ai-chat-assistant-bg: var(--ai-chat-color-bg-secondary);
-  --ai-chat-assistant-color: var(--ai-chat-color-text-primary);
-  --ai-chat-input-color: var(--ai-chat-color-text-primary);
 }
 
-/* ===== 亮色主题 ===== */
-[data-theme='light'] {
-  --ai-chat-sidebar-bg: #f9fafb;
-  --ai-chat-sidebar-hover: #f3f4f6;
-  --ai-chat-sidebar-active: #e5e7eb;
-  --ai-chat-sidebar-border: #e5e7eb;
-  --ai-chat-sidebar-text: #6b7280;
-  --ai-chat-sidebar-text-active: #111827;
+/* ============================================================
+ * 语义令牌 / Semantic —— 亮色（:root 默认）
+ * ============================================================ */
+:root {
+  /* 强调 */
+  --ai-chat-color-accent: var(--ai-chat-color-accent-500);
+  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-hover);
+  --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.15);
 
-  --ai-chat-color-bg-primary: #ffffff;
-  --ai-chat-color-bg-secondary: #f9fafb;
-  --ai-chat-color-bg-chat: #ffffff;
+  /* 背景 */
+  --ai-chat-color-bg-primary: var(--ai-chat-neutral-0);
+  --ai-chat-color-bg-secondary: var(--ai-chat-neutral-50);
+  --ai-chat-color-bg-chat: var(--ai-chat-neutral-0);
+  --ai-chat-color-bg-sidebar: var(--ai-chat-neutral-50);
+  --ai-chat-color-bg-sidebar-hover: var(--ai-chat-neutral-100);
+  --ai-chat-color-bg-sidebar-active: var(--ai-chat-neutral-200);
 
-  --ai-chat-msg-user-bg: #f3f4f6;
-
-  --ai-chat-input-bg: #f3f4f6;
-  --ai-chat-input-border: #d1d5db;
-
-  --ai-chat-color-text-primary: #111827;
-  --ai-chat-color-text-secondary: #4b5563;
+  /* 文本 */
+  --ai-chat-color-text-primary: var(--ai-chat-neutral-900);
+  --ai-chat-color-text-secondary: var(--ai-chat-neutral-600);
   --ai-chat-color-text-muted: #9ca3af;
+  --ai-chat-color-sidebar-text: var(--ai-chat-neutral-500);
+  --ai-chat-color-sidebar-text-active: var(--ai-chat-neutral-900);
 
-  --ai-chat-color-border: #e5e7eb;
-  --ai-chat-scrollbar-thumb: #d1d5db;
+  /* 边框 / 滚动条 */
+  --ai-chat-color-border: var(--ai-chat-neutral-200);
+  --ai-chat-color-sidebar-border: var(--ai-chat-neutral-200);
+  --ai-chat-scrollbar-thumb: var(--ai-chat-neutral-300);
+  --ai-chat-scrollbar-track: transparent;
 
-  --ai-chat-code-bg: #f3f4f6;
-  --ai-chat-code-header-bg: #eceef1;
-  --ai-chat-code-inline-bg: rgba(0, 0, 0, 0.06);
+  /* 输入 */
+  --ai-chat-color-input-bg: var(--ai-chat-neutral-100);
+  --ai-chat-color-input-border: var(--ai-chat-neutral-300);
+  --ai-chat-color-input-focus-border: var(--ai-chat-color-accent-500);
 
-  --ai-chat-assistant-bg: #f3f4f6;
+  /* 消息 */
+  --ai-chat-color-msg-user-bg: var(--ai-chat-neutral-100);
+  --ai-chat-color-msg-assistant-bg: transparent;
+
+  /* 代码 */
+  --ai-chat-color-code-bg: var(--ai-chat-neutral-100);
+  --ai-chat-color-code-header-bg: var(--ai-chat-neutral-100);
+  --ai-chat-color-code-inline-bg: rgba(0, 0, 0, 0.06);
+
+  /* 状态（此前未定义、属隐性 bug，本次补齐） */
+  --ai-chat-color-status-error: #ef4444;
+  --ai-chat-color-status-warning: #f59e0b;
+  --ai-chat-color-status-success: #10b981;
+
+  /* 交互 */
+  --ai-chat-hover-neutral: rgba(128, 128, 128, 0.15);
+}
+
+/* ============================================================
+ * 语义令牌 / Semantic —— 暗色（仅翻转语义层，原始层不动）
+ * ============================================================ */
+[data-theme='dark'] {
+  /* 强调 */
+  --ai-chat-color-accent: var(--ai-chat-color-accent-500);
+  --ai-chat-color-accent-hover: var(--ai-chat-color-accent-hover);
+  --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.2);
+
+  /* 背景 */
+  --ai-chat-color-bg-primary: var(--ai-chat-neutral-900);
+  --ai-chat-color-bg-secondary: var(--ai-chat-neutral-800);
+  --ai-chat-color-bg-chat: var(--ai-chat-neutral-900);
+  --ai-chat-color-bg-sidebar: var(--ai-chat-neutral-900);
+  --ai-chat-color-bg-sidebar-hover: var(--ai-chat-neutral-800);
+  --ai-chat-color-bg-sidebar-active: #2a2a2a;
+
+  /* 文本 */
+  --ai-chat-color-text-primary: var(--ai-chat-neutral-50);
+  --ai-chat-color-text-secondary: #a1a1aa;
+  --ai-chat-color-text-muted: #71717a;
+  --ai-chat-color-sidebar-text: #a1a1aa;
+  --ai-chat-color-sidebar-text-active: var(--ai-chat-neutral-50);
+
+  /* 边框 / 滚动条 */
+  --ai-chat-color-border: #2e2e2e;
+  --ai-chat-color-sidebar-border: #2e2e2e;
+  --ai-chat-scrollbar-thumb: var(--ai-chat-neutral-700);
+
+  /* 输入 */
+  --ai-chat-color-input-bg: #2f2f2f;
+  --ai-chat-color-input-border: var(--ai-chat-neutral-700);
+  --ai-chat-color-input-focus-border: var(--ai-chat-color-accent-500);
+
+  /* 消息 */
+  --ai-chat-color-msg-user-bg: #2f2f2f;
+
+  /* 代码 */
+  --ai-chat-color-code-bg: var(--ai-chat-neutral-800);
+  --ai-chat-color-code-header-bg: #242427;
+  --ai-chat-color-code-inline-bg: rgba(255, 255, 255, 0.06);
+
+  /* 状态 */
+  --ai-chat-color-status-error: #f87171;
+  --ai-chat-color-status-warning: #fbbf24;
+  --ai-chat-color-status-success: #34d399;
+}
+
+/* ============================================================
+ * 组件令牌 / Component —— 引用语义层（主题无关映射）
+ * ============================================================ */
+:root {
+  --ai-chat-bubble-radius: var(--ai-chat-radius-lg);
 }
 
 /* ===== 全局基础 ===== */
@@ -133,7 +173,6 @@
   box-sizing: border-box;
 }
 
-/* 自定义滚动条 */
 .ai-chat-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

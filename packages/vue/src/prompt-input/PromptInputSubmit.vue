@@ -34,7 +34,7 @@ const abort = inject<() => void>('promptAbort')!
   margin: 6px 8px;
   border-radius: 10px;
   border: none;
-  background: var(--ai-chat-input-bg);
+  background: var(--ai-chat-color-input-bg);
   color: var(--ai-chat-color-text-primary);
   cursor: pointer;
   display: flex;

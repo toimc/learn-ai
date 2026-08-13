@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
 }
 
 .ai-chat-markdown :deep(pre) {
-  background: var(--ai-chat-code-bg, #1e1e2e);
+  background: var(--ai-chat-color-code-bg, #1e1e2e);
   color: var(--ai-chat-code-color, #cdd6f4);
   padding: 12px 16px;
   border-radius: 6px;

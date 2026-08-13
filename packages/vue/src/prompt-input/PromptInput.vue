@@ -77,16 +77,16 @@ provide('promptAbort', handleAbort)
 
 .ai-chat-prompt-input__wrapper {
   position: relative;
-  background: var(--ai-chat-input-bg);
+  background: var(--ai-chat-color-input-bg);
   border-radius: var(--ai-chat-radius-xl);
-  border: 1px solid var(--ai-chat-input-border);
+  border: 1px solid var(--ai-chat-color-input-border);
   transition:
     border-color var(--ai-chat-duration-normal) var(--ai-chat-easing),
     box-shadow var(--ai-chat-duration-normal) var(--ai-chat-easing);
 }
 
 .ai-chat-prompt-input__wrapper:focus-within {
-  border-color: var(--ai-chat-input-focus-border);
+  border-color: var(--ai-chat-color-input-focus-border);
   box-shadow: 0 0 0 2px var(--ai-chat-color-accent-dim);
 }
 
