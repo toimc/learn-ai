@@ -36,7 +36,11 @@ export default defineConfig({
       { text: '组件', link: '/components/conversation' },
       {
         text: 'Composables',
-        items: [{ text: 'useChat', link: '/composables/use-chat' }],
+        items: [
+          { text: 'useChat', link: '/composables/use-chat' },
+          { text: 'useTheme', link: '/composables/use-theme' },
+          { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+        ],
       },
       { text: 'Playground', link: '/playground' },
       { text: '主题配置器', link: '/theme-builder' },
@@ -99,7 +103,11 @@ export default defineConfig({
       '/composables/': [
         {
           text: 'Composables',
-          items: [{ text: 'useChat', link: '/composables/use-chat' }],
+          items: [
+            { text: 'useChat', link: '/composables/use-chat' },
+            { text: 'useTheme', link: '/composables/use-theme' },
+            { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+          ],
         },
       ],
     },
