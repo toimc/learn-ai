@@ -72,3 +72,12 @@ export { default as MessageList } from './MessageList.vue'
 export { default as MessageBubble } from './MessageBubble.vue'
 /** @deprecated Use PromptInput instead */
 export { default as InputArea } from './InputArea.vue'
+
+// 主题系统
+export { useTheme, resolvedTheme } from './composables/useTheme'
+export type { ThemeMode, ResolvedTheme } from './composables/useTheme'
+export { useThemePreset } from './composables/useThemePreset'
+export { presets } from './theme/presets'
+export type { ThemePreset, PresetKey } from './theme/presets'
+export { tokensMeta } from './theme/tokens-meta'
+export type { TokenMeta, TokenType, TokenLayer } from './theme/tokens-meta'
