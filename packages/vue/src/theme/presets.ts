@@ -10,7 +10,7 @@ export const presets: Record<string, ThemePreset> = {
     vars: {
       '--ai-chat-color-accent-500': '#6366f1',
       '--ai-chat-color-accent-600': '#4f46e5',
-      '--ai-chat-color-accent-hover': '#818cf8',
+      '--ai-chat-color-accent-400': '#818cf8',
     },
   },
   purple: {
@@ -18,7 +18,7 @@ export const presets: Record<string, ThemePreset> = {
     vars: {
       '--ai-chat-color-accent-500': '#8b5cf6',
       '--ai-chat-color-accent-600': '#7c3aed',
-      '--ai-chat-color-accent-hover': '#a78bfa',
+      '--ai-chat-color-accent-400': '#a78bfa',
     },
   },
   green: {
@@ -26,7 +26,7 @@ export const presets: Record<string, ThemePreset> = {
     vars: {
       '--ai-chat-color-accent-500': '#059669',
       '--ai-chat-color-accent-600': '#047857',
-      '--ai-chat-color-accent-hover': '#10b981',
+      '--ai-chat-color-accent-400': '#10b981',
     },
   },
   warm: {
@@ -34,7 +34,7 @@ export const presets: Record<string, ThemePreset> = {
     vars: {
       '--ai-chat-color-accent-500': '#ea580c',
       '--ai-chat-color-accent-600': '#c2410c',
-      '--ai-chat-color-accent-hover': '#f97316',
+      '--ai-chat-color-accent-400': '#f97316',
     },
   },
 }
