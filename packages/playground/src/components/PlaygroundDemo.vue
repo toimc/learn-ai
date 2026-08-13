@@ -25,6 +25,8 @@ import { mockAdapter } from '../mock/mock-adapter'
 const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 
 const sidebarOpen = ref(false)
+// 桌面端折叠状态（挤压式收起，与移动端抽屉 sidebarOpen 解耦）
+const sidebarCollapsed = ref(false)
 // 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
 const { resolvedTheme, toggleTheme } = useTheme()
 const chatAreaRef = ref<HTMLElement>()
@@ -68,6 +70,18 @@ const suggestions = [
 ]
 
 function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+// 桌面端收起侧边栏（挤压式，主区自动扩展）；同时关闭移动端抽屉
+function collapseSidebar() {
+  sidebarCollapsed.value = true
+  sidebarOpen.value = false
+}
+
+// 展开/打开侧边栏：桌面端取消折叠，移动端切换抽屉
+function openSidebar() {
+  sidebarCollapsed.value = false
   sidebarOpen.value = !sidebarOpen.value
 }
 
@@ -141,7 +155,10 @@ watch(() => chat.messages.length, scrollToBottom)
 <template>
   <div class="pg-app" :data-theme="resolvedTheme">
     <!-- Sidebar -->
-    <aside class="pg-sidebar" :class="{ open: sidebarOpen }">
+    <aside
+      class="pg-sidebar"
+      :class="{ open: sidebarOpen, collapsed: sidebarCollapsed }"
+    >
       <div class="pg-sidebar-header">
         <div class="pg-sidebar-logo">
           <svg
@@ -158,7 +175,7 @@ watch(() => chat.messages.length, scrollToBottom)
           </svg>
           AI Chat UI
         </div>
-        <button class="pg-btn-icon" title="收起侧边栏" @click="toggleSidebar">
+        <button class="pg-btn-icon" title="收起侧边栏" @click="collapseSidebar">
           <svg
             width="18"
             height="18"
@@ -313,7 +330,11 @@ watch(() => chat.messages.length, scrollToBottom)
     <main class="pg-main">
       <header class="pg-main-header">
         <div style="display: flex; align-items: center; gap: 8px">
-          <button class="pg-btn-icon pg-sidebar-toggle" @click="toggleSidebar">
+          <button
+            class="pg-btn-icon pg-sidebar-toggle"
+            :class="{ show: sidebarCollapsed }"
+            @click="openSidebar"
+          >
             <svg
               width="20"
               height="20"
@@ -611,6 +632,7 @@ watch(() => chat.messages.length, scrollToBottom)
   background: var(--ai-chat-color-bg-sidebar);
   border-right: 1px solid var(--ai-chat-color-border);
   overflow: hidden;
+  transition: width 0.2s ease;
 }
 
 .pg-sidebar-header {
@@ -1082,6 +1104,24 @@ watch(() => chat.messages.length, scrollToBottom)
 
 .pg-mobile-overlay.open {
   display: block;
+}
+
+/* 桌面端折叠侧边栏：宽度收为 0，主区自动扩展；折叠时显示主区展开按钮 */
+@media (min-width: 769px) {
+  .pg-sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+  }
+
+  .pg-sidebar-toggle.show {
+    display: flex;
+  }
+
+  /* 桌面端屏蔽移动抽屉蒙层，避免展开时残留 */
+  .pg-mobile-overlay.open {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
