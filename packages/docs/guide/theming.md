@@ -56,7 +56,7 @@ const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
 </template>
 ```
 
-`useTheme` 是模块级单例，多个组件共享同一份状态。
+`useTheme` 是模块级单例，多个组件共享同一份状态。完整 API（返回值、类型、SSR 注意事项）见 [useTheme 文档](/composables/use-theme)；预设与自定义变量的容器级应用见 [useThemePreset 文档](/composables/use-theme-preset)。
 
 ### 3. CSS 覆盖（宿主零 JS）
 
