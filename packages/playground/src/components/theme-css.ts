@@ -39,10 +39,11 @@ export function buildOverridesFromCss(
   const ov: Overrides = {}
   const known = new Set(meta.map((m) => m.key))
   const parse = (block: string, mode: 'light' | 'dark') => {
+    // [\w-]+ 已含前导的 `--`，故直接用作 key（spec 原始实现会重复前缀）
     const re = /([\w-]+)\s*:\s*([^;]+);/g
     let m: RegExpExecArray | null
     while ((m = re.exec(block))) {
-      const key = `--${m[1]}`
+      const key = m[1].startsWith('--') ? m[1] : `--${m[1]}`
       if (!known.has(key)) continue
       ;(ov[key] ??= {})[mode] = m[2].trim()
     }

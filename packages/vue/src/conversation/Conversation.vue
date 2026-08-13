@@ -14,7 +14,9 @@ const props = withDefaults(
     customTheme?: Record<string, string>
     darkMode?: boolean | 'auto'
   }>(),
-  { autoScroll: true },
+  // darkMode 显式 undefined 默认：阻止 Vue 对 boolean | 'auto' 的 Boolean 类型推断
+  // 把缺失值 cast 成 false，导致 localTheme 误判为 'light'
+  { autoScroll: true, darkMode: undefined },
 )
 
 const rootRef = ref<HTMLElement>()
