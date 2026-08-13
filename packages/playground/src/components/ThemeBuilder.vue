@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, reactive, onMounted } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  reactive,
+  onMounted,
+  onUnmounted,
+} from 'vue'
 import {
   tokensMeta,
   presets,
@@ -79,6 +87,51 @@ const previewMarkdown = [
   '}',
   '```',
 ].join('\n')
+
+// ===== 左栏可拖拽调宽 =====
+const EDITOR_WIDTH_KEY = 'ai-chat-editor-width'
+const editorWidth = ref(
+  typeof localStorage === 'undefined'
+    ? 440
+    : Number(localStorage.getItem(EDITOR_WIDTH_KEY)) || 440,
+)
+const bodyRef = ref<HTMLElement | null>(null)
+const isDesktop = ref(true)
+const editorStyle = computed(() =>
+  isDesktop.value ? { width: editorWidth.value + 'px' } : {},
+)
+const dragging = ref(false)
+function onSplitterDown(e: MouseEvent): void {
+  if (!isDesktop.value || !bodyRef.value) return
+  e.preventDefault()
+  dragging.value = true
+  const left = bodyRef.value.getBoundingClientRect().left
+  const onMove = (ev: MouseEvent) => {
+    editorWidth.value = Math.min(720, Math.max(300, ev.clientX - left))
+  }
+  const onUp = () => {
+    dragging.value = false
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+    if (typeof localStorage !== 'undefined')
+      localStorage.setItem(EDITOR_WIDTH_KEY, String(editorWidth.value))
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
+let desktopMq: MediaQueryList | null = null
+function onDesktopChange(e: MediaQueryListEvent): void {
+  isDesktop.value = e.matches
+}
+onMounted(() => {
+  if (typeof window === 'undefined' || !window.matchMedia) return
+  desktopMq = window.matchMedia('(min-width: 960px)')
+  isDesktop.value = desktopMq.matches
+  desktopMq.addEventListener('change', onDesktopChange)
+})
+onUnmounted(() => {
+  desktopMq?.removeEventListener('change', onDesktopChange)
+})
 
 const rootRef = ref<HTMLElement | null>(null)
 const resolvedColors = reactive<Record<string, string>>({})
@@ -356,8 +409,8 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
     </header>
 
     <!-- 主体:左编辑 / 右预览 -->
-    <div class="tb-body">
-      <aside class="tb-editor ai-chat-scrollbar">
+    <div ref="bodyRef" class="tb-body">
+      <aside class="tb-editor ai-chat-scrollbar" :style="editorStyle">
         <div v-for="[group, tokens] in groups" :key="group" class="tb-group">
           <button class="tb-group-header" @click="toggleGroup(group)">
             <span class="tb-tw">{{ isCollapsed(group) ? '▶' : '▼' }}</span>
@@ -496,6 +549,14 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
         </div>
         <div v-if="!groups.length" class="tb-empty">未找到匹配的令牌</div>
       </aside>
+
+      <div
+        v-show="isDesktop"
+        class="tb-splitter"
+        :class="{ dragging }"
+        title="拖拽调整宽度"
+        @mousedown="onSplitterDown"
+      ></div>
 
       <!-- 右侧实时预览 -->
       <section class="tb-preview ai-chat-scrollbar">
@@ -804,7 +865,17 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
   flex-shrink: 0;
   overflow-y: auto;
   padding: 8px 0;
-  border-right: 1px solid var(--ai-chat-color-border);
+}
+.tb-splitter {
+  width: 6px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: var(--ai-chat-color-border);
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+.tb-splitter:hover,
+.tb-splitter.dragging {
+  background: var(--ai-chat-color-accent);
 }
 .tb-preview {
   flex: 1;

@@ -94,4 +94,14 @@ provide('messageFrom', props.from)
   margin-bottom: 6px;
   color: var(--ai-chat-color-text-primary);
 }
+
+/* 用户消息气泡：启用 msg-user-bg / bubble-radius 令牌
+   （此前为死令牌——Message 未引用，用户消息无背景，叠在浅色容器上呈"白色"） */
+.ai-chat-message--user .ai-chat-message-content {
+  display: inline-block;
+  max-width: 100%;
+  padding: 10px 14px;
+  background: var(--ai-chat-color-msg-user-bg);
+  border-radius: var(--ai-chat-bubble-radius);
+}
 </style>
