@@ -22,6 +22,8 @@ DOC_LABELS = {
     "packages/docs/guide/usage.md": "使用指南",
     "packages/docs/guide/theming.md": "主题文档",
     "packages/docs/composables/use-chat.md": "useChat 文档",
+    "packages/docs/composables/use-theme.md": "useTheme 文档",
+    "packages/docs/composables/use-theme-preset.md": "useThemePreset 文档",
     "packages/docs/playground.md": "Playground 文档",
 }
 
@@ -38,6 +40,11 @@ COMPONENT_DOCS = {
     "StreamText.vue": "packages/docs/components/stream-text.md",
     "Button.vue": "packages/docs/components/button.md",
     "Shimmer.vue": "packages/docs/components/shimmer.md",
+}
+
+COMPOSABLE_DOCS = {
+    "useTheme.ts": "packages/docs/composables/use-theme.md",
+    "useThemePreset.ts": "packages/docs/composables/use-theme-preset.md",
 }
 
 MARKDOWN_DOCS = {
@@ -224,6 +231,11 @@ def expected_documentation(path):
                 "label": "Design Token 与主题能力",
                 "docs": {"README.md", "packages/docs/guide/theming.md"},
             }
+        if path.startswith("packages/vue/src/composables/"):
+            doc = COMPOSABLE_DOCS.get(Path(path).name)
+            if doc:
+                return {"label": f"Composable {Path(path).name}", "docs": {doc}}
+            return None
         if path.endswith("packages/vue/src/index.ts"):
             return {
                 "label": "@ai-chat/vue 导出清单",
