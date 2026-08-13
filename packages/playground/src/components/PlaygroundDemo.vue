@@ -18,6 +18,8 @@ import {
   PromptInputTools,
   PromptInputButton,
   ToolCall,
+  ComparisonMessage,
+  useLayoutConfig,
   useTheme,
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
@@ -27,6 +29,27 @@ const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 const sidebarOpen = ref(false)
 // 桌面端折叠状态（挤压式收起，与移动端抽屉 sidebarOpen 解耦）
 const sidebarCollapsed = ref(false)
+
+// 消息布局：stacked（统一对齐）/ im（用户与 AI 分列两侧）切换
+const layoutMode = ref<'stacked' | 'im'>('stacked')
+const layout = useLayoutConfig(
+  computed(() => ({
+    layout: layoutMode.value,
+    messageAlign: 'right',
+    contentMaxWidthWide: 1024,
+    messageMaxWidth: 520,
+  })),
+)
+// ComparisonMessage 偏好回调
+const lastPrefer = ref<{
+  chosen: 'A' | 'B'
+  left: string
+  right: string
+} | null>(null)
+function onPrefer(p: { chosen: 'A' | 'B'; left: string; right: string }) {
+  lastPrefer.value = p
+}
+
 // 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
 const { resolvedTheme, toggleTheme } = useTheme()
 const chatAreaRef = ref<HTMLElement>()
@@ -379,6 +402,27 @@ watch(() => chat.messages.length, scrollToBottom)
           </button>
         </div>
         <div class="pg-header-actions">
+          <button
+            class="pg-btn-icon"
+            :title="
+              layoutMode === 'stacked' ? '切换为 IM 左右分列' : '切换为统一对齐'
+            "
+            @click="layoutMode = layoutMode === 'stacked' ? 'im' : 'stacked'"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </button>
           <button class="pg-btn-icon" title="切换主题" @click="toggleTheme">
             <svg
               v-if="resolvedTheme === 'dark'"
@@ -418,7 +462,11 @@ watch(() => chat.messages.length, scrollToBottom)
         </div>
       </header>
 
-      <Conversation>
+      <Conversation
+        :layout="layout.layoutProps.value.layout"
+        :message-align="layout.layoutProps.value.messageAlign"
+        :custom-theme="layout.vars.value"
+      >
         <ConversationContent ref="chatAreaRef" @scroll="handleScroll">
           <!-- Welcome screen -->
           <ConversationEmpty v-if="chat.messages.length === 0">
@@ -500,6 +548,16 @@ watch(() => chat.messages.length, scrollToBottom)
               </MessageAction>
             </MessageActions>
           </Message>
+
+          <!-- A/B 偏好对比演示 -->
+          <ComparisonMessage
+            left="你可以用 ref() 配合 computed() 派生状态，响应式追踪由 ref 触发。"
+            right="推荐直接用 computed() 包裹派生逻辑，内部已基于 ref 实现，写法更简洁。"
+            @prefer="onPrefer"
+          />
+          <div v-if="lastPrefer" class="pg-comparison-result">
+            你更喜欢的回复：{{ lastPrefer.chosen }}
+          </div>
 
           <!-- Typing indicator -->
           <div
@@ -1105,6 +1163,13 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-input-hint {
   font-size: 12px;
   color: var(--ai-chat-color-text-muted);
+}
+
+.pg-comparison-result {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
+  padding: 8px 0;
 }
 
 /* ===== Mobile ===== */
