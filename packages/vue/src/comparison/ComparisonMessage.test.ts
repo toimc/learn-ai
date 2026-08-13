@@ -15,8 +15,8 @@ function mountCM(
   slots?: Record<string, unknown>,
 ) {
   return mount(ComparisonMessage, {
-    props,
-    slots,
+    props: props as never,
+    slots: slots as never,
     global: {
       provide: { [markdownRendererKey as symbol]: FakeRenderer as Component },
     },

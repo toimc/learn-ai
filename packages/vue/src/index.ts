@@ -44,6 +44,9 @@ export {
   PromptInputHeader,
 } from './prompt-input'
 
+// Comparison series
+export { ComparisonMessage } from './comparison'
+
 // Attachment series
 export {
   Attachments,
@@ -81,3 +84,11 @@ export { presets } from './theme/presets'
 export type { ThemePreset, PresetKey } from './theme/presets'
 export { tokensMeta } from './theme/tokens-meta'
 export type { TokenMeta, TokenType, TokenLayer } from './theme/tokens-meta'
+
+// 布局配置
+export { useLayoutConfig } from './composables/useLayoutConfig'
+export type {
+  LayoutConfig,
+  LayoutConfigResult,
+} from './composables/useLayoutConfig'
+export type { MessageLayout, MessageAlign } from './composables/layout-types'
