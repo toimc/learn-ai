@@ -1,17 +1,31 @@
 <script setup lang="ts">
-import { provide } from 'vue'
+import { provide, computed } from 'vue'
+import { useMessageLayout } from '../composables/layout-types'
 
 const props = defineProps<{
   from: 'user' | 'assistant' | 'system'
 }>()
 
 provide('messageFrom', props.from)
+
+const layoutCtx = useMessageLayout()
+
+const layoutClass = computed<string[]>(() => {
+  const ctx = layoutCtx?.value
+  if (!ctx || ctx.layout === 'stacked') {
+    return ['ai-chat-message--layout-stacked']
+  }
+  return [
+    'ai-chat-message--layout-im',
+    `ai-chat-message--user-side-${ctx.messageAlign}`,
+  ]
+})
 </script>
 
 <template>
   <div
     class="ai-chat-message ai-chat-animate-fade-in-up"
-    :class="[`ai-chat-message--${from}`]"
+    :class="[`ai-chat-message--${from}`, ...layoutClass]"
   >
     <div class="ai-chat-message__avatar">
       <slot name="avatar">
@@ -103,5 +117,31 @@ provide('messageFrom', props.from)
   padding: 10px 14px;
   background: var(--ai-chat-color-msg-user-bg);
   border-radius: var(--ai-chat-bubble-radius);
+}
+
+/* ===== IM 模式：用户与 AI 分列两侧（stacked 保持现状不动） ===== */
+.ai-chat-message--layout-im .ai-chat-message__body {
+  flex: 0 1 auto;
+  max-width: var(--ai-chat-message-max-width, 480px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* user 在右侧 → user 消息整组靠右（头像右） */
+.ai-chat-message--layout-im.ai-chat-message--user-side-right.ai-chat-message--user {
+  flex-direction: row-reverse;
+}
+.ai-chat-message--layout-im.ai-chat-message--user-side-right.ai-chat-message--user
+  .ai-chat-message__body {
+  align-items: flex-end;
+}
+
+/* user 在左侧 → assistant 消息整组靠右（头像右），user 保持左 */
+.ai-chat-message--layout-im.ai-chat-message--user-side-left.ai-chat-message--assistant {
+  flex-direction: row-reverse;
+}
+.ai-chat-message--layout-im.ai-chat-message--user-side-left.ai-chat-message--assistant
+  .ai-chat-message__body {
+  align-items: flex-end;
 }
 </style>

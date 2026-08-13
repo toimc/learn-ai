@@ -55,9 +55,20 @@ const chat = useChat(adapter)
 
 ### Conversation
 
-无 Props。作为容器使用，provide 滚动上下文给子组件。
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| layout | `'stacked' \| 'im'` | `'stacked'` | 消息对齐模式：`stacked` 统一靠左（现状）；`im` 用户与 AI 分列两侧 |
+| messageAlign | `'left' \| 'right'` | `'left'` | `im` 模式下用户消息停靠侧（AI 在对侧）；`stacked` 下不生效 |
+| autoScroll | `boolean` | `true` | 新消息自动吸底 |
+| theme | `PresetKey` | — | 内置预设名（`default` / `purple` / `green` / `warm`） |
+| customTheme | `Record<string, string>` | — | 自定义 CSS 变量键值对象 |
+| darkMode | `boolean \| 'auto'` | `'auto'` | 容器级明暗：`true` / `false` 强制，`'auto'` 跟随全局 |
+
+通过 `provide` 把滚动上下文与消息布局上下文下发给子组件。
 
 ### ConversationContent
+
+消息区默认 `max-width: var(--ai-chat-content-max-width)` 居中；容器宽度 ≥ 1100px 时经容器查询自动放宽到 `--ai-chat-content-max-width-wide`（宽屏显示更宽的消息）。
 
 | 插槽名 | 说明 |
 |--------|------|

@@ -5,6 +5,11 @@ import {
   type ScrollAnchorContext,
 } from '../composables/useScrollAnchor'
 import { useThemePreset } from '../composables/useThemePreset'
+import {
+  messageLayoutKey,
+  type MessageLayout,
+  type MessageAlign,
+} from '../composables/layout-types'
 import type { PresetKey } from '../theme/presets'
 
 const props = withDefaults(
@@ -13,10 +18,17 @@ const props = withDefaults(
     theme?: PresetKey
     customTheme?: Record<string, string>
     darkMode?: boolean | 'auto'
+    layout?: MessageLayout
+    messageAlign?: MessageAlign
   }>(),
   // darkMode 显式 undefined 默认：阻止 Vue 对 boolean | 'auto' 的 Boolean 类型推断
   // 把缺失值 cast 成 false，导致 localTheme 误判为 'light'
-  { autoScroll: true, darkMode: undefined },
+  {
+    autoScroll: true,
+    darkMode: undefined,
+    layout: 'stacked',
+    messageAlign: 'left',
+  },
 )
 
 const rootRef = ref<HTMLElement>()
@@ -25,6 +37,13 @@ const anchor = useScrollAnchor()
 
 provide<ScrollAnchorContext>('scrollAnchor', anchor)
 provide('autoScroll', props.autoScroll)
+provide(
+  messageLayoutKey,
+  computed(() => ({
+    layout: props.layout,
+    messageAlign: props.messageAlign,
+  })),
+)
 
 // 预设 + 自定义变量 → 根元素 inline style
 useThemePreset(
