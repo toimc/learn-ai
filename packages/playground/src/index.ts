@@ -1,4 +1,5 @@
 export { default as PlaygroundPage } from './components/PlaygroundPage.vue'
 export { default as PlaygroundDemo } from './components/PlaygroundDemo.vue'
+export { default as ThemeBuilderPage } from './components/ThemeBuilderPage.vue'
 export { mockAdapter } from './mock/mock-adapter'
 export { mockMessages } from './mock/mock-messages'
