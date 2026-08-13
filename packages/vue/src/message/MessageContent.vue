@@ -33,7 +33,7 @@ const renderer = useMarkdownRenderer()
 }
 
 .ai-chat-message-content code {
-  background: var(--ai-chat-code-inline-bg);
+  background: var(--ai-chat-color-code-inline-bg);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13.5px;
@@ -41,7 +41,7 @@ const renderer = useMarkdownRenderer()
 }
 
 .ai-chat-message-content pre {
-  background: var(--ai-chat-code-bg);
+  background: var(--ai-chat-color-code-bg);
   border-radius: 10px;
   padding: 16px 20px;
   margin: 12px 0;

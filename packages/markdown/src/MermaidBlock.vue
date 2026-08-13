@@ -85,7 +85,7 @@ watch(() => props.code, render)
 .ai-chat-mermaid__error {
   padding: 16px;
   color: var(--ai-chat-color-text-secondary, #9ca3af);
-  background: var(--ai-chat-code-bg, #f6f8fa);
+  background: var(--ai-chat-color-code-bg, #f6f8fa);
   border-radius: 8px;
 }
 </style>

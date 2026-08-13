@@ -73,7 +73,7 @@ function handleAbort() {
   line-height: 1.5;
   font-family: inherit;
   outline: none;
-  background: var(--ai-chat-input-bg, #ffffff);
+  background: var(--ai-chat-color-input-bg, #ffffff);
   color: var(--ai-chat-input-color, #1f2937);
 }
 

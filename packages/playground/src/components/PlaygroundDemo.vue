@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { useChat } from '@ai-chat/core'
 import { mockMessages } from '../mock/mock-messages'
 import {
@@ -18,35 +18,15 @@ import {
   PromptInputTools,
   PromptInputButton,
   ToolCall,
+  useTheme,
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
 
 const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 
 const sidebarOpen = ref(false)
-// 默认跟随系统；首屏按亮色渲染（systemIsDark 初值 false），
-// 挂载后读取 prefers-color-scheme 再切换，避免暗色闪现
-const theme = ref<'system' | 'light' | 'dark'>('system')
-const systemIsDark = ref(false)
-const resolvedTheme = computed<'light' | 'dark'>(() =>
-  theme.value === 'system'
-    ? systemIsDark.value
-      ? 'dark'
-      : 'light'
-    : theme.value,
-)
-let mql: MediaQueryList | null = null
-function onSystemChange(e: MediaQueryListEvent) {
-  systemIsDark.value = e.matches
-}
-onMounted(() => {
-  mql = window.matchMedia('(prefers-color-scheme: dark)')
-  systemIsDark.value = mql.matches
-  mql.addEventListener('change', onSystemChange)
-})
-onUnmounted(() => {
-  mql?.removeEventListener('change', onSystemChange)
-})
+// 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
+const { resolvedTheme, toggleTheme } = useTheme()
 const chatAreaRef = ref<HTMLElement>()
 const isAtBottom = ref(true)
 
@@ -141,10 +121,6 @@ function useSuggestion(text: string) {
   chat.send(text)
 }
 
-function toggleTheme() {
-  theme.value = resolvedTheme.value === 'dark' ? 'light' : 'dark'
-}
-
 function scrollToBottom() {
   nextTick(() => {
     if (chatAreaRef.value) {
@@ -163,10 +139,7 @@ watch(() => chat.messages.length, scrollToBottom)
 </script>
 
 <template>
-  <div
-    class="pg-app"
-    :data-theme="resolvedTheme === 'light' ? 'light' : undefined"
-  >
+  <div class="pg-app" :data-theme="resolvedTheme">
     <!-- Sidebar -->
     <aside class="pg-sidebar" :class="{ open: sidebarOpen }">
       <div class="pg-sidebar-header">

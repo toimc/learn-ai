@@ -116,7 +116,7 @@ watchEffect(async () => {
 .ai-chat-code-block {
   position: relative;
   margin: 12px 0;
-  background: var(--ai-chat-code-bg, #1a1a1a);
+  background: var(--ai-chat-color-code-bg, #1a1a1a);
   border: 1px solid var(--ai-chat-color-border, #2e2e2e);
   border-radius: var(--ai-chat-radius-md, 8px);
   overflow: hidden;
@@ -132,7 +132,7 @@ watchEffect(async () => {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--ai-chat-color-text-muted, #9ca3af);
-  background: var(--ai-chat-code-header-bg, #242427);
+  background: var(--ai-chat-color-code-header-bg, #242427);
   border-bottom: 1px solid var(--ai-chat-color-border, #2e2e2e);
 }
 
