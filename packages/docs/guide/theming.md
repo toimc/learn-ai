@@ -143,6 +143,17 @@ const purple = presets.purple // { name: '优雅紫', vars: {...} }
 |--------|--------|------|
 | `--ai-chat-bubble-radius` | `var(--ai-chat-radius-lg)` | 气泡圆角（引用原始层） |
 
+### 布局与响应式
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `--ai-chat-content-max-width` | `768px` | 消息区标准限宽 |
+| `--ai-chat-content-max-width-wide` | `1024px` | 宽屏（容器 ≥1100px）消息区限宽 |
+| `--ai-chat-message-max-width` | `480px` | `im` 模式单条消息气泡限宽 |
+| `--ai-chat-input-max-height` | `200px` | 输入框最大高度（桌面端） |
+| `--ai-chat-input-max-height-mobile` | `120px` | 输入框最大高度（移动端） |
+| `--ai-chat-mobile-breakpoint` | `640px` | 移动端断点（语义参考；CSS 容器查询条件为字面量 640px） |
+
 ## 使用方式
 
 ### 全局覆盖
