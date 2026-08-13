@@ -43,6 +43,42 @@ const importVisible = ref(false)
 const importText = ref('')
 const importError = ref('')
 const presetSel = ref('')
+const helpVisible = ref(false)
+const exportResultVisible = ref(false)
+const exportResultCss = ref('')
+
+// 预览区 Markdown 示例：覆盖标题/强调/列表/引用/表格/代码块，便于校验主题变化
+const previewMarkdown = [
+  '### Markdown 渲染示例',
+  '',
+  '右侧预览会跟随你左侧的调整实时变化，下面是各类语法的呈现效果。',
+  '',
+  '支持 **加粗**、*斜体*、`行内代码` 与 [主色链接](#)。',
+  '',
+  '- 无序列表：原始层 / 语义层 / 组件层',
+  '- 切换暗色只翻转语义层',
+  '  - 嵌套子项也跟随主题',
+  '',
+  '1. 调整原始色阶',
+  '2. 导出 CSS',
+  '3. 接入项目',
+  '',
+  '> 引用块：用于强调内容，左侧带强调边线。',
+  '',
+  '| 令牌层 | 作用 | 随暗色翻转 |',
+  '| --- | --- | --- |',
+  '| 原始 | 色阶原材料 | 否 |',
+  '| 语义 | 含义映射 | 是 |',
+  '| 组件 | 组件内引用 | 否 |',
+  '',
+  '```ts',
+  '// 代码块：语法高亮随主题切换',
+  'export function useTheme() {',
+  "  const theme = ref<'light' | 'dark'>('light')",
+  '  return { theme }',
+  '}',
+  '```',
+].join('\n')
 
 const rootRef = ref<HTMLElement | null>(null)
 const resolvedColors = reactive<Record<string, string>>({})
@@ -131,10 +167,11 @@ const groups = computed<[string, TokenMeta[]][]>(() => {
 })
 
 function toggleGroup(g: string): void {
-  collapsed.value[g] = !collapsed.value[g]
+  collapsed.value[g] = !(collapsed.value[g] ?? true)
 }
 function isCollapsed(g: string): boolean {
-  return !!collapsed.value[g]
+  // 默认折叠：未显式展开的分组一律视为折叠，首屏只展示分组标题
+  return collapsed.value[g] ?? true
 }
 
 // 全量变量(当前 editMode)→ inline style 对象,套到根容器吃狗粮 + 解析 derived
@@ -177,6 +214,14 @@ function exportCss(): void {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+  // 导出后展示接入说明，告诉用户如何使用这份 CSS
+  exportResultCss.value = css
+  exportResultVisible.value = true
+}
+
+function copyExport(): void {
+  if (typeof navigator === 'undefined' || !navigator.clipboard) return
+  navigator.clipboard.writeText(exportResultCss.value).catch(() => {})
 }
 
 function openImport(): void {
@@ -298,6 +343,9 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
           <input v-model="includeAll" type="checkbox" />
           <span>全量导出</span>
         </label>
+        <button class="tb-btn" title="使用说明" @click="helpVisible = true">
+          说明
+        </button>
         <button class="tb-btn" @click="reset">重置</button>
         <button class="tb-btn" @click="openImport">导入</button>
         <button class="tb-btn tb-btn-primary" @click="save">保存</button>
@@ -459,15 +507,7 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
               </MessageContent>
             </Message>
             <Message from="assistant">
-              <MessageContent>
-                <p>
-                  这是 AI 回复,展示 <a href="#">主色链接</a>、行内代码
-                  <code>const x = 1</code> 与正文文本。
-                </p>
-                <pre><code>function hello() {
-  return 'code block'
-}</code></pre>
-              </MessageContent>
+              <MessageContent :content="previewMarkdown" />
               <MessageActions>
                 <MessageAction title="复制">复制</MessageAction>
                 <MessageAction title="重新生成">重新生成</MessageAction>
@@ -568,6 +608,80 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
         </div>
       </div>
     </div>
+
+    <!-- 使用说明弹窗 -->
+    <div
+      v-if="helpVisible"
+      class="tb-modal-mask"
+      @click.self="helpVisible = false"
+    >
+      <div class="tb-modal">
+        <h3 class="tb-modal-title">使用说明</h3>
+        <p class="tb-modal-hint">
+          在左侧按「原始 → 语义 → 组件」三层调整令牌，右侧实时预览。
+        </p>
+        <ol class="tb-steps">
+          <li><b>原始层</b>：改 accent 色阶，全局品牌色自动联动。</li>
+          <li><b>语义层</b>：顶部 ☀/🌙 切换，分别编辑亮色与暗色。</li>
+          <li>
+            <b>预设</b
+            >一键换色；<b>保存</b>写入浏览器(localStorage)；<b>导入</b>还原之前导出的
+            CSS。
+          </li>
+        </ol>
+        <h4 class="tb-modal-sub">如何使用导出的 CSS</h4>
+        <p class="tb-modal-hint">
+          把下载的
+          <code>ai-chat-theme.css</code>
+          放进项目，在应用入口中<b>排在组件库样式之后</b>引入：
+        </p>
+        <pre class="tb-modal-code">
+import '@ai-chat/vue/style.css'
+import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
+        <p class="tb-modal-hint">
+          暗色覆盖写在 <code>[data-theme='dark']</code> 块里；用
+          <code>&lt;Conversation dark-mode&gt;</code> 或
+          <code>useTheme()</code> 控制 <code>data-theme</code> 即可生效。
+        </p>
+        <div class="tb-modal-actions">
+          <button class="tb-btn tb-btn-primary" @click="helpVisible = false">
+            知道了
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导出结果弹窗 -->
+    <div
+      v-if="exportResultVisible"
+      class="tb-modal-mask"
+      @click.self="exportResultVisible = false"
+    >
+      <div class="tb-modal">
+        <h3 class="tb-modal-title">✓ 已导出 ai-chat-theme.css</h3>
+        <p class="tb-modal-hint">
+          在你的项目入口中，<b>排在组件库样式之后</b>引入它即可覆盖默认主题：
+        </p>
+        <pre class="tb-modal-code">
+import '@ai-chat/vue/style.css'
+import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
+        <details class="tb-modal-details">
+          <summary>查看生成的 CSS</summary>
+          <pre class="tb-modal-code tb-modal-code-scroll ai-chat-scrollbar">{{
+            exportResultCss
+          }}</pre>
+        </details>
+        <div class="tb-modal-actions">
+          <button class="tb-btn" @click="copyExport">复制 CSS</button>
+          <button
+            class="tb-btn tb-btn-primary"
+            @click="exportResultVisible = false"
+          >
+            完成
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -576,7 +690,7 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  flex: 1;
   min-height: 0;
   font-family: var(--ai-chat-font-sans);
   background: var(--ai-chat-color-bg-primary);
@@ -946,6 +1060,52 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+.tb-steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ai-chat-color-text-secondary);
+}
+.tb-steps b {
+  color: var(--ai-chat-color-text-primary);
+}
+.tb-modal-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ai-chat-color-text-primary);
+}
+.tb-modal-code {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: var(--ai-chat-radius-sm);
+  background: var(--ai-chat-color-code-bg);
+  color: var(--ai-chat-color-text-primary);
+  font-size: 12px;
+  font-family: var(--ai-chat-font-mono);
+  white-space: pre;
+  overflow-x: auto;
+}
+.tb-modal-code-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.tb-modal-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ai-chat-color-text-secondary);
+}
+.tb-modal-details[open] summary {
+  margin-bottom: 8px;
+}
+.tb-modal code {
+  font-family: var(--ai-chat-font-mono);
+  font-size: 12px;
+  background: var(--ai-chat-color-code-inline-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 /* ===== 响应式:窄屏堆叠 ===== */
