@@ -233,6 +233,16 @@ function numOf(v: string): number {
   const n = parseFloat(v)
   return Number.isNaN(n) ? 0 : n
 }
+// 取色器显示值：合法 hex 直接用；var()/rgba 等非 hex 值改用 getComputedStyle
+// 解析后的颜色（resolvedColors 已展开 var() 链），避免 <input type="color">
+// 被喂非法值而回退成黑色。文本框仍显示原始值（如 var(...)），可被覆盖。
+function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
+  const raw = curValue(t, mode).trim()
+  if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(raw)) return toHex(raw)
+  const resolved = resolvedColors[t.key]
+  if (resolved) return toHex(resolved.trim())
+  return '#000000'
+}
 </script>
 
 <template>
@@ -320,7 +330,7 @@ function numOf(v: string): number {
                     <input
                       type="color"
                       class="tb-color"
-                      :value="toHex(curLight(t))"
+                      :value="colorInputValue(t, 'light')"
                       @input="
                         setLight(t, ($event.target as HTMLInputElement).value)
                       "
@@ -339,7 +349,7 @@ function numOf(v: string): number {
                     <input
                       type="color"
                       class="tb-color"
-                      :value="toHex(curDark(t))"
+                      :value="colorInputValue(t, 'dark')"
                       @input="
                         setDark(t, ($event.target as HTMLInputElement).value)
                       "
