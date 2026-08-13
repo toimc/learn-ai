@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useChat } from '@ai-chat/core'
 import { mockMessages } from '../mock/mock-messages'
 import {
@@ -94,6 +94,20 @@ function newChat() {
   chat.clear()
   if (window.innerWidth <= 768) sidebarOpen.value = false
 }
+
+// ⌘K / Ctrl+K → 新对话；捕获阶段拦截，避免被 VitePress 本地搜索抢占
+function onShortcutKeydown(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault()
+    e.stopPropagation()
+    newChat()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onShortcutKeydown, true))
+onUnmounted(() =>
+  window.removeEventListener('keydown', onShortcutKeydown, true),
+)
 
 function startEdit(conv: PlaygroundConv) {
   editingId.value = conv.id

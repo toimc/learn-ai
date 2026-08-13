@@ -942,8 +942,8 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 140px;
-  flex-shrink: 0;
+  flex: 1 1 0;
+  min-width: 0;
 }
 .tb-token-label {
   font-size: 13px;
@@ -960,6 +960,7 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
   min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
 }
 .tb-color {
@@ -982,8 +983,6 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
 .tb-hex,
 .tb-num,
 .tb-text {
-  flex: 1;
-  min-width: 0;
   height: 30px;
   padding: 0 8px;
   border: 1px solid var(--ai-chat-color-input-border);
@@ -999,6 +998,15 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
 .tb-text:focus {
   border-color: var(--ai-chat-color-input-focus-border);
 }
+/* 字号/色号等简单值：固定宽度，不随面板伸缩 */
+.tb-num {
+  flex: none;
+  width: 78px;
+}
+.tb-hex {
+  flex: none;
+  width: 96px;
+}
 .tb-range {
   flex: 1;
   min-width: 60px;
@@ -1010,6 +1018,8 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
   flex-shrink: 0;
 }
 .tb-text {
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: var(--ai-chat-font-sans);
 }
 .tb-swatch {
