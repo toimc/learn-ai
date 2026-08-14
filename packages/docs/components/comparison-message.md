@@ -11,7 +11,7 @@ A/B 偏好对比组件：左右双列并排展示两个候选回复，每列底�
   />
 </DemoContainer>
 
-点击任一列底部的按钮即可看到高亮选中。列内容经 `MessageContent` 走 markdown-it 渲染，支持代码高亮、公式等。
+点击任一列骑在底边上的按钮即可选中并高亮该列；按钮在消息卡下边界正中、主题色圆角，文案可经 `buttonLabel` 配置（默认「喜欢这个」）。列内容经 `MessageContent` 走 markdown-it 渲染，支持代码高亮、公式等。
 
 ```vue
 <script setup lang="ts">
@@ -43,7 +43,7 @@ const last = ref<{ chosen: 'A' | 'B'; left: string; right: string } | null>(null
 | leftLabel | `string` | `'回复 A'` | 左列标题 |
 | rightLabel | `string` | `'回复 B'` | 右列标题 |
 | chosen | `'A' \| 'B' \| null` | `null` | 受控选中；非 `null` 时高亮由父控制 |
-| buttonLabel | `string` | `'我更喜欢这个回复'` | 底部按钮文案 |
+| buttonLabel | `string` | `'喜欢这个'` | 底部按钮文案 |
 | stackOnMobile | `boolean` | `true` | 窄屏（< 640px）堆叠为上下 |
 | disabled | `boolean` | `false` | 禁用选择 |
 

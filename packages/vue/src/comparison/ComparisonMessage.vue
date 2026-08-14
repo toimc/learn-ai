@@ -19,7 +19,7 @@ const props = withDefaults(
     leftLabel: '回复 A',
     rightLabel: '回复 B',
     chosen: null,
-    buttonLabel: '我更喜欢这个回复',
+    buttonLabel: '喜欢这个',
     stackOnMobile: true,
     disabled: false,
   },
@@ -101,13 +101,16 @@ function choose(side: Side) {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--ai-chat-msg-gap);
+  /* 给骑底边按钮的下半部分留空间 */
+  margin-bottom: 6px;
 }
 
 .ai-chat-comparison__col {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
+  padding: 12px 12px 26px;
   border: 1px solid var(--ai-chat-color-border);
   border-radius: var(--ai-chat-radius-lg);
   background: var(--ai-chat-color-msg-assistant-bg);
@@ -132,21 +135,35 @@ function choose(side: Side) {
   min-width: 0;
 }
 
+/* 操作区：铺在卡片底边，按钮骑边界水平居中 */
+.ai-chat-comparison__action {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .ai-chat-comparison__btn {
-  align-self: stretch;
-  padding: 8px 12px;
-  border: 1px solid var(--ai-chat-color-border);
+  transform: translateY(50%);
+  pointer-events: auto;
+  padding: 6px 16px;
+  border: none;
   border-radius: var(--ai-chat-radius-md);
-  background: transparent;
-  color: var(--ai-chat-color-text-primary);
+  background: var(--ai-chat-color-accent);
+  color: var(--ai-chat-neutral-0, #ffffff);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
 }
 
 .ai-chat-comparison__btn:hover:not(:disabled) {
-  background: var(--ai-chat-hover-neutral);
+  background: var(--ai-chat-color-accent-hover);
 }
 
 .ai-chat-comparison__btn:disabled {

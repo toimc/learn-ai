@@ -31,7 +31,7 @@ describe('ComparisonMessage', () => {
     expect(labels[1].text()).toBe('回复 B')
     const btns = w.findAll('.ai-chat-comparison__btn')
     expect(btns).toHaveLength(2)
-    expect(btns[0].text()).toBe('我更喜欢这个回复')
+    expect(btns[0].text()).toBe('喜欢这个')
   })
 
   it('点击左/右按钮分别 emit prefer，chosen 对应', async () => {
