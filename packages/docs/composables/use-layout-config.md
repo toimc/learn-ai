@@ -26,7 +26,9 @@ function useLayoutConfig(
 | `messageMaxWidth` | `number` | `--ai-chat-message-max-width` |
 | `inputMaxHeight` | `number` | `--ai-chat-input-max-height` |
 | `inputMaxHeightMobile` | `number` | `--ai-chat-input-max-height-mobile` |
-| `mobileBreakpoint` | `number` | `--ai-chat-mobile-breakpoint` |
+| `breakpointSm` | `number` | `--ai-chat-breakpoint-sm` |
+| `breakpointMd` | `number` | `--ai-chat-breakpoint-md` |
+| `breakpointLg` | `number` | `--ai-chat-breakpoint-lg` |
 | `layout` | `'stacked' \| 'im'` | 透传 `Conversation.layout` |
 | `messageAlign` | `'left' \| 'right'` | 透传 `Conversation.messageAlign` |
 
@@ -67,4 +69,4 @@ const layout = useLayoutConfig(
 - **不直接写 DOM**：`vars` 是纯 CSS 变量字典，交给 `Conversation.customTheme`，经 `useThemePreset` 单点写入容器（全组件唯一 inline-style 写入点），避免多写入点互相覆盖。
 - **结构配置分离**：`layout` / `messageAlign` 不变量化，作为 `layoutProps` 返回，透传给 `Conversation` 的同名 prop。
 - **ThemeBuilder 联动**：映射的 CSS 变量均已登记进 `tokensMeta`，可在[主题配置器](/theme-builder)可视化调整。
-- **CSS 容器查询限制**：容器查询条件（如 `@container (min-width: 1100px)`）不支持 `var()`，故 `mobileBreakpoint` 等变量仅作语义参考，实际断点在 CSS 中为字面量。
+- **CSS 容器查询限制**：容器查询条件（如 `@container (min-width: 1100px)`）不支持 `var()`，故 `breakpointSm/Md/Lg` 等变量仅作语义参考，实际断点在 CSS 中为字面量。

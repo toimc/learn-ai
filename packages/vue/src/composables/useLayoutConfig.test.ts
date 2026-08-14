@@ -10,7 +10,9 @@ describe('useLayoutConfig', () => {
       messageMaxWidth: 460,
       inputMaxHeight: 180,
       inputMaxHeightMobile: 100,
-      mobileBreakpoint: 600,
+      breakpointSm: 400,
+      breakpointMd: 600,
+      breakpointLg: 1200,
     })
     expect(vars.value).toEqual({
       '--ai-chat-content-max-width': '720px',
@@ -18,7 +20,9 @@ describe('useLayoutConfig', () => {
       '--ai-chat-message-max-width': '460px',
       '--ai-chat-input-max-height': '180px',
       '--ai-chat-input-max-height-mobile': '100px',
-      '--ai-chat-mobile-breakpoint': '600px',
+      '--ai-chat-breakpoint-sm': '400px',
+      '--ai-chat-breakpoint-md': '600px',
+      '--ai-chat-breakpoint-lg': '1200px',
     })
   })
 
@@ -48,9 +52,9 @@ describe('useLayoutConfig', () => {
   it('state 返回当前生效配置', () => {
     const { state } = useLayoutConfig({
       layout: 'stacked',
-      mobileBreakpoint: 500,
+      breakpointMd: 500,
     })
     expect(state.value.layout).toBe('stacked')
-    expect(state.value.mobileBreakpoint).toBe(500)
+    expect(state.value.breakpointMd).toBe(500)
   })
 })

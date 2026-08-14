@@ -99,7 +99,7 @@ provide('promptAbort', handleAbort)
 }
 
 /* 窄屏（移动端）：降低 padding、隐藏 disclaimer。
-   容器查询条件不支持 var()，640px 为字面量（= --ai-chat-mobile-breakpoint 默认）。 */
+   容器查询条件不支持 var()，640px 为字面量（= --ai-chat-breakpoint-md 默认）。 */
 @container (max-width: 640px) {
   .ai-chat-prompt-input {
     padding: 0 12px 12px;

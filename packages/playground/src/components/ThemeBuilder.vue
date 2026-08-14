@@ -219,6 +219,26 @@ const groups = computed<[string, TokenMeta[]][]>(() => {
   })
 })
 
+// 断点可视化：Bootstrap 式三档矩形（sm/md/lg），数值跟随滑块实时变化
+const bpVal = (key: string, fallback: number): number => {
+  const m = tokensMeta.find((t) => t.key === key)
+  const n = m ? parseFloat(curLight(m)) : NaN
+  return Number.isNaN(n) ? fallback : n
+}
+const breakpointPreview = computed(() => {
+  const sm = bpVal('--ai-chat-breakpoint-sm', 480)
+  const md = Math.max(bpVal('--ai-chat-breakpoint-md', 640), sm)
+  const lg = Math.max(bpVal('--ai-chat-breakpoint-lg', 1100), md)
+  return {
+    sm,
+    md,
+    lg,
+    segSm: Math.max(sm, 1),
+    segMd: Math.max(md - sm, 1),
+    segLg: Math.max(lg - md, 1),
+  }
+})
+
 function toggleGroup(g: string): void {
   collapsed.value[g] = !(collapsed.value[g] ?? true)
 }
@@ -418,6 +438,39 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
             <span class="tb-group-count">{{ tokens.length }}</span>
           </button>
           <div v-show="!isCollapsed(group)" class="tb-group-body">
+            <!-- 断点组：Bootstrap 式三档矩形可视化，数值跟随下方滑块实时变化 -->
+            <div v-if="group === '原始·断点'" class="tb-bp-preview">
+              <div class="tb-bp-bar">
+                <div
+                  class="tb-bp-seg tb-bp-sm"
+                  :style="{ flexGrow: breakpointPreview.segSm }"
+                >
+                  <span class="tb-bp-name">sm 小屏</span>
+                  <span class="tb-bp-range"
+                    >&lt; {{ breakpointPreview.sm }}</span
+                  >
+                </div>
+                <div
+                  class="tb-bp-seg tb-bp-md"
+                  :style="{ flexGrow: breakpointPreview.segMd }"
+                >
+                  <span class="tb-bp-name">md 中屏</span>
+                  <span class="tb-bp-range">
+                    {{ breakpointPreview.sm }} – {{ breakpointPreview.md }}
+                  </span>
+                </div>
+                <div
+                  class="tb-bp-seg tb-bp-lg"
+                  :style="{ flexGrow: breakpointPreview.segLg }"
+                >
+                  <span class="tb-bp-name">lg 宽屏</span>
+                  <span class="tb-bp-range">
+                    ≥ {{ breakpointPreview.md }} · 放宽
+                    {{ breakpointPreview.lg }}
+                  </span>
+                </div>
+              </div>
+            </div>
             <div v-for="t in tokens" :key="t.key" class="tb-token">
               <div class="tb-token-meta">
                 <span class="tb-token-label">{{ t.label }}</span>
@@ -928,6 +981,52 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
 .tb-group-body {
   padding: 0 16px 8px;
 }
+/* 断点三档矩形可视化（Bootstrap 式 sm/md/lg） */
+.tb-bp-preview {
+  margin-bottom: 10px;
+}
+
+.tb-bp-bar {
+  display: flex;
+  gap: 4px;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.tb-bp-seg {
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 8px;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tb-bp-name {
+  font-weight: 600;
+}
+
+.tb-bp-range {
+  opacity: 0.85;
+}
+
+.tb-bp-sm {
+  background: var(--ai-chat-color-accent-400);
+}
+
+.tb-bp-md {
+  background: var(--ai-chat-color-accent-500);
+}
+
+.tb-bp-lg {
+  background: var(--ai-chat-color-accent-600);
+}
+
 .tb-token {
   display: flex;
   align-items: center;

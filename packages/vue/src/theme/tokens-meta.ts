@@ -373,15 +373,37 @@ export const tokensMeta: TokenMeta[] = [
 
   // ===== 原始·断点 =====
   {
-    key: '--ai-chat-mobile-breakpoint',
+    key: '--ai-chat-breakpoint-sm',
     layer: 'primitive',
     group: '原始·断点',
-    label: '移动端断点',
+    label: '小屏断点 sm',
+    type: 'size',
+    light: '480px',
+    unit: 'px',
+    min: 320,
+    max: 640,
+  },
+  {
+    key: '--ai-chat-breakpoint-md',
+    layer: 'primitive',
+    group: '原始·断点',
+    label: '中屏断点 md',
     type: 'size',
     light: '640px',
     unit: 'px',
-    min: 320,
+    min: 480,
     max: 1024,
+  },
+  {
+    key: '--ai-chat-breakpoint-lg',
+    layer: 'primitive',
+    group: '原始·断点',
+    label: '宽屏断点 lg',
+    type: 'size',
+    light: '1100px',
+    unit: 'px',
+    min: 768,
+    max: 1600,
   },
 
   // ===== 语义·强调 =====

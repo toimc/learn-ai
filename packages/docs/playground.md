@@ -11,4 +11,4 @@ title: Playground
 - **明暗主题**：顶部 ☀/🌙 切换，由 [`useTheme`](/composables/use-theme) 驱动，状态持久化。
 - **消息布局**：顶部布局按钮在「统一对齐」与「IM 左右分列」（用户右、AI 左）间切换；宽屏消息区自动放宽，由 [`useLayoutConfig`](/composables/use-layout-config) 驱动。
 - **A/B 偏好对比**：消息流里 [`ComparisonMessage`](/components/comparison-message) 双列展示两个候选回复（mock 场景：用户提问 + 双角度回答），点「喜欢这个」后对比卡移除，选中的回复固化为消息流中的一条 AI 消息。
-- 想可视化调整令牌并导出 CSS？前往 [主题配置器](/theme-builder)。
+- 想可视化调整令牌并导出 CSS？前往 [主题配置器](/theme-builder)；「原始·断点」组内置 Bootstrap 式 sm/md/lg 三档矩形示意，数值跟随滑块实时变化。

@@ -7,7 +7,9 @@ export interface LayoutConfig {
   messageMaxWidth?: number
   inputMaxHeight?: number
   inputMaxHeightMobile?: number
-  mobileBreakpoint?: number
+  breakpointSm?: number
+  breakpointMd?: number
+  breakpointLg?: number
   layout?: MessageLayout
   messageAlign?: MessageAlign
 }
@@ -30,7 +32,9 @@ const SIZE_KEYS: Array<[keyof LayoutConfig, string]> = [
   ['messageMaxWidth', '--ai-chat-message-max-width'],
   ['inputMaxHeight', '--ai-chat-input-max-height'],
   ['inputMaxHeightMobile', '--ai-chat-input-max-height-mobile'],
-  ['mobileBreakpoint', '--ai-chat-mobile-breakpoint'],
+  ['breakpointSm', '--ai-chat-breakpoint-sm'],
+  ['breakpointMd', '--ai-chat-breakpoint-md'],
+  ['breakpointLg', '--ai-chat-breakpoint-lg'],
 ]
 
 /**

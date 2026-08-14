@@ -171,7 +171,7 @@ function choose(side: Side) {
   cursor: not-allowed;
 }
 
-/* 窄屏堆叠：容器查询条件不支持 var()，640px 为字面量（= --ai-chat-mobile-breakpoint 默认）。 */
+/* 窄屏堆叠：容器查询条件不支持 var()，640px 为字面量（= --ai-chat-breakpoint-md 默认）。 */
 @container (max-width: 640px) {
   .ai-chat-comparison.is-stack-mobile {
     grid-template-columns: 1fr;

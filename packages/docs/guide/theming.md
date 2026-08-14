@@ -152,7 +152,9 @@ const purple = presets.purple // { name: '优雅紫', vars: {...} }
 | `--ai-chat-message-max-width` | `480px` | `im` 模式单条消息气泡限宽 |
 | `--ai-chat-input-max-height` | `200px` | 输入框最大高度（桌面端） |
 | `--ai-chat-input-max-height-mobile` | `120px` | 输入框最大高度（移动端） |
-| `--ai-chat-mobile-breakpoint` | `640px` | 移动端断点（语义参考；CSS 容器查询条件为字面量 640px） |
+| `--ai-chat-breakpoint-sm` | `480px` | 小屏断点 sm（语义参考） |
+| `--ai-chat-breakpoint-md` | `640px` | 中屏断点 md：输入紧凑、对比卡堆叠（CSS 容器查询为字面量 640px） |
+| `--ai-chat-breakpoint-lg` | `1100px` | 宽屏断点 lg：消息区放宽（容器查询为字面量 1100px） |
 
 ## 使用方式
 
