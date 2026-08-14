@@ -61,7 +61,8 @@
   --ai-chat-input-max-height-mobile: 120px;
   --ai-chat-breakpoint-sm: 480px;
   --ai-chat-breakpoint-md: 640px;
-  --ai-chat-breakpoint-lg: 1100px;
+  --ai-chat-breakpoint-lg: 1024px;
+  --ai-chat-breakpoint-xl: 1280px;
 }
 
 /* ============================================================

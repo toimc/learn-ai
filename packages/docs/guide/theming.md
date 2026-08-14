@@ -154,7 +154,8 @@ const purple = presets.purple // { name: '优雅紫', vars: {...} }
 | `--ai-chat-input-max-height-mobile` | `120px` | 输入框最大高度（移动端） |
 | `--ai-chat-breakpoint-sm` | `480px` | 小屏断点 sm（语义参考） |
 | `--ai-chat-breakpoint-md` | `640px` | 中屏断点 md：输入紧凑、对比卡堆叠（CSS 容器查询为字面量 640px） |
-| `--ai-chat-breakpoint-lg` | `1100px` | 宽屏断点 lg：消息区放宽（容器查询为字面量 1100px） |
+| `--ai-chat-breakpoint-lg` | `1024px` | 大屏断点 lg（语义参考） |
+| `--ai-chat-breakpoint-xl` | `1280px` | 超大屏断点 xl：消息区放宽（容器查询为字面量 1280px） |
 
 ## 使用方式
 

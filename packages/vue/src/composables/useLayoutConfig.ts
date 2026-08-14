@@ -10,6 +10,7 @@ export interface LayoutConfig {
   breakpointSm?: number
   breakpointMd?: number
   breakpointLg?: number
+  breakpointXl?: number
   layout?: MessageLayout
   messageAlign?: MessageAlign
 }
@@ -35,6 +36,7 @@ const SIZE_KEYS: Array<[keyof LayoutConfig, string]> = [
   ['breakpointSm', '--ai-chat-breakpoint-sm'],
   ['breakpointMd', '--ai-chat-breakpoint-md'],
   ['breakpointLg', '--ai-chat-breakpoint-lg'],
+  ['breakpointXl', '--ai-chat-breakpoint-xl'],
 ]
 
 /**

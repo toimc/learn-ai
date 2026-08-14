@@ -29,6 +29,7 @@ function useLayoutConfig(
 | `breakpointSm` | `number` | `--ai-chat-breakpoint-sm` |
 | `breakpointMd` | `number` | `--ai-chat-breakpoint-md` |
 | `breakpointLg` | `number` | `--ai-chat-breakpoint-lg` |
+| `breakpointXl` | `number` | `--ai-chat-breakpoint-xl` |
 | `layout` | `'stacked' \| 'im'` | 透传 `Conversation.layout` |
 | `messageAlign` | `'left' \| 'right'` | 透传 `Conversation.messageAlign` |
 

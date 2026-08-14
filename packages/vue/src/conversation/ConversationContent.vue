@@ -52,8 +52,8 @@ onBeforeUnmount(() => {
 }
 
 /* 宽屏：消息区放宽（满足「宽屏显示更宽的消息」）。
-   注意：容器查询条件不支持 var()，此处 1100px 为字面量阈值。 */
-@container (min-width: 1100px) {
+   注意：容器查询条件不支持 var()，此处 1280px 为字面量（= --ai-chat-breakpoint-xl 默认）。 */
+@container (min-width: 1280px) {
   .ai-chat-conversation-messages {
     max-width: var(--ai-chat-content-max-width-wide);
   }

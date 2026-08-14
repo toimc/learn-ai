@@ -228,14 +228,17 @@ const bpVal = (key: string, fallback: number): number => {
 const breakpointPreview = computed(() => {
   const sm = bpVal('--ai-chat-breakpoint-sm', 480)
   const md = Math.max(bpVal('--ai-chat-breakpoint-md', 640), sm)
-  const lg = Math.max(bpVal('--ai-chat-breakpoint-lg', 1100), md)
+  const lg = Math.max(bpVal('--ai-chat-breakpoint-lg', 1024), md)
+  const xl = Math.max(bpVal('--ai-chat-breakpoint-xl', 1280), lg)
   return {
     sm,
     md,
     lg,
+    xl,
     segSm: Math.max(sm, 1),
     segMd: Math.max(md - sm, 1),
     segLg: Math.max(lg - md, 1),
+    segXl: Math.max(xl - lg, 1),
   }
 })
 
@@ -463,10 +466,19 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
                   class="tb-bp-seg tb-bp-lg"
                   :style="{ flexGrow: breakpointPreview.segLg }"
                 >
-                  <span class="tb-bp-name">lg 宽屏</span>
+                  <span class="tb-bp-name">lg 大屏</span>
                   <span class="tb-bp-range">
-                    ≥ {{ breakpointPreview.md }} · 放宽
-                    {{ breakpointPreview.lg }}
+                    {{ breakpointPreview.md }} – {{ breakpointPreview.lg }}
+                  </span>
+                </div>
+                <div
+                  class="tb-bp-seg tb-bp-xl"
+                  :style="{ flexGrow: breakpointPreview.segXl }"
+                >
+                  <span class="tb-bp-name">xl 超大屏</span>
+                  <span class="tb-bp-range">
+                    ≥ {{ breakpointPreview.lg }} · 放宽
+                    {{ breakpointPreview.xl }}
                   </span>
                 </div>
               </div>
@@ -1025,6 +1037,11 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
 
 .tb-bp-lg {
   background: var(--ai-chat-color-accent-600);
+}
+
+.tb-bp-xl {
+  background: var(--ai-chat-color-accent-600);
+  filter: brightness(0.82);
 }
 
 .tb-token {

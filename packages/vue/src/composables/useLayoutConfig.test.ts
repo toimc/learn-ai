@@ -12,7 +12,8 @@ describe('useLayoutConfig', () => {
       inputMaxHeightMobile: 100,
       breakpointSm: 400,
       breakpointMd: 600,
-      breakpointLg: 1200,
+      breakpointLg: 900,
+      breakpointXl: 1400,
     })
     expect(vars.value).toEqual({
       '--ai-chat-content-max-width': '720px',
@@ -22,7 +23,8 @@ describe('useLayoutConfig', () => {
       '--ai-chat-input-max-height-mobile': '100px',
       '--ai-chat-breakpoint-sm': '400px',
       '--ai-chat-breakpoint-md': '600px',
-      '--ai-chat-breakpoint-lg': '1200px',
+      '--ai-chat-breakpoint-lg': '900px',
+      '--ai-chat-breakpoint-xl': '1400px',
     })
   })
 
