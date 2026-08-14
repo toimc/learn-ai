@@ -68,7 +68,7 @@ const chat = useChat(adapter)
 
 ### ConversationContent
 
-消息区默认 `max-width: var(--ai-chat-content-max-width)` 居中；容器宽度 ≥ 1100px 时经容器查询自动放宽到 `--ai-chat-content-max-width-wide`（宽屏显示更宽的消息）。
+消息区默认 `max-width: var(--ai-chat-content-max-width)` 居中，四周留白 24px（底部留白用于与输入区隔开）；容器宽度 ≥ 1100px 时经容器查询自动放宽到 `--ai-chat-content-max-width-wide`（宽屏显示更宽的消息）。
 
 | 插槽名 | 说明 |
 |--------|------|

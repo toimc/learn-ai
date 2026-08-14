@@ -47,7 +47,7 @@ onBeforeUnmount(() => {
   max-width: var(--ai-chat-content-max-width);
   width: 100%;
   margin: 0 auto;
-  padding: 24px 24px 0;
+  padding: 24px;
   flex: 1;
 }
 

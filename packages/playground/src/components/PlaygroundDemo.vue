@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
-import { useChat } from '@ai-chat/core'
+import { useChat, generateId } from '@ai-chat/core'
 import { mockMessages } from '../mock/mock-messages'
 import {
   Conversation,
@@ -47,8 +47,26 @@ const lastPrefer = ref<{
   left: string
   right: string
 } | null>(null)
+// 对比卡是否已选择：选中后移除卡片，把内容固化为消息流
+const comparisonChosen = ref(false)
 function onPrefer(p: { chosen: 'A' | 'B'; left: string; right: string }) {
   lastPrefer.value = p
+  if (comparisonChosen.value) return
+  comparisonChosen.value = true
+  chat.messages.push(
+    {
+      id: generateId(),
+      role: 'user',
+      content: comparisonMock.question,
+      createdAt: new Date(),
+    },
+    {
+      id: generateId(),
+      role: 'assistant',
+      content: p.chosen === 'A' ? p.left : p.right,
+      createdAt: new Date(),
+    },
+  )
 }
 
 // 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
@@ -550,17 +568,19 @@ watch(() => chat.messages.length, scrollToBottom)
             </MessageActions>
           </Message>
 
-          <!-- A/B 偏好对比演示（mock 场景：用户提问 + 双候选回复） -->
-          <Message from="user">
-            <MessageContent>{{ comparisonMock.question }}</MessageContent>
-          </Message>
-          <ComparisonMessage
-            :left="comparisonMock.left"
-            :right="comparisonMock.right"
-            :left-label="comparisonMock.leftLabel"
-            :right-label="comparisonMock.rightLabel"
-            @prefer="onPrefer"
-          />
+          <!-- A/B 偏好对比演示：选中后固化为消息流（用户问题 + 选中的回复） -->
+          <template v-if="!comparisonChosen">
+            <Message from="user">
+              <MessageContent>{{ comparisonMock.question }}</MessageContent>
+            </Message>
+            <ComparisonMessage
+              :left="comparisonMock.left"
+              :right="comparisonMock.right"
+              :left-label="comparisonMock.leftLabel"
+              :right-label="comparisonMock.rightLabel"
+              @prefer="onPrefer"
+            />
+          </template>
           <div v-if="lastPrefer" class="pg-comparison-result">
             你更喜欢的回复：{{ lastPrefer.chosen }}
           </div>
