@@ -43,6 +43,8 @@
 
 无 Props。provide 输入上下文给子组件。
 
+响应式：容器宽度 < 640px（容器查询）时自动紧凑——减小外边距并隐藏底部 disclaimer；输入框 `max-height` 跟随 `--ai-chat-input-max-height`（桌面 200px），窄屏可由 `--ai-chat-input-max-height-mobile`（默认 120px）覆盖收窄。
+
 | 插槽名 | 说明 |
 |--------|------|
 | default | 输入主体（Textarea + Submit） |

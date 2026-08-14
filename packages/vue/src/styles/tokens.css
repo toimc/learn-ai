@@ -56,6 +56,10 @@
   --ai-chat-btn-tool-size: 32px;
   --ai-chat-msg-gap: 16px;
   --ai-chat-msg-padding-y: 20px;
+  --ai-chat-content-max-width-wide: 1024px;
+  --ai-chat-message-max-width: 480px;
+  --ai-chat-input-max-height-mobile: 120px;
+  --ai-chat-mobile-breakpoint: 640px;
 }
 
 /* ============================================================

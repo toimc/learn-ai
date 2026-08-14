@@ -73,6 +73,7 @@ provide('promptAbort', handleAbort)
   width: 100%;
   margin: 0 auto;
   padding: 0 24px 20px;
+  container-type: inline-size;
 }
 
 .ai-chat-prompt-input__wrapper {
@@ -95,5 +96,16 @@ provide('promptAbort', handleAbort)
   font-size: 12px;
   color: var(--ai-chat-color-text-muted);
   padding: 8px 24px 0;
+}
+
+/* 窄屏（移动端）：降低 padding、隐藏 disclaimer。
+   容器查询条件不支持 var()，640px 为字面量（= --ai-chat-mobile-breakpoint 默认）。 */
+@container (max-width: 640px) {
+  .ai-chat-prompt-input {
+    padding: 0 12px 12px;
+  }
+  .ai-chat-prompt-input__disclaimer {
+    display: none;
+  }
 }
 </style>

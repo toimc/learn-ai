@@ -337,6 +337,52 @@ export const tokensMeta: TokenMeta[] = [
     min: 0,
     max: 48,
   },
+  {
+    key: '--ai-chat-content-max-width-wide',
+    layer: 'primitive',
+    group: '原始·尺寸',
+    label: '宽屏内容最大宽',
+    type: 'size',
+    light: '1024px',
+    unit: 'px',
+    min: 768,
+    max: 1600,
+  },
+  {
+    key: '--ai-chat-message-max-width',
+    layer: 'primitive',
+    group: '原始·尺寸',
+    label: '消息气泡最大宽',
+    type: 'size',
+    light: '480px',
+    unit: 'px',
+    min: 240,
+    max: 960,
+  },
+  {
+    key: '--ai-chat-input-max-height-mobile',
+    layer: 'primitive',
+    group: '原始·尺寸',
+    label: '移动端输入框最大高',
+    type: 'size',
+    light: '120px',
+    unit: 'px',
+    min: 60,
+    max: 240,
+  },
+
+  // ===== 原始·断点 =====
+  {
+    key: '--ai-chat-mobile-breakpoint',
+    layer: 'primitive',
+    group: '原始·断点',
+    label: '移动端断点',
+    type: 'size',
+    light: '640px',
+    unit: 'px',
+    min: 320,
+    max: 1024,
+  },
 
   // ===== 语义·强调 =====
   {

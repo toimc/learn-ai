@@ -40,6 +40,7 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
 }
 
 .ai-chat-conversation-messages {
@@ -48,5 +49,13 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   padding: 24px 24px 0;
   flex: 1;
+}
+
+/* 宽屏：消息区放宽（满足「宽屏显示更宽的消息」）。
+   注意：容器查询条件不支持 var()，此处 1100px 为字面量阈值。 */
+@container (min-width: 1100px) {
+  .ai-chat-conversation-messages {
+    max-width: var(--ai-chat-content-max-width-wide);
+  }
 }
 </style>

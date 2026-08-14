@@ -34,6 +34,13 @@
 |--------|------|--------|------|
 | from | `'user' \| 'assistant' \| 'system'` | — | 消息角色（必填） |
 
+消息的水平对齐由父级 `Conversation` 的 `layout` / `messageAlign` 控制（经 provide/inject 下发）：
+
+- `layout='stacked'`（默认）：保持现状，所有消息统一靠左。
+- `layout='im'`：用户消息与 AI 消息分列两侧，单条气泡限宽 `--ai-chat-message-max-width`（默认 480px）；`messageAlign` 决定用户消息停靠侧，AI 在对侧。
+
+未检测到布局上下文时回退现状布局，向后兼容。
+
 ### MessageContent
 
 无 Props。slot 放消息正文。

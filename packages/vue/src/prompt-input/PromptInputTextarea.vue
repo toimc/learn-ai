@@ -48,7 +48,7 @@ function handleKeydown(e: KeyboardEvent) {
   padding: 14px 16px 14px 20px;
   resize: none;
   outline: none;
-  max-height: 200px;
+  max-height: var(--ai-chat-input-max-height, 200px);
   min-height: 24px;
   line-height: 1.5;
 }
