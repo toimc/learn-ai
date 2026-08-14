@@ -40,6 +40,7 @@ export default defineConfig({
           { text: 'useChat', link: '/composables/use-chat' },
           { text: 'useTheme', link: '/composables/use-theme' },
           { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+          { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
         ],
       },
       { text: 'Playground', link: '/playground' },
@@ -66,7 +67,13 @@ export default defineConfig({
         },
         {
           text: '消息组件',
-          items: [{ text: 'Message', link: '/components/message' }],
+          items: [
+            { text: 'Message', link: '/components/message' },
+            {
+              text: 'ComparisonMessage',
+              link: '/components/comparison-message',
+            },
+          ],
         },
         {
           text: '输入组件',
@@ -107,6 +114,7 @@ export default defineConfig({
             { text: 'useChat', link: '/composables/use-chat' },
             { text: 'useTheme', link: '/composables/use-theme' },
             { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+            { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
           ],
         },
       ],
