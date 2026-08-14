@@ -19,6 +19,8 @@ import {
   MessageContent,
   MessageActions,
   MessageAction,
+  // Comparison series
+  ComparisonMessage,
   // PromptInput series
   PromptInput,
   PromptInputBody,
@@ -75,6 +77,9 @@ export default {
     app.component('MessageContent', MessageContent)
     app.component('MessageActions', MessageActions)
     app.component('MessageAction', MessageAction)
+
+    // Comparison
+    app.component('ComparisonMessage', ComparisonMessage)
 
     // PromptInput
     app.component('PromptInput', PromptInput)

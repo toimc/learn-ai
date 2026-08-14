@@ -23,6 +23,7 @@ import {
   useTheme,
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
+import { comparisonMock } from '../mock/mock-comparison'
 
 const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 
@@ -549,10 +550,15 @@ watch(() => chat.messages.length, scrollToBottom)
             </MessageActions>
           </Message>
 
-          <!-- A/B 偏好对比演示 -->
+          <!-- A/B 偏好对比演示（mock 场景：用户提问 + 双候选回复） -->
+          <Message from="user">
+            <MessageContent>{{ comparisonMock.question }}</MessageContent>
+          </Message>
           <ComparisonMessage
-            left="你可以用 ref() 配合 computed() 派生状态，响应式追踪由 ref 触发。"
-            right="推荐直接用 computed() 包裹派生逻辑，内部已基于 ref 实现，写法更简洁。"
+            :left="comparisonMock.left"
+            :right="comparisonMock.right"
+            :left-label="comparisonMock.leftLabel"
+            :right-label="comparisonMock.rightLabel"
             @prefer="onPrefer"
           />
           <div v-if="lastPrefer" class="pg-comparison-result">

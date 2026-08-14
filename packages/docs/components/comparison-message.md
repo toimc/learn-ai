@@ -4,6 +4,15 @@ A/B 偏好对比组件：左右双列并排展示两个候选回复，每列底�
 
 ## 基础用法
 
+<DemoContainer>
+  <ComparisonMessage
+    left="**回复 A**：一律用 ref，心智模型统一，访问走 .value，解构与整体替换都安全。"
+    right="**回复 B**：按场景分工——composable 对外返回 ref，组件内聚合状态用 reactive 减少样板。"
+  />
+</DemoContainer>
+
+点击任一列底部的按钮即可看到高亮选中。列内容经 `MessageContent` 走 markdown-it 渲染，支持代码高亮、公式等。
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
