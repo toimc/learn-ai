@@ -23,6 +23,12 @@ pnpm add @ai-chat/vue
 pnpm add @ai-chat/markdown
 ```
 
+如需渲染 LaTeX 公式，额外手动引入 KaTeX 样式（可选，不影响其他功能）：
+
+```ts
+import '@ai-chat/markdown/katex.css'
+```
+
 ## 最小示例
 
 ```vue

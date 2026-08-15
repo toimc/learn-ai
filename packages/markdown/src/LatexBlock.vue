@@ -45,15 +45,17 @@ const html = computed(() => {
 </template>
 
 <style>
-.ai-chat-latex {
-  font-family: 'Cambria Math', 'Latin Modern Math', serif;
-  font-style: italic;
-}
+@layer ai-chat-components {
+  .ai-chat-latex {
+    font-family: 'Cambria Math', 'Latin Modern Math', serif;
+    font-style: italic;
+  }
 
-.ai-chat-latex--display {
-  display: block;
-  text-align: center;
-  margin: 12px 0;
-  font-size: 1.1em;
+  .ai-chat-latex--display {
+    display: block;
+    text-align: center;
+    margin: 12px 0;
+    font-size: 1.1em;
+  }
 }
 </style>

@@ -19,9 +19,11 @@ defineProps<{
 </template>
 
 <style>
-.ai-chat-message-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ai-chat-message-gap, 12px);
+@layer ai-chat-components {
+  .ai-chat-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ai-chat-message-gap, 12px);
+  }
 }
 </style>

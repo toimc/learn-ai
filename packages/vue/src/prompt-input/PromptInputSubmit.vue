@@ -28,35 +28,37 @@ const abort = inject<() => void>('promptAbort')!
 </template>
 
 <style>
-.ai-chat-prompt-submit {
-  width: 36px;
-  height: 36px;
-  margin: 6px 8px;
-  border-radius: 10px;
-  border: none;
-  background: var(--ai-chat-color-input-bg);
-  color: var(--ai-chat-color-text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--ai-chat-duration-fast) var(--ai-chat-easing),
-    opacity var(--ai-chat-duration-fast) var(--ai-chat-easing);
-  flex-shrink: 0;
-}
+@layer ai-chat-components {
+  .ai-chat-prompt-submit {
+    width: 36px;
+    height: 36px;
+    margin: 6px 8px;
+    border-radius: 10px;
+    border: none;
+    background: var(--ai-chat-color-input-bg);
+    color: var(--ai-chat-color-text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      background var(--ai-chat-duration-fast) var(--ai-chat-easing),
+      opacity var(--ai-chat-duration-fast) var(--ai-chat-easing);
+    flex-shrink: 0;
+  }
 
-.ai-chat-prompt-submit:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
+  .ai-chat-prompt-submit:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 
-.ai-chat-prompt-submit:not(:disabled):hover {
-  background: var(--ai-chat-hover-neutral);
-}
+  .ai-chat-prompt-submit:not(:disabled):hover {
+    background: var(--ai-chat-hover-neutral);
+  }
 
-.ai-chat-prompt-submit svg {
-  width: 18px;
-  height: 18px;
+  .ai-chat-prompt-submit svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 </style>

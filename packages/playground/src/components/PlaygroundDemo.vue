@@ -24,6 +24,9 @@ import {
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
 import { comparisonMock } from '../mock/mock-comparison'
+// FR-4（spec 04）：KaTeX 样式已改为可选子路径，playground 显式引入保持公式渲染体验。
+// 走 workspace 源码路径；发布包对应 '@ai-chat/markdown/katex.css'
+import '../../../markdown/src/styles/katex.css'
 
 const chat = useChat(mockAdapter, { initialMessages: mockMessages })
 

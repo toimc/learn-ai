@@ -5,7 +5,7 @@
 ## 函数签名
 
 ```typescript
-function useTheme(): {
+function useTheme(options?: UseThemeOptions): {
   theme: Ref<ThemeMode>
   resolvedTheme: Readonly<Ref<ResolvedTheme>>
   setTheme: (t: ThemeMode) => void
@@ -20,7 +20,23 @@ function useTheme(): {
 ```typescript
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
+
+export interface UseThemeOptions {
+  /** data-theme 写入位置：'html'（宿主根，默认）或 'component'（组件根元素） */
+  target?: 'html' | 'component'
+  /** 是否读写 localStorage，默认 true */
+  persist?: boolean
+}
 ```
+
+## 选项
+
+| 选项 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `target` | `'html' \| 'component'` | `'html'` | `data-theme` 写入位置。`'html'` 写宿主 `<html>`，整页生效（默认，向后兼容）；`'component'` 只写组件根元素，暗色令牌仅作用于组件子树，不碰宿主主题系统 |
+| `persist` | `boolean` | `true` | 是否把主题读写到 `localStorage['ai-chat-theme']`。`false` 关闭持久化，刷新后回到默认 |
+
+> 选项由**首次带 options 的调用**生效（单例），后续调用忽略；不带 options 的调用保持默认行为。
 
 ## 返回值
 
@@ -34,9 +50,9 @@ export type ResolvedTheme = 'light' | 'dark'
 ## 特性
 
 - **模块级单例**：任意多个组件调用 `useTheme()` 共享同一份状态，切换一处全局生效。
-- **持久化**：写入 `localStorage['ai-chat-theme']`，刷新后保留。
+- **持久化**：默认写入 `localStorage['ai-chat-theme']`，刷新后保留；`persist: false` 关闭。
 - **跟随系统**：`theme = 'system'` 时监听 `prefers-color-scheme`，系统切换自动跟随。
-- **自动应用**：把解析后的明暗写入 `<html data-theme="...">`，组件令牌自动翻转。
+- **自动应用**：把解析后的明暗写入 `data-theme` 属性，组件令牌自动翻转；写入位置由 `target` 选项决定（默认 `<html>`）。
 - **SSR 安全**：所有 `window` / `localStorage` 访问都有 `typeof window` 守卫，可在 `<script setup>` 中直接调用。
 
 ## 示例
@@ -72,6 +88,26 @@ toggleTheme()
   </button>
 </template>
 ```
+
+## 组件内主题（不碰宿主）
+
+宿主应用有自己的主题系统时，用 `target: 'component'` 把 `data-theme` 限定在组件子树，同时可用 `persist: false` 关闭 `localStorage` 写入：
+
+```vue
+<script setup lang="ts">
+import { useTheme } from '@ai-chat/vue'
+
+const { resolvedTheme, toggleTheme } = useTheme({ target: 'component', persist: false })
+</script>
+
+<template>
+  <button @click="toggleTheme">
+    {{ resolvedTheme === 'dark' ? '🌙' : '☀' }}
+  </button>
+</template>
+```
+
+此模式下宿主 `<html>` 不会被写入 `data-theme`，暗色令牌只在聊天组件子树内翻转。
 
 ## 相关
 

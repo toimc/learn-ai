@@ -4,5 +4,5 @@ declare module '*.vue' {
   export default component
 }
 
-// 侧效样式导入（如 katex/dist/katex.min.css），运行时由 Vite 处理
+// 侧效样式导入（如 styles/katex.css），运行时由 Vite 处理
 declare module '*.css'

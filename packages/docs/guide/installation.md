@@ -34,6 +34,16 @@ yarn add @ai-chat/core @ai-chat/vue @ai-chat/markdown
 pnpm add vue@^3.5.0
 ```
 
+## 可选样式：KaTeX 公式
+
+`@ai-chat/markdown` 不再自动注入 KaTeX 样式。需要渲染 LaTeX 公式时，手动引入子路径样式（约 25KB CSS + 数学字体，不用公式的项目可省去）：
+
+```ts
+import '@ai-chat/markdown/katex.css'
+```
+
+不引入该 CSS 时，代码高亮、Mermaid 图表等功能不受影响，仅公式无 KaTeX 排版样式。
+
 ## 版本兼容
 
 | ai-chat-ui | Vue | TypeScript |

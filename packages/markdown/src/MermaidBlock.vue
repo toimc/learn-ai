@@ -72,20 +72,22 @@ watch(() => props.code, render)
 </template>
 
 <style>
-.ai-chat-mermaid {
-  margin: 12px 0;
-  text-align: center;
-}
-.ai-chat-mermaid__frame {
-  width: 100%;
-  min-height: 120px;
-  border: none;
-}
-.ai-chat-mermaid__loading,
-.ai-chat-mermaid__error {
-  padding: 16px;
-  color: var(--ai-chat-color-text-secondary, #9ca3af);
-  background: var(--ai-chat-color-code-bg, #f6f8fa);
-  border-radius: 8px;
+@layer ai-chat-components {
+  .ai-chat-mermaid {
+    margin: 12px 0;
+    text-align: center;
+  }
+  .ai-chat-mermaid__frame {
+    width: 100%;
+    min-height: 120px;
+    border: none;
+  }
+  .ai-chat-mermaid__loading,
+  .ai-chat-mermaid__error {
+    padding: 16px;
+    color: var(--ai-chat-color-text-secondary, #9ca3af);
+    background: var(--ai-chat-color-code-bg, #f6f8fa);
+    border-radius: 8px;
+  }
 }
 </style>

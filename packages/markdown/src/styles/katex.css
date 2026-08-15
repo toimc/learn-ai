@@ -1,0 +1,4 @@
+/* FR-4（spec 04）：KaTeX 样式可选子路径入口。
+   宿主按需引入：import '@ai-chat/markdown/katex.css'（构建产物为 dist/katex.css）。
+   不引入时公式仍可渲染，但无排版样式（纯文本级），属预期行为。 */
+@import 'katex/dist/katex.min.css';

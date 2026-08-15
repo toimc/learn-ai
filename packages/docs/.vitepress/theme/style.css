@@ -13,8 +13,8 @@
 }
 
 .dark .ai-chat-window {
-  --ai-chat-bg: #1e1e2e;
-  --ai-chat-border-color: #374151;
+  --ai-chat-color-bg-primary: #1e1e2e;
+  --ai-chat-color-border: #374151;
 }
 
 .demo-container {

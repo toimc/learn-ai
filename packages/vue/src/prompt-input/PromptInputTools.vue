@@ -5,8 +5,10 @@
 </template>
 
 <style>
-.ai-chat-prompt-input-tools {
-  display: flex;
-  gap: 2px;
+@layer ai-chat-components {
+  .ai-chat-prompt-input-tools {
+    display: flex;
+    gap: 2px;
+  }
 }
 </style>

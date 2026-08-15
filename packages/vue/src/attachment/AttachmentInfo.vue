@@ -18,22 +18,24 @@ const data = inject<Attachment>('attachmentData')!
 </template>
 
 <style>
-.ai-chat-attachment-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+@layer ai-chat-components {
+  .ai-chat-attachment-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
 
-.ai-chat-attachment-info__name {
-  font-size: 13px;
-  color: var(--ai-chat-color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .ai-chat-attachment-info__name {
+    font-size: 13px;
+    color: var(--ai-chat-color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.ai-chat-attachment-info__meta {
-  font-size: 12px;
-  color: var(--ai-chat-color-text-muted);
+  .ai-chat-attachment-info__meta {
+    font-size: 12px;
+    color: var(--ai-chat-color-text-muted);
+  }
 }
 </style>

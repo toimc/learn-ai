@@ -38,22 +38,24 @@ function handleKeydown(e: KeyboardEvent) {
 </template>
 
 <style>
-.ai-chat-prompt-textarea {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--ai-chat-color-text-primary);
-  font-size: 15px;
-  font-family: var(--ai-chat-font-sans);
-  padding: 14px 16px 14px 20px;
-  resize: none;
-  outline: none;
-  max-height: var(--ai-chat-input-max-height, 200px);
-  min-height: 24px;
-  line-height: 1.5;
-}
+@layer ai-chat-components {
+  .ai-chat-prompt-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ai-chat-color-text-primary);
+    font-size: 15px;
+    font-family: var(--ai-chat-font-sans);
+    padding: 14px 16px 14px 20px;
+    resize: none;
+    outline: none;
+    max-height: var(--ai-chat-input-max-height, 200px);
+    min-height: 24px;
+    line-height: 1.5;
+  }
 
-.ai-chat-prompt-textarea::placeholder {
-  color: var(--ai-chat-color-text-muted);
+  .ai-chat-prompt-textarea::placeholder {
+    color: var(--ai-chat-color-text-muted);
+  }
 }
 </style>

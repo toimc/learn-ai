@@ -21,29 +21,31 @@ defineEmits<{ remove: [] }>()
 </template>
 
 <style>
-.ai-chat-attachment-remove {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  visibility: hidden;
-  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
-}
+@layer ai-chat-components {
+  .ai-chat-attachment-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+  }
 
-.ai-chat-attachment:hover .ai-chat-attachment-remove {
-  visibility: visible;
-}
+  .ai-chat-attachment:hover .ai-chat-attachment-remove {
+    visibility: visible;
+  }
 
-.ai-chat-attachment-remove:hover {
-  background: rgba(0, 0, 0, 0.8);
+  .ai-chat-attachment-remove:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
 }
 </style>

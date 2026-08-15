@@ -38,13 +38,15 @@ watch(
 </template>
 
 <style>
-.ai-chat-stream-text__cursor {
-  animation: ai-chat-blink 1s step-end infinite;
-}
+@layer ai-chat-components {
+  .ai-chat-stream-text__cursor {
+    animation: ai-chat-blink 1s step-end infinite;
+  }
 
-@keyframes ai-chat-blink {
-  50% {
-    opacity: 0;
+  @keyframes ai-chat-blink {
+    50% {
+      opacity: 0;
+    }
   }
 }
 </style>

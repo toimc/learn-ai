@@ -42,57 +42,59 @@ withDefaults(
 </template>
 
 <style>
-.ai-chat-conversation-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  padding: 40px 20px;
-}
+@layer ai-chat-components {
+  .ai-chat-conversation-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 40px 20px;
+  }
 
-.ai-chat-conversation-empty__logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #c084fc 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  color: #fff;
-}
+  .ai-chat-conversation-empty__logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #c084fc 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: #fff;
+  }
 
-.ai-chat-conversation-empty__logo svg {
-  width: 28px;
-  height: 28px;
-}
+  .ai-chat-conversation-empty__logo svg {
+    width: 28px;
+    height: 28px;
+  }
 
-.ai-chat-conversation-empty__title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--ai-chat-color-text-primary);
-}
+  .ai-chat-conversation-empty__title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ai-chat-color-text-primary);
+  }
 
-.ai-chat-conversation-empty__desc {
-  font-size: 14px;
-  color: var(--ai-chat-color-text-muted);
-  margin-bottom: 28px;
-}
+  .ai-chat-conversation-empty__desc {
+    font-size: 14px;
+    color: var(--ai-chat-color-text-muted);
+    margin-bottom: 28px;
+  }
 
-.ai-chat-conversation-empty__suggestions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  width: 100%;
-  max-width: 560px;
-}
-
-@media (max-width: 768px) {
   .ai-chat-conversation-empty__suggestions {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  @media (max-width: 768px) {
+    .ai-chat-conversation-empty__suggestions {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style>

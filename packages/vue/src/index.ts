@@ -77,8 +77,13 @@ export { default as MessageBubble } from './MessageBubble.vue'
 export { default as InputArea } from './InputArea.vue'
 
 // 主题系统
-export { useTheme, resolvedTheme } from './composables/useTheme'
-export type { ThemeMode, ResolvedTheme } from './composables/useTheme'
+export { useTheme, resolvedTheme, componentTheme } from './composables/useTheme'
+export type {
+  ThemeMode,
+  ResolvedTheme,
+  ThemeTarget,
+  UseThemeOptions,
+} from './composables/useTheme'
 export { useThemePreset } from './composables/useThemePreset'
 export { presets } from './theme/presets'
 export type { ThemePreset, PresetKey } from './theme/presets'

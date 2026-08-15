@@ -162,4 +162,84 @@ describe('useTheme', () => {
     expect(b!.theme.value).toBe('dark')
     wrapper.unmount()
   })
+
+  // ---- target / persist 选项 ----
+
+  it("target='component'：documentElement 不写 data-theme，componentTheme 跟随切换", async () => {
+    const mod = await importFresh()
+    let ctx: ReturnType<typeof mod.useTheme> | undefined
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          ctx = mod.useTheme({ target: 'component' })
+          return () => h('div')
+        },
+      }),
+    )
+    await tick()
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+    expect(mod.componentTheme?.value).toBe('light')
+    ctx!.setTheme('dark')
+    await tick()
+    // 切主题后 html 仍保持干净，主题值只暴露给组件根绑定
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+    expect(mod.componentTheme?.value).toBe('dark')
+    wrapper.unmount()
+  })
+
+  it("target='html'（默认）：componentTheme 为 undefined，不产生组件级属性", async () => {
+    const mod = await importFresh()
+    const { wrapper } = mountWithTheme(mod)
+    await tick()
+    expect(mod.componentTheme?.value).toBeUndefined()
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+    wrapper.unmount()
+  })
+
+  it('persist=false：不写也不读 localStorage', async () => {
+    storage.set('ai-chat-theme', 'dark')
+    const mod = await importFresh()
+    let ctx: ReturnType<typeof mod.useTheme> | undefined
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          ctx = mod.useTheme({ persist: false })
+          return () => h('div')
+        },
+      }),
+    )
+    await tick()
+    // 未读回旧值、未写入新值（预置旧值原样留在 storage）
+    expect(ctx!.theme.value).toBe('system')
+    expect(localStorage.getItem).not.toHaveBeenCalled()
+    ctx!.setTheme('dark')
+    await tick()
+    expect(ctx!.theme.value).toBe('dark')
+    expect(localStorage.setItem).not.toHaveBeenCalled()
+    expect(storage.get('ai-chat-theme')).toBe('dark')
+    wrapper.unmount()
+  })
+
+  it('options 首次传入生效，后续调用忽略', async () => {
+    const mod = await importFresh()
+    let a: ReturnType<typeof mod.useTheme> | undefined
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          a = mod.useTheme({ target: 'component', persist: false })
+          mod.useTheme({ target: 'html', persist: true })
+          return () => h('div')
+        },
+      }),
+    )
+    await tick()
+    await tick()
+    // 首次 options 生效：html 干净、无持久化
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+    a!.setTheme('dark')
+    await tick()
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+    expect(storage.has('ai-chat-theme')).toBe(false)
+    wrapper.unmount()
+  })
 })
