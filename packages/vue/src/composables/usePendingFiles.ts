@@ -1,4 +1,4 @@
-import { onScopeDispose, ref, type Ref } from 'vue'
+import { onScopeDispose, ref } from 'vue'
 import { generateId } from '@ai-chat/core'
 
 export interface PendingFile {
@@ -8,6 +8,11 @@ export interface PendingFile {
   previewUrl: string
   status: 'ready' | 'uploading' | 'error'
   error?: string
+}
+
+export interface RejectedFile {
+  file: File
+  reason: string
 }
 
 export interface UsePendingFilesOptions {
@@ -28,14 +33,14 @@ function matchesAccept(file: File, accept?: string): boolean {
   })
 }
 
-export function usePendingFiles(options: UsePendingFilesOptions) {
-  const pendingFiles = ref<PendingFile[]>([]) as Ref<PendingFile[]>
+export function usePendingFiles(options: UsePendingFilesOptions = {}) {
+  const pendingFiles = ref<PendingFile[]>([])
   const objectUrls: string[] = []
 
   function addFiles(files: File[] | FileList) {
     const list = Array.from(files)
     const accepted: PendingFile[] = []
-    const rejected: { file: File; reason: string }[] = []
+    const rejected: RejectedFile[] = []
     const maxFiles = options.maxFiles ?? Infinity
 
     for (const file of list) {

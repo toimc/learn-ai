@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { effectScope } from 'vue'
 import { usePendingFiles } from './usePendingFiles'
 
@@ -16,6 +16,10 @@ describe('usePendingFiles', () => {
       createObjectURL: vi.fn(() => 'blob:mock'),
       revokeObjectURL: vi.fn(),
     })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   it('addFiles 接收文件并生成 PendingFile', () => {
@@ -44,6 +48,26 @@ describe('usePendingFiles', () => {
     const { addFiles } = usePendingFiles({ accept: '.png,.pdf' })
     const { accepted } = addFiles([png(), pdf()])
     expect(accepted).toHaveLength(2)
+  })
+
+  it('accept 空串放行全部类型', () => {
+    const { addFiles } = usePendingFiles({ accept: '' })
+    const { accepted, rejected } = addFiles([png(), pdf()])
+    expect(accepted).toHaveLength(2)
+    expect(rejected).toHaveLength(0)
+  })
+
+  it('addFiles 接受 FileList 输入', () => {
+    const file = png()
+    const fileList = {
+      0: file,
+      length: 1,
+      item: () => file,
+    } as unknown as FileList
+    const { pendingFiles, addFiles: add } = usePendingFiles({})
+    const { accepted } = add(fileList)
+    expect(accepted).toHaveLength(1)
+    expect(pendingFiles.value[0].file).toBe(file)
   })
 
   it('maxSize 拒绝超限文件', () => {
