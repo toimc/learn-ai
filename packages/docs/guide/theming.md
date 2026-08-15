@@ -130,6 +130,7 @@ const purple = presets.purple // { name: '优雅紫', vars: {...} }
 |--------|----------|------|
 | `--ai-chat-color-accent` | `var(--ai-chat-color-accent-500)` | 主色 |
 | `--ai-chat-color-accent-hover` | `#818cf8` | 主色悬停 |
+| `--ai-chat-color-text-on-accent` | `#ffffff` | 主色上的文字（发送按钮等） |
 | `--ai-chat-color-accent-dim` | `rgba(99,102,241,0.15)` | 主色淡底 |
 
 ### 背景
