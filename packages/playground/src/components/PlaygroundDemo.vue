@@ -606,7 +606,7 @@ watch(() => chat.messages.length, scrollToBottom)
             />
           </template>
           <div v-if="lastPrefer" class="pg-comparison-result">
-            你更喜欢的回复：{{ lastPrefer.chosen }}
+            {{ t('pg.actions.preferred', { chosen: lastPrefer.chosen }) }}
           </div>
 
           <!-- Typing indicator -->

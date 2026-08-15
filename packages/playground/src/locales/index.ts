@@ -46,6 +46,7 @@ const zhCN = {
   actions: {
     copy: '复制',
     regenerate: '重新生成',
+    preferred: '你更喜欢的回复：{chosen}',
   },
   tools: {
     upload: '上传文件',
@@ -105,6 +106,7 @@ const enUS: typeof zhCN = {
   actions: {
     copy: 'Copy',
     regenerate: 'Regenerate',
+    preferred: 'Your preferred response: {chosen}',
   },
   tools: {
     upload: 'Upload file',

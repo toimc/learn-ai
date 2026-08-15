@@ -38,4 +38,8 @@ export default {
     send: 'Send',
     stop: 'Stop',
   },
+  markdown: {
+    rendering: 'Rendering diagram…',
+    renderFailed: 'Failed to render diagram: ',
+  },
 } satisfies MessageSchema

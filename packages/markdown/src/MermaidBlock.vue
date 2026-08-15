@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { aiChatI18n } from '@ai-chat/vue'
 
 const props = defineProps<{ code: string }>()
+
+const { t } = aiChatI18n.global
 
 const status = ref<'loading' | 'done' | 'error'>('loading')
 const svg = ref<string>('')
@@ -56,10 +59,10 @@ watch(() => props.code, render)
 <template>
   <div class="ai-chat-mermaid">
     <div v-if="status === 'loading'" class="ai-chat-mermaid__loading">
-      图表渲染中…
+      {{ t('markdown.rendering') }}
     </div>
     <div v-else-if="status === 'error'" class="ai-chat-mermaid__error">
-      图表渲染失败：{{ errorText }}
+      {{ t('markdown.renderFailed') }}{{ errorText }}
       <pre>{{ code }}</pre>
     </div>
     <iframe

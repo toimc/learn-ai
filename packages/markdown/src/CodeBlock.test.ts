@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import CodeBlock from './CodeBlock.vue'
+import { aiChatI18n } from '@ai-chat/vue'
 
 // 与 MarkdownRenderer.test 一致的 rAF 桩，避免 jsdom 缺失
 const stubRequestAnimationFrame = (cb: FrameRequestCallback): number =>
@@ -105,10 +106,13 @@ describe('CodeBlock', () => {
       props: { code: 'const a = 1', language: 'javascript' },
     })
     const btn = wrapper.find('.ai-chat-code-block__copy')
+    // 复制按钮 title 走字典（与当前 locale 联动，spec §9）
+    expect(btn.attributes('title')).toBe(aiChatI18n.global.t('shared.copy'))
     await btn.trigger('click')
     await flushAsync()
     expect(writeText).toHaveBeenCalledWith('const a = 1')
     expect(btn.classes()).toContain('is-copied')
+    expect(btn.attributes('title')).toBe(aiChatI18n.global.t('shared.copied'))
     // 已复制态渲染对勾图标
     expect(wrapper.html()).toContain('polyline')
   })

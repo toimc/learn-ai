@@ -37,6 +37,10 @@ const zhCN = {
     send: '发送',
     stop: '停止',
   },
+  markdown: {
+    rendering: '图表渲染中…',
+    renderFailed: '图表渲染失败：',
+  },
 }
 
 export type MessageSchema = typeof zhCN
