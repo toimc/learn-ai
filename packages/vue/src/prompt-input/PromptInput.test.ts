@@ -52,6 +52,20 @@ describe('PromptInput', () => {
     expect(w.text()).toContain('自定义提示')
   })
 
+  it('footer 具名插槽渲染在 wrapper 内（default 插槽之后）', () => {
+    const w = mount(PromptInput, {
+      slots: {
+        default: () => h('div', { class: 'slot-default' }, 'D'),
+        footer: () => h('div', { class: 'slot-footer' }, 'F'),
+      },
+    })
+    const wrapper = w.get('.ai-chat-prompt-input__wrapper')
+    expect(wrapper.find('.slot-footer').exists()).toBe(true)
+    expect(
+      wrapper.findAll('.slot-default, .slot-footer').map((n) => n.classes()[0]),
+    ).toEqual(['slot-default', 'slot-footer'])
+  })
+
   it('无文本但有文件时可发送，send 携带 files', async () => {
     const w = mountInput()
     const file = png()

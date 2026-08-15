@@ -163,6 +163,7 @@ provide('promptAbort', handleAbort)
       @drop="onDrop"
     >
       <slot />
+      <slot name="footer" />
     </div>
     <p class="ai-chat-prompt-input__disclaimer">
       <slot name="disclaimer">{{ t('promptInput.disclaimer') }}</slot>
