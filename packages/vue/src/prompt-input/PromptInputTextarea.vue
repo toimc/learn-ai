@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { inject, type Ref } from 'vue'
+import { inject } from 'vue'
+import { PROMPT_INPUT_KEY } from './context'
 
-const { inputText, disabled, maxHeight, placeholder } = inject<{
-  inputText: Ref<string>
-  disabled: () => boolean
-  maxHeight: () => number
-  placeholder: () => string
-}>('promptInput')!
+const { inputText, disabled, maxHeight, placeholder, sendKey, addFiles } =
+  inject(PROMPT_INPUT_KEY)!
 
 const submit = inject<() => void>('promptSubmit')!
 
@@ -18,9 +15,27 @@ function handleInput(e: Event) {
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  if (e.isComposing || e.keyCode === 229) return // IME 组合中，交给输入法
+  if (e.key !== 'Enter') return
+  if (sendKey() === 'enter') {
+    if (!e.shiftKey) {
+      e.preventDefault()
+      submit()
+    }
+    return
+  }
+  // alt-enter 模式：Enter 原生换行不拦截；Alt/Cmd+Enter 发送
+  if ((e.altKey || e.metaKey) && !e.shiftKey) {
     e.preventDefault()
     submit()
+  }
+}
+
+function handlePaste(e: ClipboardEvent) {
+  const files = e.clipboardData?.files
+  if (files && files.length > 0) {
+    e.preventDefault()
+    addFiles(files)
   }
 }
 </script>
@@ -34,6 +49,7 @@ function handleKeydown(e: KeyboardEvent) {
     rows="1"
     @input="handleInput"
     @keydown="handleKeydown"
+    @paste="handlePaste"
   />
 </template>
 

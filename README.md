@@ -145,8 +145,8 @@ const chat = useChat(adapter)
 
 | 组件 | 说明 |
 |------|------|
-| PromptInput | 外层容器，provide 输入上下文 |
-| PromptInputTextarea | 自适应输入框（Enter 发送 / Shift+Enter 换行） |
+| PromptInput | 外层容器，provide 输入上下文，承载多模态附件管道（上传/粘贴/拖拽） |
+| PromptInputTextarea | 自适应输入框（`sendKey` 切换 Enter / Alt+Enter 发送，IME 组合期防御） |
 | PromptInputSubmit | 发送/停止切换按钮 |
 | PromptInputBody | 输入行容器 |
 | PromptInputFooter | 底部工具栏 |
@@ -170,6 +170,7 @@ const chat = useChat(adapter)
 | AttachmentInfo | 文件名 + 类型 + 大小 |
 | AttachmentRemove | hover 删除按钮 |
 | AttachmentEmpty | 空状态 |
+| ImageLightbox | 图片灯箱预览（Esc 关闭、方向键翻页，可独立使用） |
 
 ### ToolCall 系列（工具调用）
 

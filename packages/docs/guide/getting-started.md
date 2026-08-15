@@ -35,7 +35,14 @@ import '@ai-chat/markdown/katex.css'
 <script setup lang="ts">
 import { useChat } from '@ai-chat/core'
 import type { ChatAdapter } from '@ai-chat/core'
-import { ChatWindow, MessageList, MessageBubble, InputArea } from '@ai-chat/vue'
+import {
+  ChatWindow,
+  MessageList,
+  MessageBubble,
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputSubmit,
+} from '@ai-chat/vue'
 import { MarkdownRenderer } from '@ai-chat/markdown'
 
 // 1. 实现 ChatAdapter 接口
@@ -71,11 +78,14 @@ const chat = useChat(adapter)
       </MessageBubble>
     </MessageList>
     <template #footer>
-      <InputArea
+      <PromptInput
         :disabled="chat.isStreaming"
-        @send="chat.send"
+        @send="(payload) => chat.send(payload.text)"
         @abort="chat.abort"
-      />
+      >
+        <PromptInputTextarea />
+        <PromptInputSubmit />
+      </PromptInput>
     </template>
   </ChatWindow>
 </template>

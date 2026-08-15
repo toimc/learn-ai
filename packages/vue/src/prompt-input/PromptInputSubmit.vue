@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { inject, type Ref } from 'vue'
+import { inject } from 'vue'
+import { PROMPT_INPUT_KEY } from './context'
 
-const { status, disabled } = inject<{
-  status: Ref<'ready' | 'streaming'>
-  disabled: () => boolean
-}>('promptInput')!
+const { status, disabled } = inject(PROMPT_INPUT_KEY)!
 
 const submit = inject<() => void>('promptSubmit')!
 const abort = inject<() => void>('promptAbort')!

@@ -86,6 +86,7 @@ export default defineConfig({
             { text: 'ToolCall', link: '/components/tool-call' },
             { text: 'Shimmer', link: '/components/shimmer' },
             { text: 'Toast', link: '/components/toast' },
+            { text: 'ImageLightbox', link: '/components/image-lightbox' },
           ],
         },
         {

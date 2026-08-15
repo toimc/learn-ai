@@ -32,6 +32,8 @@ export default tseslint.config(
         File: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly',
+        ClipboardEvent: 'readonly',
+        DragEvent: 'readonly',
         MouseEvent: 'readonly',
         localStorage: 'readonly',
         confirm: 'readonly',

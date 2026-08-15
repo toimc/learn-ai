@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useChat, generateId } from '@ai-chat/core'
+import type { Attachment } from '@ai-chat/core'
 import { mockMessages } from '../mock/mock-messages'
 import {
   Conversation,
@@ -14,6 +15,8 @@ import {
   PromptInput,
   PromptInputTextarea,
   PromptInputSubmit,
+  PromptInputUploadButton,
+  PromptInputAttachments,
   PromptInputFooter,
   PromptInputTools,
   PromptInputButton,
@@ -192,6 +195,22 @@ function removeConversation(id: string) {
 
 function useSuggestion(text: string) {
   chat.send(text)
+}
+
+// mock 上传：模拟真实接口的 800ms 延迟，返回带本地预览 URL 的附件
+async function mockUpload(files: File[]): Promise<Attachment[]> {
+  await new Promise((r) => setTimeout(r, 800))
+  return files.map((f) => ({
+    id: `att_${f.name}_${f.size}`,
+    name: f.name,
+    mediaType: f.type || 'application/octet-stream',
+    size: f.size,
+    url: URL.createObjectURL(f),
+  }))
+}
+
+function onSend(payload: { text: string; attachments?: Attachment[] }) {
+  chat.send(payload.text, payload.attachments)
 }
 
 function scrollToBottom() {
@@ -622,29 +641,16 @@ watch(() => chat.messages.length, scrollToBottom)
 
         <!-- Input -->
         <div class="pg-input-area">
-          <PromptInput
-            @send="(payload: { text: string }) => chat.send(payload.text)"
-          >
+          <PromptInput :before-send="mockUpload" @send="onSend">
+            <PromptInputAttachments />
             <PromptInputTextarea placeholder="给 AI Chat UI 发送消息..." />
             <PromptInputSubmit />
             <template #footer>
               <PromptInputFooter>
                 <template #tools>
                   <PromptInputTools>
-                    <PromptInputButton title="上传文件">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
-                        />
-                      </svg>
-                    </PromptInputButton>
+                    <PromptInputUploadButton kind="image" />
+                    <PromptInputUploadButton kind="file" />
                     <PromptInputButton title="网页搜索">
                       <svg
                         viewBox="0 0 24 24"
@@ -699,7 +705,7 @@ watch(() => chat.messages.length, scrollToBottom)
                 </template>
                 <template #hint>
                   <span class="pg-input-hint"
-                    >Enter 发送，Shift+Enter 换行</span
+                    >Enter 换行，Alt+Enter 发送；支持粘贴/拖拽上传</span
                   >
                 </template>
               </PromptInputFooter>

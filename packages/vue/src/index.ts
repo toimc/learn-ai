@@ -43,6 +43,8 @@ export {
   PromptInputButton,
   PromptInputSubmit,
   PromptInputHeader,
+  PromptInputUploadButton,
+  PromptInputAttachments,
 } from './prompt-input'
 
 // Comparison series
@@ -66,6 +68,9 @@ export {
   ToolCallInput,
   ToolCallOutput,
 } from './tool-call'
+
+// Preview series
+export { ImageLightbox } from './preview'
 
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */

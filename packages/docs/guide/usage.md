@@ -139,11 +139,14 @@ const chat = useChat(adapter, {
 
     <!-- 输入区域 -->
     <template #footer>
-      <InputArea
+      <PromptInput
         :disabled="chat.isStreaming"
-        @send="chat.send"
+        @send="(payload) => chat.send(payload.text)"
         @abort="chat.abort"
-      />
+      >
+        <PromptInputTextarea />
+        <PromptInputSubmit />
+      </PromptInput>
     </template>
   </ChatWindow>
 </template>
