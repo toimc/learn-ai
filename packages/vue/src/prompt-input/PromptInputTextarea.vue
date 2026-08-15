@@ -53,27 +53,30 @@ function handlePaste(e: ClipboardEvent) {
   />
 </template>
 
-<style>
-@layer ai-chat-components {
-  .ai-chat-prompt-textarea {
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    background: transparent;
-    border: none;
-    color: var(--ai-chat-color-text-primary);
-    font-size: 15px;
-    font-family: var(--ai-chat-font-sans);
-    padding: 14px 16px 14px 20px;
-    resize: none;
-    outline: none;
-    max-height: var(--ai-chat-input-max-height, 200px);
-    min-height: 24px;
-    line-height: 1.5;
-  }
+<!-- scoped 而非 @layer：宿主文档站（VitePress 等）的未分层元素级 reset
+     （如 textarea { padding: 0 }）会压过任何 @layer 规则；data-v 属性
+     选择器天然限本组件不泄漏，且特异性高于元素级 reset -->
+<style scoped>
+.ai-chat-prompt-textarea {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--ai-chat-color-text-primary);
+  font-size: 15px;
+  font-family: var(--ai-chat-font-sans);
+  padding: 14px 16px 14px 20px;
+  resize: none;
+  outline: none;
+  /* 输入行弹性高度：随内容增长，超过上限后内部滚动（类 ChatGPT/豆包） */
+  max-height: var(--ai-chat-input-max-height, 200px);
+  min-height: 24px;
+  line-height: 1.5;
+  overflow-y: auto;
+}
 
-  .ai-chat-prompt-textarea::placeholder {
-    color: var(--ai-chat-color-text-muted);
-  }
+.ai-chat-prompt-textarea::placeholder {
+  color: var(--ai-chat-color-text-muted);
 }
 </style>
