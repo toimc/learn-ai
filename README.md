@@ -7,6 +7,7 @@
 - **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端
 - **32 个可组合组件**：Conversation / Message / Comparison / PromptInput / Attachment / ToolCall / Shared 七大系列
 - **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
+- **样式隔离**：全部库样式收在 `@layer` 级联层内，不污染宿主；宿主一行未分层 CSS 即可覆盖任意组件样式，无需 `!important`
 - **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
 - **AsyncGenerator 流式渲染**：`sendMessage` 返回 `AsyncGenerator<StreamChunk>`，原生支持流式输出
 - **零 CSS 框架依赖**：不绑定 Tailwind / UnoCSS 等框架
@@ -266,7 +267,7 @@ pnpm clean          # 清理构建产物
 |------|------|------|
 | @ai-chat/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
 | @ai-chat/vue | 0.0.1 | 32 个 Vue 3 组件 + Design Token |
-| @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX |
+| @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@ai-chat/markdown/katex.css` 可选引入） |
 | @ai-chat/docs | 私有 | VitePress 文档站 + Playground |
 
 ## License

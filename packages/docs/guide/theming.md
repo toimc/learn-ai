@@ -38,7 +38,18 @@ AI Chat UI 使用 CSS Variables 实现主题定制，不依赖任何 CSS 框架�
 
 ### 2. useTheme 运行时切换（全局）
 
-通过 `useTheme` composable 在运行时切换全局明暗，状态自动持久化到 `localStorage`，并写入 `document.documentElement` 的 `data-theme`：
+通过 `useTheme` composable 在运行时切换全局明暗，默认写入 `document.documentElement` 的 `data-theme` 并持久化到 `localStorage`。两个选项可改变这一行为：
+
+- `target: 'html'`（默认）：`data-theme` 写宿主 `<html>`，整页生效。
+- `target: 'component'`：`data-theme` 只写到组件根元素，暗色变量仅作用于组件子树，**不碰宿主主题系统**。
+- `persist: false`：关闭 `localStorage` 读写，主题不跨会话保留。
+
+```ts
+// 组件内明暗切换，不影响宿主页面、不落 localStorage
+const { resolvedTheme, toggleTheme } = useTheme({ target: 'component', persist: false })
+```
+
+基本用法：
 
 ```vue
 <script setup lang="ts">
@@ -67,6 +78,30 @@ const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
   --ai-chat-color-accent-500: #7c3aed; /* 改原始层，语义层自动跟随 */
 }
 ```
+
+## 样式隔离与宿主覆盖（@layer）
+
+组件库的全部样式都收在 CSS 级联层（`@layer`）内，层顺序在 `tokens.css` 顶部声明一次：
+
+```css
+@layer ai-chat-base, ai-chat-tokens, ai-chat-components, ai-chat-animations;
+/*      基础重置      令牌变量        组件样式           动画 keyframes */
+```
+
+这带来两个直接收益：
+
+1. **覆盖库样式无需 `!important`**：CSS 规范中层内样式优先级低于任何未分层样式——宿主应用（通常不使用 @layer）的一行普通 CSS 天然覆盖组件库任意对应规则：
+
+   ```css
+   /* 宿主里的一行普通 CSS，直接生效，不需要 !important */
+   .ai-chat-window { border-radius: 16px; }
+   ```
+
+2. **库样式不会反向污染宿主**：组件库自己写的规则永远压不过宿主样式；同时全局 `*` box-sizing reset 已收敛为只作用于 `.ai-chat-window` 子树，宿主文档中除聊天窗口外没有任何元素被组件库规则命中。
+
+::: tip 何时用 @layer 覆盖、何时用变量？
+调颜色/圆角等令牌时优先[覆盖 CSS 变量](#三档配置方式)；需要改结构型样式（边框、间距、布局）时直接写未分层 CSS 规则覆盖即可，两者都不需要 `!important`。
+:::
 
 ## 内置预设
 
