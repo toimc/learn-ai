@@ -16,11 +16,11 @@
 ## 基础用法
 
 ```vue
-<PromptInput>
-  <PromptInputTextarea
-    placeholder="输入消息..."
-    @send="(text) => chat.send(text)"
-  />
+<PromptInput
+  placeholder="输入消息..."
+  @send="(payload) => chat.send(payload.text)"
+>
+  <PromptInputTextarea />
   <PromptInputSubmit />
   <template #footer>
     <PromptInputFooter>
@@ -45,7 +45,7 @@
 
 | 模式 | 发送 | 换行 | 适用场景 |
 |------|------|------|----------|
-| `'alt-enter'`（默认） | `Alt+Enter` / `⌥+Enter` | `Enter` | 长文输入为主，换行是高频操作（对齐 Claude/ChatGPT 桌面端） |
+| `'alt-enter'`（默认） | `Alt+Enter`（macOS 亦支持 `⌘+Enter`） | `Enter` | 长文输入为主，换行是高频操作（对齐 Claude/ChatGPT 桌面端） |
 | `'enter'` | `Enter` | `Shift+Enter` | 短问答为主，发送是高频操作 |
 
 ```vue
@@ -133,13 +133,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 
 ### PromptInputTextarea
 
-| 属性名 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| placeholder | `string` | `'Type a message...'` | 输入框占位文本 |
-
-| 事件名 | 参数 | 说明 |
-|--------|------|------|
-| send | `(content: string)` | 用户按发送快捷键提交（由 PromptInput 的 `sendKey` 决定） |
+无自身 Props/Events。占位文本来自 `PromptInput` 的 `placeholder` prop；发送快捷键由 `PromptInput` 的 `sendKey` 决定，`send` 事件也在 `PromptInput` 上监听。粘贴图片/文件会自动进入附件预览列表。
 
 ### PromptInputSubmit
 

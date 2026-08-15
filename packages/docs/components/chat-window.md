@@ -36,7 +36,7 @@
 | 插槽名 | 说明 |
 |--------|------|
 | default | 消息内容区域（可滚动） |
-| footer | 底部区域，通常放置 InputArea |
+| footer | 底部区域，通常放置 PromptInput 输入组件 |
 
 ### CSS 变量
 
