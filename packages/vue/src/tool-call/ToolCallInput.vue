@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import type { ToolCallInfo } from '@ai-chat/core'
+import { aiChatI18n } from '../locales'
 
 const data = inject<ToolCallInfo>('toolCallData')!
+
+const { t } = aiChatI18n.global
 </script>
 
 <template>
   <div class="ai-chat-tool-call-input">
-    <div class="ai-chat-tool-call-input__label">Parameters</div>
+    <div class="ai-chat-tool-call-input__label">
+      {{ t('toolCall.parameters') }}
+    </div>
     <pre class="ai-chat-tool-call-input__code">{{
       JSON.stringify(data.arguments, null, 2)
     }}</pre>

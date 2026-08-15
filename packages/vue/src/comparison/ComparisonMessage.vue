@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import MessageContent from '../message/MessageContent.vue'
+import { aiChatI18n } from '../locales'
 
 type Side = 'A' | 'B'
 
@@ -15,14 +16,18 @@ const props = withDefaults(
     stackOnMobile?: boolean
     disabled?: boolean
   }>(),
-  {
-    leftLabel: '回复 A',
-    rightLabel: '回复 B',
-    chosen: null,
-    buttonLabel: '喜欢这个',
-    stackOnMobile: true,
-    disabled: false,
-  },
+  { chosen: null, stackOnMobile: true, disabled: false },
+)
+
+const { t } = aiChatI18n.global
+const displayLeftLabel = computed(
+  () => props.leftLabel ?? t('comparison.leftLabel'),
+)
+const displayRightLabel = computed(
+  () => props.rightLabel ?? t('comparison.rightLabel'),
+)
+const displayButtonLabel = computed(
+  () => props.buttonLabel ?? t('comparison.buttonLabel'),
 )
 
 const emit = defineEmits<{
@@ -52,9 +57,9 @@ function choose(side: Side) {
       class="ai-chat-comparison__col"
       :class="{ 'is-selected': selected === 'A' }"
     >
-      <div class="ai-chat-comparison__label">{{ leftLabel }}</div>
+      <div class="ai-chat-comparison__label">{{ displayLeftLabel }}</div>
       <div class="ai-chat-comparison__content">
-        <slot name="left" :label="leftLabel">
+        <slot name="left" :label="displayLeftLabel">
           <MessageContent :content="left" />
         </slot>
       </div>
@@ -65,7 +70,7 @@ function choose(side: Side) {
             :disabled="disabled"
             @click="choose('A')"
           >
-            {{ buttonLabel }}
+            {{ displayButtonLabel }}
           </button>
         </slot>
       </div>
@@ -75,9 +80,9 @@ function choose(side: Side) {
       class="ai-chat-comparison__col"
       :class="{ 'is-selected': selected === 'B' }"
     >
-      <div class="ai-chat-comparison__label">{{ rightLabel }}</div>
+      <div class="ai-chat-comparison__label">{{ displayRightLabel }}</div>
       <div class="ai-chat-comparison__content">
-        <slot name="right" :label="rightLabel">
+        <slot name="right" :label="displayRightLabel">
           <MessageContent :content="right" />
         </slot>
       </div>
@@ -88,7 +93,7 @@ function choose(side: Side) {
             :disabled="disabled"
             @click="choose('B')"
           >
-            {{ buttonLabel }}
+            {{ displayButtonLabel }}
           </button>
         </slot>
       </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue'
+import { ref, provide, computed } from 'vue'
+import { aiChatI18n } from '../locales'
 
 const props = withDefaults(
   defineProps<{
@@ -12,7 +13,6 @@ const props = withDefaults(
   }>(),
   {
     disabled: false,
-    placeholder: '给 AI Chat UI 发送消息...',
     maxHeight: 200,
     accept: '',
     multiple: false,
@@ -29,13 +29,18 @@ const inputText = ref('')
 const files = ref<File[]>([])
 const status = ref<'ready' | 'streaming'>('ready')
 
+const { t } = aiChatI18n.global
+const displayPlaceholder = computed(
+  () => props.placeholder ?? t('promptInput.placeholder'),
+)
+
 provide('promptInput', {
   inputText,
   files,
   status,
   disabled: () => props.disabled,
   maxHeight: () => props.maxHeight,
-  placeholder: () => props.placeholder,
+  placeholder: () => displayPlaceholder.value,
 })
 
 function handleSubmit() {
@@ -60,9 +65,7 @@ provide('promptAbort', handleAbort)
       <slot />
     </div>
     <p class="ai-chat-prompt-input__disclaimer">
-      <slot name="disclaimer"
-        >AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性</slot
-      >
+      <slot name="disclaimer">{{ t('promptInput.disclaimer') }}</slot>
     </p>
   </div>
 </template>

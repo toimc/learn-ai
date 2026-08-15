@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import type { ToolCallInfo } from '@ai-chat/core'
+import { aiChatI18n } from '../locales'
 
 const data = inject<ToolCallInfo>('toolCallData')!
+
+const { t } = aiChatI18n.global
 </script>
 
 <template>
@@ -11,14 +14,16 @@ const data = inject<ToolCallInfo>('toolCallData')!
       <div
         class="ai-chat-tool-call-output__label ai-chat-tool-call-output__label--error"
       >
-        Error
+        {{ t('toolCall.error') }}
       </div>
       <pre
         class="ai-chat-tool-call-output__code ai-chat-tool-call-output__code--error"
         >{{ data.error }}</pre>
     </template>
     <template v-else>
-      <div class="ai-chat-tool-call-output__label">Result</div>
+      <div class="ai-chat-tool-call-output__label">
+        {{ t('toolCall.result') }}
+      </div>
       <pre class="ai-chat-tool-call-output__code">{{
         JSON.stringify(data.result, null, 2)
       }}</pre>
