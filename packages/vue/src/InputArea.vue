@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { aiChatI18n } from './locales'
+
+const { t } = aiChatI18n.global
 
 const props = defineProps<{
   disabled?: boolean
@@ -32,7 +35,7 @@ function handleAbort() {
       <textarea
         v-model="input"
         class="ai-chat-input__textarea"
-        :placeholder="placeholder || 'Type a message...'"
+        :placeholder="placeholder || t('inputArea.placeholder')"
         :disabled="disabled"
         rows="1"
         @keydown.enter.exact.prevent="handleSubmit"
@@ -42,7 +45,7 @@ function handleAbort() {
         class="ai-chat-input__btn ai-chat-input__btn--abort"
         @click="handleAbort"
       >
-        Stop
+        {{ t('inputArea.stop') }}
       </button>
       <button
         v-else
@@ -50,7 +53,7 @@ function handleAbort() {
         :disabled="!input.trim()"
         @click="handleSubmit"
       >
-        Send
+        {{ t('inputArea.send') }}
       </button>
     </div>
   </div>

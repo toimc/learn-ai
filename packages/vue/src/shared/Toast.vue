@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { aiChatI18n } from '../locales'
+
+const { t } = aiChatI18n.global
 
 const props = withDefaults(
   defineProps<{
@@ -100,7 +103,7 @@ onBeforeUnmount(clearTimer)
     <button
       class="ai-chat-toast__close"
       type="button"
-      aria-label="关闭"
+      :aria-label="t('shared.close')"
       @click="handleClose"
     >
       <svg
