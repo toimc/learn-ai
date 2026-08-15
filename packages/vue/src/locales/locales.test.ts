@@ -17,8 +17,6 @@ describe('字典结构', () => {
   })
 
   it('所有值均为非空字符串', () => {
-    for (const k of flattenKeys(zhCN)) expect(typeof k).toBe('string')
-    // 逐值断言非空
     const check = (o: Record<string, unknown>) => {
       for (const v of Object.values(o)) {
         if (typeof v === 'object' && v !== null)
