@@ -7,6 +7,7 @@ export { default as StreamText } from './shared/StreamText.vue'
 export { default as Button } from './shared/Button.vue'
 export { default as Shimmer } from './shared/Shimmer.vue'
 export { default as Toast } from './shared/Toast.vue'
+export { default as LanguageToggle } from './shared/LanguageToggle.vue'
 
 // Conversation series
 export {
@@ -90,6 +91,10 @@ export { presets } from './theme/presets'
 export type { ThemePreset, PresetKey } from './theme/presets'
 export { tokensMeta } from './theme/tokens-meta'
 export type { TokenMeta, TokenType, TokenLayer } from './theme/tokens-meta'
+
+// i18n
+export type { LocaleOption, AiChatLocale, MessageSchema } from './locales'
+export { aiChatI18n, setAiChatLocale, getInitialLocale } from './locales'
 
 // 布局配置
 export { useLayoutConfig } from './composables/useLayoutConfig'
