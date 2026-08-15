@@ -58,6 +58,14 @@ const zhCN = {
     placeholder: '给 AI Chat UI 发送消息...',
     hint: 'Enter 换行，Alt+Enter 发送；支持粘贴/拖拽上传',
   },
+  multimodalDemo: {
+    title: '多模态输入',
+    description:
+      '三种入口添加附件：点击图标选择、⌘V/Ctrl+V 粘贴、拖拽到输入框；Enter 换行、Alt+Enter 发送。发送前经 mock 上传（800ms），超限（>5 个或 >10MB）会 Toast 拒绝。',
+    payloadTitle: '最近一次 send 事件 payload',
+    payloadEmpty: '尚未发送——输入文字、附一张图片，然后按 Alt+Enter 试试',
+    reset: '清空',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -117,6 +125,15 @@ const enUS: typeof zhCN = {
   input: {
     placeholder: 'Send a message to AI Chat UI...',
     hint: 'Enter for newline, Alt+Enter to send; paste/drag to upload',
+  },
+  multimodalDemo: {
+    title: 'Multimodal Input',
+    description:
+      'Add attachments three ways: click the icons, paste (⌘V/Ctrl+V), or drag files onto the input; Enter for newline, Alt+Enter to send. Mock upload takes 800ms; limits (>5 files or >10MB) are rejected with a toast.',
+    payloadTitle: 'Last send event payload',
+    payloadEmpty:
+      'Nothing sent yet — type something, attach an image, then press Alt+Enter',
+    reset: 'Clear',
   },
 }
 
