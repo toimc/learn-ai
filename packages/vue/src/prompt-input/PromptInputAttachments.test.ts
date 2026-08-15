@@ -123,6 +123,38 @@ describe('PromptInputAttachments 状态标记', () => {
     const item = w.get('.ai-chat-prompt-attachments__item--error')
     expect(item.attributes('title')).toContain('上传失败')
   })
+
+  it('a11y：移除按钮 aria-label 含文件名；非图片缩略图不可点击；uploading/error 有 sr-only 状态文本', () => {
+    const files = [
+      pending('f1', makeFile('note.pdf', 'application/pdf')),
+      pending('u1', makeFile('up.png', 'image/png'), { status: 'uploading' }),
+      pending('e1', makeFile('err.mp3', 'audio/mpeg'), {
+        status: 'error',
+        error: '上传失败',
+      }),
+    ]
+    const { w } = mountAttachments(files)
+    const items = w.findAll('.ai-chat-prompt-attachments__item')
+    expect(
+      items[0]
+        .get('.ai-chat-prompt-attachments__remove')
+        .attributes('aria-label'),
+    ).toBe('移除 note.pdf')
+
+    // 非图片项的 thumb 不是 button，图标可见
+    expect(
+      items[0].get('.ai-chat-prompt-attachments__thumb').element.tagName,
+    ).not.toBe('BUTTON')
+    expect(items[0].text()).toContain('📄')
+
+    // uploading 项 aria-busy 与状态文本
+    expect(items[1].attributes('aria-busy')).toBe('true')
+    expect(items[1].find('.ai-chat-sr-only').text()).toBe('上传中')
+
+    // error 项状态文本
+    expect(items[2].attributes('aria-busy')).toBe('false')
+    expect(items[2].find('.ai-chat-sr-only').text()).toBe('上传失败')
+  })
 })
 
 describe('PromptInputAttachments 图片预览兜底链', () => {

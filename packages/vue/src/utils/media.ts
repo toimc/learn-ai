@@ -7,6 +7,16 @@ export function getMediaCategory(
   return 'document'
 }
 
+export function getFileIcon(mediaType: string): string {
+  const category = getMediaCategory(mediaType)
+  const map: Record<string, string> = {
+    document: '📄',
+    audio: '🎵',
+    video: '🎬',
+  }
+  return map[category] || '📄'
+}
+
 export function getAttachmentLabel(mediaType: string): string {
   const map: Record<string, string> = {
     'application/pdf': 'PDF',

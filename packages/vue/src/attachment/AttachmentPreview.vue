@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import type { Attachment } from '@ai-chat/core'
-import { getMediaCategory } from '../utils/media'
+import { getMediaCategory, getFileIcon } from '../utils/media'
 
 const data = inject<Attachment>('attachmentData')!
 
-const category = getMediaCategory(data.mediaType)
+const emit = defineEmits<{
+  preview: []
+}>()
 
-const iconMap: Record<string, string> = {
-  document: '📄',
-  audio: '🎵',
-  video: '🎬',
-}
+const category = getMediaCategory(data.mediaType)
 </script>
 
 <template>
@@ -24,9 +22,11 @@ const iconMap: Record<string, string> = {
       :src="data.url"
       :alt="data.name"
       class="ai-chat-attachment-preview__img"
+      style="cursor: pointer"
+      @click="emit('preview')"
     />
     <span v-else class="ai-chat-attachment-preview__icon">
-      {{ iconMap[category] || '📄' }}
+      {{ getFileIcon(data.mediaType) }}
     </span>
   </div>
 </template>

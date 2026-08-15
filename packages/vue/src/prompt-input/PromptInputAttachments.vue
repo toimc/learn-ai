@@ -4,12 +4,13 @@ import type { Attachment } from '@ai-chat/core'
 import { ImageLightbox } from '../preview'
 import { PROMPT_INPUT_KEY } from './context'
 import { formatFileSize } from '../utils/format'
-import { getMediaCategory } from '../utils/media'
+import { getFileIcon } from '../utils/media'
 import type { PendingFile } from '../composables/usePendingFiles'
 
 const { pendingFiles, remove } = inject(PROMPT_INPUT_KEY)!
 
-const attrs = getCurrentInstance()?.vnode.props
+const instance = getCurrentInstance()
+
 const emit = defineEmits<{
   preview: [{ attachments: Attachment[]; index: number }]
 }>()
@@ -31,7 +32,12 @@ const imageAttachments = computed<Attachment[]>(() =>
   })),
 )
 
-const hostHandlesPreview = computed(() => !!attrs && 'onPreview' in attrs)
+// 点击时实时读当前 vnode 的 props，宿主动态增删 onPreview 监听也能感知
+// （instance.vnode 在每次重渲染后被替换，不能在 setup 时快照 props）
+function hostHandlesPreview(): boolean {
+  const props = instance?.vnode.props
+  return !!props && 'onPreview' in props
+}
 
 function openPreview(p: PendingFile) {
   if (!isImage(p)) return
@@ -39,23 +45,12 @@ function openPreview(p: PendingFile) {
     0,
     imageAttachments.value.findIndex((a) => a.id === p.id),
   )
-  if (hostHandlesPreview.value) {
+  if (hostHandlesPreview()) {
     emit('preview', { attachments: imageAttachments.value, index })
     return
   }
   lightboxIndex.value = index
   lightboxOpen.value = true
-}
-
-const ICONS: Record<string, string> = {
-  document: '📄',
-  audio: '🎵',
-  video: '🎬',
-}
-
-function iconFor(mime: string) {
-  const category = getMediaCategory(mime)
-  return ICONS[category] || '📎'
 }
 </script>
 
@@ -69,36 +64,50 @@ function iconFor(mime: string) {
         'ai-chat-prompt-attachments__item--uploading': p.status === 'uploading',
         'ai-chat-prompt-attachments__item--error': p.status === 'error',
       }"
+      :aria-busy="p.status === 'uploading'"
       :title="p.error || p.file.name"
     >
       <button
+        v-if="isImage(p)"
         type="button"
         class="ai-chat-prompt-attachments__thumb"
         :aria-label="`预览 ${p.file.name}`"
         @click="openPreview(p)"
       >
-        <img v-if="isImage(p)" :src="p.previewUrl" :alt="p.file.name" />
-        <span
-          v-else
-          class="ai-chat-prompt-attachments__icon"
-          aria-hidden="true"
-          >{{ iconFor(p.file.type) }}</span
-        >
+        <img :src="p.previewUrl" :alt="p.file.name" />
         <span
           v-if="p.status === 'uploading'"
           class="ai-chat-prompt-attachments__loading"
         />
       </button>
+      <div
+        v-else
+        class="ai-chat-prompt-attachments__thumb ai-chat-prompt-attachments__thumb--static"
+      >
+        <span class="ai-chat-prompt-attachments__icon" aria-hidden="true">{{
+          getFileIcon(p.file.type)
+        }}</span>
+        <span
+          v-if="p.status === 'uploading'"
+          class="ai-chat-prompt-attachments__loading"
+        />
+      </div>
       <div class="ai-chat-prompt-attachments__meta">
         <span class="ai-chat-prompt-attachments__name">{{ p.file.name }}</span>
         <span class="ai-chat-prompt-attachments__size">{{
           formatFileSize(p.file.size)
         }}</span>
+        <span v-if="p.status === 'uploading'" class="ai-chat-sr-only"
+          >上传中</span
+        >
+        <span v-else-if="p.status === 'error'" class="ai-chat-sr-only"
+          >上传失败</span
+        >
       </div>
       <button
         type="button"
         class="ai-chat-prompt-attachments__remove"
-        aria-label="移除附件"
+        :aria-label="`移除 ${p.file.name}`"
         @click="remove(p.id)"
       >
         <svg
@@ -174,6 +183,10 @@ function iconFor(mime: string) {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .ai-chat-prompt-attachments__thumb--static {
+    cursor: default;
   }
 
   .ai-chat-prompt-attachments__icon {
