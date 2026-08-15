@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
+import { defineComponent, h, inject } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import PromptInput from './PromptInput.vue'
+import { PROMPT_INPUT_KEY, type PromptInputContext } from './context'
 import type { Attachment } from '@ai-chat/core'
-import type { PendingFile } from '../composables/usePendingFiles'
 
 function png(name = 'a.png', size = 1024) {
   return new File([new ArrayBuffer(size)], name, { type: 'image/png' })
@@ -16,16 +17,21 @@ const attachment: Attachment = {
   size: 1024,
 }
 
-/** 读取 PromptInput provide 出来的上下文（含 submit/addFiles/pendingFiles） */
-function getCtx(w: VueWrapper) {
-  return (w.vm.$ as unknown as { provides: Record<string, unknown> }).provides[
-    'promptInput'
-  ] as {
-    inputText: { value: string }
-    pendingFiles: { value: PendingFile[] }
-    addFiles: (files: File[] | FileList) => void
-    submit: () => Promise<void>
-  }
+/** probe 模式：通过 default slot 内的探针组件拿到 provide 出来的上下文 */
+let ctx: PromptInputContext
+const Probe = defineComponent({
+  setup() {
+    ctx = inject(PROMPT_INPUT_KEY)!
+    return () => null
+  },
+})
+
+function mountInput(props: Record<string, unknown> = {}): VueWrapper {
+  ctx = undefined as unknown as PromptInputContext
+  return mount(PromptInput, {
+    props,
+    slots: { default: () => h(Probe) },
+  })
 }
 
 function flush() {
@@ -34,7 +40,7 @@ function flush() {
 
 describe('PromptInput', () => {
   it('渲染 disclaimer 默认文案', () => {
-    const w = mount(PromptInput)
+    const w = mountInput()
     expect(w.find('.ai-chat-prompt-input__disclaimer').exists()).toBe(true)
     expect(w.text()).toContain('AI Chat UI')
   })
@@ -47,8 +53,7 @@ describe('PromptInput', () => {
   })
 
   it('无文本但有文件时可发送，send 携带 files', async () => {
-    const w = mount(PromptInput)
-    const ctx = getCtx(w)
+    const w = mountInput()
     const file = png()
     ctx.addFiles([file])
     ctx.inputText.value = ''
@@ -65,10 +70,7 @@ describe('PromptInput', () => {
 
   it('beforeSend 成功：uploading 后 emit send attachments 并清空', async () => {
     const beforeSend = vi.fn().mockResolvedValue([attachment])
-    const w = mount(PromptInput, {
-      props: { beforeSend },
-    })
-    const ctx = getCtx(w)
+    const w = mountInput({ beforeSend })
     const file = png()
     ctx.addFiles([file])
     ctx.inputText.value = '  看图  '
@@ -89,12 +91,20 @@ describe('PromptInput', () => {
     expect(ctx.inputText.value).toBe('')
   })
 
+  it('beforeSend resolve 空数组时 attachments 为 undefined', async () => {
+    const beforeSend = vi.fn().mockResolvedValue([])
+    const w = mountInput({ beforeSend })
+    ctx.addFiles([png()])
+    ctx.inputText.value = '看图'
+    await ctx.submit()
+    const payload = w.emitted('send')![0][0] as { attachments?: Attachment[] }
+    expect(payload.attachments).toBeUndefined()
+    expect(ctx.pendingFiles.value).toHaveLength(0)
+  })
+
   it('beforeSend 失败：不 emit send，文件标记 error', async () => {
     const beforeSend = vi.fn().mockRejectedValue(new Error('网络错误'))
-    const w = mount(PromptInput, {
-      props: { beforeSend },
-    })
-    const ctx = getCtx(w)
+    const w = mountInput({ beforeSend })
     ctx.addFiles([png()])
     ctx.inputText.value = '看图'
 
@@ -109,9 +119,40 @@ describe('PromptInput', () => {
     expect(ctx.inputText.value).toBe('看图')
   })
 
+  it('上传窗口内新增文件与继续输入不被丢弃', async () => {
+    let resolveUpload: (v: Attachment[]) => void
+    const beforeSend = vi.fn(
+      () =>
+        new Promise<Attachment[]>((resolve) => {
+          resolveUpload = resolve
+        }),
+    )
+    const w = mountInput({ beforeSend })
+    const file1 = png('1.png')
+    ctx.addFiles([file1])
+    ctx.inputText.value = '第一批'
+
+    const pending = ctx.submit()
+    // 上传进行中：追加文件 B、继续输入
+    const file2 = png('2.png')
+    ctx.addFiles([file2])
+    ctx.inputText.value = '第一批追加'
+
+    resolveUpload!([attachment])
+    await pending
+
+    expect(beforeSend).toHaveBeenCalledTimes(1)
+    expect(beforeSend).toHaveBeenCalledWith([file1])
+    // 新增文件 B 保留，未参与本次 beforeSend
+    expect(ctx.pendingFiles.value).toHaveLength(1)
+    expect(ctx.pendingFiles.value[0].file).toBe(file2)
+    // 等待期间新敲的字保留
+    expect(ctx.inputText.value).toBe('第一批追加')
+    expect(w.emitted('send')).toHaveLength(1)
+  })
+
   it('校验拒绝：emit error 并渲染 Toast', async () => {
-    const w = mount(PromptInput, { props: { maxFiles: 1 } })
-    const ctx = getCtx(w)
+    const w = mountInput({ maxFiles: 1 })
     const f1 = png('1.png')
     const f2 = png('2.png')
     ctx.addFiles([f1, f2])
@@ -133,10 +174,7 @@ describe('PromptInput', () => {
           resolveUpload = resolve
         }),
     )
-    const w = mount(PromptInput, {
-      props: { beforeSend },
-    })
-    const ctx = getCtx(w)
+    const w = mountInput({ beforeSend })
     ctx.addFiles([png()])
     ctx.inputText.value = '看图'
 

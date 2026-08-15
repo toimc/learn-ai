@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { inject, type Ref } from 'vue'
+import { inject } from 'vue'
+import { PROMPT_INPUT_KEY } from './context'
 
-const { inputText, disabled, maxHeight, placeholder } = inject<{
-  inputText: Ref<string>
-  disabled: () => boolean
-  maxHeight: () => number
-  placeholder: () => string
-}>('promptInput')!
+const { inputText, disabled, maxHeight, placeholder } =
+  inject(PROMPT_INPUT_KEY)!
 
 const submit = inject<() => void>('promptSubmit')!
 

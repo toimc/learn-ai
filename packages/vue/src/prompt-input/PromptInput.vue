@@ -3,6 +3,7 @@ import { ref, provide } from 'vue'
 import type { Attachment } from '@ai-chat/core'
 import { usePendingFiles } from '../composables/usePendingFiles'
 import Toast from '../shared/Toast.vue'
+import { PROMPT_INPUT_KEY } from './context'
 
 const props = withDefaults(
   defineProps<{
@@ -59,7 +60,7 @@ function addFilesAndNotify(files: Parameters<typeof pf.addFiles>[0]) {
   })
 }
 
-provide('promptInput', {
+provide(PROMPT_INPUT_KEY, {
   inputText,
   pendingFiles: pf.pendingFiles,
   status,
@@ -71,12 +72,14 @@ provide('promptInput', {
   sendKey: () => props.sendKey,
   multiple: () => props.multiple,
   accept: () => props.accept,
-  submit: () => submit(),
+  submit,
 })
 
 async function submit() {
-  const text = inputText.value.trim()
-  const pending = pf.pendingFiles.value
+  const rawText = inputText.value
+  const text = rawText.trim()
+  // 快照必须是拷贝：pf.addFiles 原地 push，await 期间新增的文件不能进入本次上传/移除集合
+  const pending = [...pf.pendingFiles.value]
   if ((!text && !pending.length) || props.disabled) return
   if (pending.some((p) => p.status === 'uploading')) return
 
@@ -85,9 +88,14 @@ async function submit() {
     pending.forEach((p) => pf.setStatus(p.id, 'uploading'))
     try {
       const attachments = await props.beforeSend(files)
-      emit('send', { text, attachments })
-      inputText.value = ''
-      pf.clear()
+      emit('send', {
+        text,
+        attachments: attachments.length ? attachments : undefined,
+      })
+      // 上传窗口内用户可能继续输入或追加文件：只清仍等于快照的文本，
+      // 文件按 id 移除已上传项，窗口内新增的文件保留
+      if (inputText.value === rawText) inputText.value = ''
+      pending.forEach((p) => pf.remove(p.id))
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       pending.forEach((p) => pf.setStatus(p.id, 'error', message))
