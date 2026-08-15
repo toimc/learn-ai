@@ -119,6 +119,7 @@ function handleAbort() {
 const dragDepth = ref(0)
 
 function onDragEnter(e: DragEvent) {
+  if (props.disabled) return
   if (!e.dataTransfer?.types.includes('Files')) return
   e.preventDefault()
   dragDepth.value++
@@ -127,6 +128,7 @@ function onDragEnter(e: DragEvent) {
 function onDragOver(e: DragEvent) {
   if (!e.dataTransfer?.types.includes('Files')) return
   e.preventDefault()
+  e.dataTransfer.dropEffect = 'copy'
 }
 
 function onDragLeave() {
@@ -134,6 +136,7 @@ function onDragLeave() {
 }
 
 function onDrop(e: DragEvent) {
+  if (props.disabled) return
   dragDepth.value = 0
   if (!e.dataTransfer?.files?.length) return
   e.preventDefault()

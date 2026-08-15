@@ -256,4 +256,19 @@ describe('PromptInput', () => {
     })
     expect(ctx.pendingFiles.value).toHaveLength(0)
   })
+
+  it('disabled 时 drop 不入 pendingFiles、不高亮', async () => {
+    const w = mountInput({ disabled: true })
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    await wrapper.trigger('dragenter', { dataTransfer: { types: ['Files'] } })
+    await wrapper.trigger('dragover', { dataTransfer: { types: ['Files'] } })
+    expect(wrapper.classes()).not.toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+
+    await wrapper.trigger('drop', {
+      dataTransfer: { types: ['Files'], files: [png()] },
+    })
+    expect(ctx.pendingFiles.value).toHaveLength(0)
+  })
 })
