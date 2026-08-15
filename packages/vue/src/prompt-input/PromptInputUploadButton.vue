@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { PROMPT_INPUT_KEY } from './context'
 
-withDefaults(defineProps<{ kind?: 'image' | 'file' }>(), {
+const props = withDefaults(defineProps<{ kind?: 'image' | 'file' }>(), {
   kind: 'file',
 })
 
 const { disabled, multiple, accept, addFiles } = inject(PROMPT_INPUT_KEY)!
+
+const label = computed(() => (props.kind === 'image' ? '上传图片' : '上传附件'))
 
 const fileInput = ref<HTMLInputElement | null>(null)
 
@@ -22,21 +24,24 @@ function onChange(e: Event) {
 </script>
 
 <template>
+  <!-- input 必须是 button 的兄弟节点：button 禁止交互式后代，
+       且 input 嵌在 button 内时其 click 冒泡回 button 会导致 pick() 双执行 -->
+  <input
+    ref="fileInput"
+    type="file"
+    :accept="kind === 'image' ? 'image/*' : accept() || undefined"
+    :multiple="multiple()"
+    hidden
+    @change="onChange"
+  />
   <button
     class="ai-chat-prompt-input-btn"
     type="button"
-    :title="kind === 'image' ? '上传图片' : '上传附件'"
+    :title="label"
+    :aria-label="label"
     :disabled="disabled()"
     @click="pick"
   >
-    <input
-      ref="fileInput"
-      type="file"
-      :accept="kind === 'image' ? 'image/*' : accept() || undefined"
-      :multiple="multiple()"
-      hidden
-      @change="onChange"
-    />
     <slot>
       <!-- 图片 icon -->
       <svg

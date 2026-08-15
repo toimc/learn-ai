@@ -32,7 +32,7 @@ function mountUpload(
     sendKey: () => 'alt-enter',
     multiple: () => opts.multiple ?? false,
     accept: () => opts.accept ?? '',
-    submit: vi.fn() as unknown as () => Promise<void>,
+    submit: () => Promise.resolve(),
   }
   const w = mount(PromptInputUploadButton, {
     props: opts.kind ? { kind: opts.kind } : {},
@@ -67,14 +67,14 @@ describe('PromptInputUploadButton accept 属性', () => {
     expect(input(w).accept).toBe('.pdf,.doc')
   })
 
-  it('context accept 为空时 input 不设 accept 限制', () => {
+  it('context accept 为空时移除 accept 属性（不限文件类型）', () => {
     const { w } = mountUpload()
-    expect(input(w).accept).toBe('')
+    expect(input(w).hasAttribute('accept')).toBe(false)
   })
 })
 
 describe('PromptInputUploadButton multiple', () => {
-  it('input multiple 跟随 context', async () => {
+  it('input multiple 跟随 context', () => {
     const { w } = mountUpload({ multiple: true })
     expect(input(w).multiple).toBe(true)
   })
@@ -94,6 +94,28 @@ describe('PromptInputUploadButton 点击选择文件', () => {
     await w.find('button').trigger('click')
     expect(clickSpy).toHaveBeenCalledTimes(1)
     expect(clickSpy.mock.instances[0]).toBe(input(w))
+  })
+
+  it('input 与 button 为兄弟节点：一次用户点击 pick 只执行一次（不 mock click）', async () => {
+    // 不替换 click 实现：若 input 嵌在 button 内，input.click() 会冒泡回
+    // button 再次触发 pick（jsdom 无浏览器 click-in-progress 重入保护，会递归）
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click')
+    const { w } = mountUpload()
+    const btn = w.find('button')
+    const btnClicks = vi.fn()
+    btn.element.addEventListener('click', btnClicks)
+
+    await btn.trigger('click')
+
+    expect(btnClicks).toHaveBeenCalledTimes(1)
+    expect(clickSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('button 有与 title 同值的 aria-label', () => {
+    const { w } = mountUpload({ kind: 'image' })
+    const btn = w.find('button')
+    expect(btn.attributes('aria-label')).toBe('上传图片')
+    expect(btn.attributes('title')).toBe('上传图片')
   })
 
   it('change 后 addFiles 收到文件数组、input.value 清空（连续选同一文件可再次触发）', () => {
