@@ -32,7 +32,16 @@ export default defineConfig({
     siteTitle: 'AI Chat UI',
 
     nav: [
-      { text: '指南', link: '/guide/getting-started' },
+      {
+        text: '指南',
+        items: [
+          { text: '快速开始', link: '/guide/getting-started' },
+          { text: '安装', link: '/guide/installation' },
+          { text: '使用指南', link: '/guide/usage' },
+          { text: '主题定制', link: '/guide/theming' },
+          { text: '国际化', link: '/guide/i18n' },
+        ],
+      },
       { text: '组件', link: '/components/conversation' },
       {
         text: 'Composables',
@@ -56,6 +65,7 @@ export default defineConfig({
             { text: '安装', link: '/guide/installation' },
             { text: '使用指南', link: '/guide/usage' },
             { text: '主题定制', link: '/guide/theming' },
+            { text: '国际化', link: '/guide/i18n' },
             { text: '主题配置器', link: '/theme-builder' },
           ],
         },
@@ -83,6 +93,7 @@ export default defineConfig({
           text: '附件与工具调用',
           items: [
             { text: 'Attachments', link: '/components/attachments' },
+            { text: 'LanguageToggle', link: '/components/language-toggle' },
             { text: 'ToolCall', link: '/components/tool-call' },
             { text: 'Shimmer', link: '/components/shimmer' },
             { text: 'Toast', link: '/components/toast' },
