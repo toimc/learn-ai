@@ -43,6 +43,8 @@ export {
   PromptInputButton,
   PromptInputSubmit,
   PromptInputHeader,
+  PromptInputUploadButton,
+  PromptInputAttachments,
 } from './prompt-input'
 
 // Comparison series

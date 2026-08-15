@@ -1,6 +1,6 @@
 # PromptInput 系列
 
-可组合的富输入系统，包含 8 个子组件：
+可组合的富输入系统，包含 10 个子组件：
 
 - **PromptInput** — 外层容器，provide 输入上下文
 - **PromptInputTextarea** — 自适应高度输入框（Enter 发送 / Shift+Enter 换行）
@@ -9,6 +9,8 @@
 - **PromptInputFooter** — 底部工具栏容器
 - **PromptInputTools** — 工具按钮组
 - **PromptInputButton** — 单个工具按钮
+- **PromptInputUploadButton** — 图片/附件上传入口（触发文件选择管道）
+- **PromptInputAttachments** — 待发送附件预览列表（图片缩略图 + Lightbox 兜底预览）
 - **PromptInputHeader** — 顶部附件预览区域
 
 ## 基础用法
@@ -92,3 +94,33 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 |--------|------|--------|------|
 | title | `string` | — | 按钮 title |
 | active | `boolean` | `false` | 激活状态 |
+
+### PromptInputUploadButton
+
+上传入口按钮，点击触发隐藏的 `<input type="file">`，选中文件走 PromptInput 的附件管道（accept / maxFiles / maxSize 校验）。`disabled` 跟随输入上下文。
+
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| kind | `'image' \| 'file'` | `'file'` | `image` 时 `accept` 固定为 `image/*`，`file` 时跟随 PromptInput 的 `accept` |
+
+| 插槽名 | 说明 |
+|--------|------|
+| default | 按钮图标/内容 |
+
+### PromptInputAttachments
+
+待发送附件（pendingFiles）预览列表，通常放在 Textarea 上方。图片渲染 40px 缩略图，非图片按类型渲染图标占位（📄 文档 / 🎵 音频 / 🎬 视频）；`uploading` 态叠加呼吸遮罩，`error` 态红色边框且 `title` 显示错误信息；每项带文件名（单行省略）、大小与移除按钮。
+
+图片点击预览走兜底链：宿主监听 `preview` 事件时只抛出事件、不弹内置预览；未监听则打开内置 `ImageLightbox`（Esc 关闭、左右方向键翻页）。
+
+```vue
+<PromptInput v-model="..." @send="...">
+  <PromptInputAttachments />
+  <PromptInputTextarea />
+  <PromptInputSubmit />
+</PromptInput>
+```
+
+| 事件名 | 参数 | 说明 |
+|--------|------|------|
+| preview | `(payload: { attachments: Attachment[]; index: number })` | 宿主接管图片预览时触发；`attachments` 为当前全部图片（含 id/name/mediaType/url/size），`index` 指向被点击项 |
