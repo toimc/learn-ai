@@ -19,6 +19,15 @@
             "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" post-edit"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/i18n_guard.py\" component-reminder"
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -28,6 +37,15 @@
           {
             "type": "command",
             "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" pre-commit"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/i18n_guard.py\" pre-commit"
           }
         ]
       }
