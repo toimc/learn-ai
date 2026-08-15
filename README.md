@@ -5,7 +5,7 @@
 ## 特性
 
 - **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端
-- **32 个可组合组件**：Conversation / Message / Comparison / PromptInput / Attachment / ToolCall / Shared 七大系列
+- **33 个可组合组件**：Conversation / Message / Comparison / PromptInput / Attachment / ToolCall / Shared 七大系列
 - **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
 - **样式隔离**：全部库样式收在 `@layer` 级联层内，不污染宿主；宿主一行未分层 CSS 即可覆盖任意组件样式，无需 `!important`
 - **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
@@ -35,7 +35,7 @@ ai-chat-ui/
 │   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
 │   │   └── src/utils/         # generateId, createUserMessage, createAssistantMessage
 │   │
-│   ├── vue/                   # @ai-chat/vue — 32 个 Vue 3 组件
+│   ├── vue/                   # @ai-chat/vue — 33 个 Vue 3 组件
 │   │   └── src/
 │   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
 │   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
@@ -43,7 +43,7 @@ ai-chat-ui/
 │   │       ├── prompt-input/  # PromptInput / Textarea / Submit / Footer / Tools / Button / Header
 │   │       ├── attachment/    # Attachments / Attachment / Preview / Info / Remove / Empty
 │   │       ├── tool-call/     # ToolCall / Header / Content / Input / Output
-│   │       ├── shared/        # StreamText / Button / Shimmer
+│   │       ├── shared/        # StreamText / Button / Shimmer / Toast
 │   │       ├── composables/   # useScrollAnchor
 │   │       └── utils/         # media.ts + format.ts
 │   │
@@ -188,6 +188,7 @@ const chat = useChat(adapter)
 | StreamText | 流式文本（光标动画） |
 | Button | 通用按钮 |
 | Shimmer | 微光扫过动画 |
+| Toast | 顶部轻提示（自动关闭） |
 
 ## 核心 API
 
@@ -266,7 +267,7 @@ pnpm clean          # 清理构建产物
 | 包 | 版本 | 状态 |
 |------|------|------|
 | @ai-chat/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
-| @ai-chat/vue | 0.0.1 | 32 个 Vue 3 组件 + Design Token |
+| @ai-chat/vue | 0.0.1 | 33 个 Vue 3 组件 + Design Token |
 | @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@ai-chat/markdown/katex.css` 可选引入） |
 | @ai-chat/docs | 私有 | VitePress 文档站 + Playground |
 

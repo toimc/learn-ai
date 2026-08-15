@@ -55,6 +55,7 @@
 
     /* 尺寸 */
     --ai-chat-sidebar-width: 260px;
+    --ai-chat-z-toast: 1000;
     --ai-chat-content-max-width: 768px;
     --ai-chat-input-max-height: 200px;
     --ai-chat-avatar-size: 30px;

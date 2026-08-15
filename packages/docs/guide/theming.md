@@ -191,6 +191,7 @@ const purple = presets.purple // { name: '优雅紫', vars: {...} }
 | `--ai-chat-breakpoint-md` | `640px` | 中屏断点 md：输入紧凑、对比卡堆叠（CSS 容器查询为字面量 640px） |
 | `--ai-chat-breakpoint-lg` | `1024px` | 大屏断点 lg（语义参考） |
 | `--ai-chat-breakpoint-xl` | `1280px` | 超大屏断点 xl：消息区放宽（容器查询为字面量 1280px） |
+| `--ai-chat-z-toast` | `1000` | Toast 弹层层级 |
 
 ## 使用方式
 

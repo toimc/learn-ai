@@ -18,8 +18,8 @@ export interface TokenMeta {
   derived?: boolean
   /** derived 时指向的原始令牌 key（仅展示用） */
   ref?: string
-  /** size/duration 的单位提示 */
-  unit?: 'px' | 's'
+  /** size/duration 的单位提示；'' 表示无单位（如 z-index） */
+  unit?: 'px' | 's' | ''
   /** size/duration 滑块范围 */
   min?: number
   max?: number
@@ -369,6 +369,17 @@ export const tokensMeta: TokenMeta[] = [
     unit: 'px',
     min: 60,
     max: 240,
+  },
+  {
+    key: '--ai-chat-z-toast',
+    layer: 'primitive',
+    group: '原始·尺寸',
+    label: 'Toast 层级',
+    type: 'size',
+    light: '1000',
+    unit: '',
+    min: 0,
+    max: 2000,
   },
 
   // ===== 原始·断点 =====

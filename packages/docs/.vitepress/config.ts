@@ -85,6 +85,7 @@ export default defineConfig({
             { text: 'Attachments', link: '/components/attachments' },
             { text: 'ToolCall', link: '/components/tool-call' },
             { text: 'Shimmer', link: '/components/shimmer' },
+            { text: 'Toast', link: '/components/toast' },
           ],
         },
         {
