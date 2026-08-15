@@ -4,7 +4,7 @@
 
 - **PromptInput** — 外层容器，provide 输入上下文
 - **PromptInputBody** — 输入行容器（flex 行：Textarea 占满剩余宽度 + Submit 靠右）
-- **PromptInputTextarea** — 自适应高度输入框（键位模式由 PromptInput 的 `sendKey` 决定，粘贴文件进入附件管道）
+- **PromptInputTextarea** — 弹性高度输入框：随内容自动增高，超过 `--ai-chat-input-max-height`（默认 200px）后内部滚动；键位模式由 PromptInput 的 `sendKey` 决定，粘贴文件进入附件管道
 - **PromptInputSubmit** — 发送/停止按钮
 - **PromptInputBody** — 输入行容器
 - **PromptInputFooter** — 底部工具栏容器
