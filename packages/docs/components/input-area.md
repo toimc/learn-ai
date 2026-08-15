@@ -1,5 +1,7 @@
 # InputArea
 
+> ⚠️ **已废弃**：请迁移到 [PromptInput](/components/prompt-input)。本组件保留导出仅为向后兼容。
+
 文本输入区域，支持发送和中止两种模式。按下 Enter 发送消息，流式输出时切换为中止按钮。
 
 ## 基础用法

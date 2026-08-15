@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * @deprecated 已废弃，请迁移到 PromptInput 复合组件
+ * （支持附件上传/粘贴/拖拽、Enter 换行 Alt/Cmd+Enter 发送等能力）。
+ * 保留导出仅为向后兼容，后续大版本移除。
+ */
 import { ref } from 'vue'
 
 const props = defineProps<{
