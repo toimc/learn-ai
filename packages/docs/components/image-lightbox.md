@@ -43,6 +43,8 @@ const images: Attachment[] = [
 ## 无障碍
 
 - 遮罩使用 `role="dialog"` + `aria-modal="true"`，导航与关闭按钮带 `aria-label`
+- 打开时焦点移入遮罩（`tabindex="-1"`），关闭/卸载时焦点归还给打开前的元素
+- 键盘监听做防御：已 prevented、输入法组合中、或带 Meta/Ctrl/Alt 修饰键的按键不触发翻页/关闭，方向键会 `preventDefault` 避免页面滚动
 - 进场动画遵守 `prefers-reduced-motion`，用户开启「减弱动态效果」时跳过动画
 
 ## API

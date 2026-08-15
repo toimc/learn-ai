@@ -78,6 +78,40 @@ describe('ImageLightbox 导航', () => {
       'https://example.com/dog.png',
     )
   })
+
+  it('Cmd+ArrowRight 不翻页', async () => {
+    const w = mountLightbox({ attachments: images })
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', metaKey: true }),
+    )
+    await nextTick()
+    expect(w.get('.ai-chat-lightbox__image').attributes('src')).toBe(
+      'https://example.com/cat.png',
+    )
+  })
+
+  it('defaultPrevented 的 Escape 不触发 close', async () => {
+    const w = mountLightbox({ attachments: images })
+    const e = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })
+    e.preventDefault()
+    window.dispatchEvent(e)
+    await nextTick()
+    expect(w.emitted('close')).toBeUndefined()
+  })
+})
+
+describe('ImageLightbox 边界守卫', () => {
+  it('空附件数组不崩溃、计数不显示 NaN', () => {
+    const w = mountLightbox({ attachments: [] })
+    expect(w.text()).not.toContain('NaN')
+  })
+
+  it('index 越界时 clamp 到有效范围', () => {
+    const w = mountLightbox({ attachments: images, index: 5 })
+    expect(w.get('.ai-chat-lightbox__image').attributes('src')).toBe(
+      'https://example.com/dog.png',
+    )
+  })
 })
 
 describe('ImageLightbox 响应式与清理', () => {
@@ -94,5 +128,6 @@ describe('ImageLightbox 响应式与清理', () => {
     expect(() => w.unmount()).not.toThrow()
     // 卸载后按键不再触发 close
     pressKey('Escape')
+    expect(w.emitted('close')).toBeUndefined()
   })
 })

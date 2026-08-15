@@ -12,42 +12,69 @@ const props = withDefaults(
 
 const emit = defineEmits<{ close: [] }>()
 
-const current = ref(props.index)
+const overlayRef = ref<HTMLElement | null>(null)
+let savedFocus: HTMLElement | null = null
+
+function clamp(i: number) {
+  const len = props.attachments.length
+  if (len === 0) return 0
+  return Math.min(Math.max(i, 0), len - 1)
+}
+
+const current = ref(clamp(props.index))
 watch(
   () => props.index,
   (i) => {
-    current.value = i
+    current.value = clamp(i)
   },
 )
 
 const image = computed(() => props.attachments[current.value])
 
 function next() {
+  if (!props.attachments.length) return
   current.value = (current.value + 1) % props.attachments.length
 }
 
 function prev() {
+  if (!props.attachments.length) return
   current.value =
     (current.value - 1 + props.attachments.length) % props.attachments.length
 }
 
 function onKeydown(e: KeyboardEvent) {
+  if (e.defaultPrevented || e.isComposing || e.metaKey || e.ctrlKey || e.altKey)
+    return
   if (e.key === 'Escape') emit('close')
-  else if (e.key === 'ArrowRight') next()
-  else if (e.key === 'ArrowLeft') prev()
+  else if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    next()
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    prev()
+  }
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  savedFocus = document.activeElement as HTMLElement | null
+  overlayRef.value?.focus()
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown)
+  savedFocus?.focus?.()
+})
 </script>
 
 <template>
   <Teleport to="body">
     <div
+      ref="overlayRef"
       class="ai-chat-lightbox__overlay"
       role="dialog"
       aria-modal="true"
       aria-label="图片预览"
+      tabindex="-1"
       @click.self="emit('close')"
     >
       <button
@@ -136,6 +163,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     align-items: center;
     justify-content: center;
     background: var(--ai-chat-lightbox-mask, rgba(0, 0, 0, 0.75));
+    outline: none;
     animation: ai-chat-lightbox-fade var(--ai-chat-duration-normal)
       var(--ai-chat-easing) both;
   }

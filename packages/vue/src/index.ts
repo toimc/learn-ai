@@ -67,6 +67,9 @@ export {
   ToolCallOutput,
 } from './tool-call'
 
+// Preview series
+export { ImageLightbox } from './preview'
+
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */
 export { default as ChatWindow } from './ChatWindow.vue'
