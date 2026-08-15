@@ -3,11 +3,14 @@ import { mount } from '@vue/test-utils'
 import Toast from './Toast.vue'
 
 type ToastType = 'info' | 'success' | 'error' | 'warning'
+type ToastPlacement =
+  'top' | 'top-left' | 'top-right' | 'bottom' | 'bottom-left' | 'bottom-right'
 
 function mountToast(props: {
   message: string
   type?: ToastType
   duration?: number
+  placement?: ToastPlacement
 }) {
   return mount(Toast, { props })
 }
@@ -45,6 +48,33 @@ describe('Toast 渲染', () => {
   it('关闭按钮带 aria-label="关闭"', () => {
     const w = mountToast({ message: 'msg' })
     expect(w.get('.ai-chat-toast__close').attributes('aria-label')).toBe('关闭')
+  })
+
+  it('默认 placement=top：渲染 --top 修饰类', () => {
+    const w = mountToast({ message: 'msg' })
+    expect(w.classes()).toContain('ai-chat-toast--top')
+  })
+
+  it.each([
+    'top',
+    'top-left',
+    'top-right',
+    'bottom',
+    'bottom-left',
+    'bottom-right',
+  ] as const)('placement=%s 渲染对应修饰符类', (placement) => {
+    const w = mountToast({ message: 'msg', placement })
+    expect(w.classes()).toContain(`ai-chat-toast--${placement}`)
+  })
+
+  it('placement 与 type 修饰类共存', () => {
+    const w = mountToast({
+      message: 'msg',
+      type: 'error',
+      placement: 'bottom-right',
+    })
+    expect(w.classes()).toContain('ai-chat-toast--error')
+    expect(w.classes()).toContain('ai-chat-toast--bottom-right')
   })
 })
 

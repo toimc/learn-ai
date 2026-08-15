@@ -1,6 +1,6 @@
 # Toast
 
-轻量提示组件，fixed 定位在视口顶部居中，用于操作反馈、错误提示等短暂通知。到时自动关闭，`duration` 设为 `0` 则常驻，由宿主控制关闭时机。
+轻量提示组件，fixed 定位悬浮于视口，用于操作反馈、错误提示等短暂通知。默认顶部居中弹出，可通过 `placement` 配置为上/下居中或四角；到时自动关闭，`duration` 设为 `0` 则常驻，由宿主控制关闭时机。
 
 ## 基础用法
 
@@ -26,6 +26,21 @@ function showToast(type: ToastType) {
   currentType.value = type
   typeMessage.value = messages[type]
   typeVisible.value = true
+}
+
+type ToastPlacement =
+  | 'top'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom'
+  | 'bottom-left'
+  | 'bottom-right'
+const placementVisible = ref(false)
+const currentPlacement = ref<ToastPlacement>('top')
+
+function showPlacementToast(placement: ToastPlacement) {
+  currentPlacement.value = placement
+  placementVisible.value = true
 }
 </script>
 
@@ -66,6 +81,32 @@ const visible = ref(false)
   <Toast v-if="typeVisible" :message="typeMessage" :type="currentType" @close="typeVisible = false" />
 </DemoContainer>
 
+## 弹出位置
+
+`placement` 控制弹出位置，默认 `top`（顶部居中）；下方位置从下往上入场，四角紧贴对应角落（16px 边距）：
+
+<DemoContainer>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap">
+    <Button size="small" @click="showPlacementToast('top')">top</Button>
+    <Button size="small" @click="showPlacementToast('top-left')">top-left</Button>
+    <Button size="small" @click="showPlacementToast('top-right')">top-right</Button>
+    <Button size="small" @click="showPlacementToast('bottom')">bottom</Button>
+    <Button size="small" @click="showPlacementToast('bottom-left')">bottom-left</Button>
+    <Button size="small" @click="showPlacementToast('bottom-right')">bottom-right</Button>
+  </div>
+  <Toast
+    v-if="placementVisible"
+    :message="`从 ${currentPlacement} 位置弹出`"
+    :placement="currentPlacement"
+    @close="placementVisible = false"
+  />
+</DemoContainer>
+
+```vue
+<!-- 右下角弹出，类似系统通知 -->
+<Toast v-if="visible" message="下载已完成" placement="bottom-right" @close="visible = false" />
+```
+
 ## 自动关闭时长
 
 `duration` 控制自动关闭的延时（毫秒），默认 `3000`（3 秒）；设为 `0` 时不自动关闭，需宿主在合适的时机（如用户确认后）移除组件：
@@ -92,6 +133,7 @@ const visible = ref(false)
 | message | `string` | — | 提示内容（必填） |
 | type | `'info' \| 'success' \| 'error' \| 'warning'` | `'info'` | 提示类型 |
 | duration | `number` | `3000` | 自动关闭延时（ms），`0` 表示不自动关闭 |
+| placement | `'top' \| 'top-left' \| 'top-right' \| 'bottom' \| 'bottom-left' \| 'bottom-right'` | `'top'` | 弹出位置 |
 
 ### Events
 

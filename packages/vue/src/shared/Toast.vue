@@ -7,10 +7,19 @@ const props = withDefaults(
     type?: 'info' | 'success' | 'error' | 'warning'
     /** ms，0 = 不自动关闭 */
     duration?: number
+    /** 弹出位置：上/下居中 + 四角 */
+    placement?:
+      | 'top'
+      | 'top-left'
+      | 'top-right'
+      | 'bottom'
+      | 'bottom-left'
+      | 'bottom-right'
   }>(),
   {
     type: 'info',
     duration: 3000,
+    placement: 'top',
   },
 )
 
@@ -50,7 +59,7 @@ onBeforeUnmount(clearTimer)
 <template>
   <div
     class="ai-chat-toast"
-    :class="`ai-chat-toast--${type}`"
+    :class="[`ai-chat-toast--${type}`, `ai-chat-toast--${placement}`]"
     :role="type === 'error' ? 'alert' : 'status'"
     :aria-live="type === 'error' ? undefined : 'polite'"
   >
@@ -115,9 +124,6 @@ onBeforeUnmount(clearTimer)
 @layer ai-chat-components {
   .ai-chat-toast {
     position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
     z-index: var(--ai-chat-z-toast, 1000);
     display: flex;
     align-items: center;
@@ -187,6 +193,37 @@ onBeforeUnmount(clearTimer)
     color: var(--ai-chat-color-status-warning);
   }
 
+  /* 弹出位置：上/下居中 + 四角。居中用 transform 定位，
+     入场位移用独立 translate 属性叠加，不与 transform 冲突 */
+  .ai-chat-toast--top,
+  .ai-chat-toast--bottom {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .ai-chat-toast--top,
+  .ai-chat-toast--top-left,
+  .ai-chat-toast--top-right {
+    top: 16px;
+  }
+
+  .ai-chat-toast--bottom,
+  .ai-chat-toast--bottom-left,
+  .ai-chat-toast--bottom-right {
+    bottom: 16px;
+    animation-name: ai-chat-toast-in-up;
+  }
+
+  .ai-chat-toast--top-left,
+  .ai-chat-toast--bottom-left {
+    left: 16px;
+  }
+
+  .ai-chat-toast--top-right,
+  .ai-chat-toast--bottom-right {
+    right: 16px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .ai-chat-toast {
       animation-name: ai-chat-toast-in-reduced;
@@ -198,11 +235,22 @@ onBeforeUnmount(clearTimer)
   @keyframes ai-chat-toast-in {
     from {
       opacity: 0;
-      transform: translate(-50%, -8px);
+      translate: 0 -8px;
     }
     to {
       opacity: 1;
-      transform: translate(-50%, 0);
+      translate: 0 0;
+    }
+  }
+
+  @keyframes ai-chat-toast-in-up {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
     }
   }
 
