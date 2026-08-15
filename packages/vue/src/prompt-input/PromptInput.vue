@@ -116,13 +116,44 @@ function handleAbort() {
   emit('abort')
 }
 
+const dragDepth = ref(0)
+
+function onDragEnter(e: DragEvent) {
+  if (!e.dataTransfer?.types.includes('Files')) return
+  e.preventDefault()
+  dragDepth.value++
+}
+
+function onDragOver(e: DragEvent) {
+  if (!e.dataTransfer?.types.includes('Files')) return
+  e.preventDefault()
+}
+
+function onDragLeave() {
+  dragDepth.value = Math.max(0, dragDepth.value - 1)
+}
+
+function onDrop(e: DragEvent) {
+  dragDepth.value = 0
+  if (!e.dataTransfer?.files?.length) return
+  e.preventDefault()
+  addFilesAndNotify(e.dataTransfer.files)
+}
+
 provide('promptSubmit', submit)
 provide('promptAbort', handleAbort)
 </script>
 
 <template>
   <div class="ai-chat-prompt-input">
-    <div class="ai-chat-prompt-input__wrapper">
+    <div
+      class="ai-chat-prompt-input__wrapper"
+      :class="{ 'ai-chat-prompt-input__wrapper--dragover': dragDepth > 0 }"
+      @dragenter="onDragEnter"
+      @dragover="onDragOver"
+      @dragleave="onDragLeave"
+      @drop="onDrop"
+    >
       <slot />
     </div>
     <p class="ai-chat-prompt-input__disclaimer">
@@ -160,6 +191,11 @@ provide('promptAbort', handleAbort)
   }
 
   .ai-chat-prompt-input__wrapper:focus-within {
+    border-color: var(--ai-chat-color-input-focus-border);
+    box-shadow: 0 0 0 2px var(--ai-chat-color-accent-dim);
+  }
+
+  .ai-chat-prompt-input__wrapper--dragover {
     border-color: var(--ai-chat-color-input-focus-border);
     box-shadow: 0 0 0 2px var(--ai-chat-color-accent-dim);
   }

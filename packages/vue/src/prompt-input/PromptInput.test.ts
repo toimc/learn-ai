@@ -186,4 +186,74 @@ describe('PromptInput', () => {
     await p1
     expect(w.emitted('send')).toHaveLength(1)
   })
+
+  it('drop 带文件：经 addFilesAndNotify 管道加入 pendingFiles', async () => {
+    const w = mountInput()
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    await wrapper.trigger('drop', {
+      dataTransfer: { files: [png()] },
+    })
+    expect(ctx.pendingFiles.value).toHaveLength(1)
+    expect(ctx.pendingFiles.value[0].file.name).toBe('a.png')
+  })
+
+  it('dragenter + dragover（Files）后 wrapper 加 dragover 高亮类', async () => {
+    const w = mountInput()
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    await wrapper.trigger('dragenter', { dataTransfer: { types: ['Files'] } })
+    await wrapper.trigger('dragover', { dataTransfer: { types: ['Files'] } })
+    expect(wrapper.classes()).toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+  })
+
+  it('drop 后高亮类移除', async () => {
+    const w = mountInput()
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    await wrapper.trigger('dragenter', { dataTransfer: { types: ['Files'] } })
+    await wrapper.trigger('drop', {
+      dataTransfer: { files: [png()] },
+    })
+    expect(wrapper.classes()).not.toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+  })
+
+  it('dragleave 深度计数归零才熄灭；子元素间移动不误灭', async () => {
+    const w = mountInput()
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    const dragenter = () =>
+      wrapper.trigger('dragenter', { dataTransfer: { types: ['Files'] } })
+
+    await dragenter()
+    await dragenter() // 拖入子元素再 enter 一次
+    await wrapper.trigger('dragleave')
+    expect(wrapper.classes()).toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+
+    await wrapper.trigger('dragleave')
+    expect(wrapper.classes()).not.toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+  })
+
+  it('非 Files 拖拽：不加高亮、drop 不入列表', async () => {
+    const w = mountInput()
+    const wrapper = w.find('.ai-chat-prompt-input__wrapper')
+    await wrapper.trigger('dragenter', {
+      dataTransfer: { types: ['text/plain'] },
+    })
+    await wrapper.trigger('dragover', {
+      dataTransfer: { types: ['text/plain'] },
+    })
+    expect(wrapper.classes()).not.toContain(
+      'ai-chat-prompt-input__wrapper--dragover',
+    )
+
+    await wrapper.trigger('drop', {
+      dataTransfer: { types: ['text/plain'], files: [] },
+    })
+    expect(ctx.pendingFiles.value).toHaveLength(0)
+  })
 })
