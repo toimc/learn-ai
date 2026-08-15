@@ -1,8 +1,17 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      // 包 exports 指向 dist/index.mjs 而构建产物是 index.js，测试内值导入走源码解析
+      '@ai-chat/core': fileURLToPath(
+        new URL('./packages/core/src/index.ts', import.meta.url),
+      ),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
