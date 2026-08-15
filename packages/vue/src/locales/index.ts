@@ -44,7 +44,8 @@ export function setAiChatLocale(
   opts: { persist?: boolean } = {},
 ) {
   const { persist = true } = opts
-  composer.locale.value = locale
+  // 入参收 string（宿主可注入自定义 locale），composer 的 locale 字面量联合类型需收窄断言
+  composer.locale.value = locale as AiChatLocale
   if (typeof document !== 'undefined') document.documentElement.lang = locale
   if (persist && typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, locale)
