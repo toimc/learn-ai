@@ -112,89 +112,91 @@ watchEffect(async () => {
 </template>
 
 <style>
-/* 容器：单一卡片，仅外层圆角；overflow:hidden 让 header 与 code 共享外层圆角，视觉合为一体 */
-.ai-chat-code-block {
-  position: relative;
-  margin: 12px 0;
-  background: var(--ai-chat-color-code-bg, #1a1a1a);
-  border: 1px solid var(--ai-chat-color-border, #2e2e2e);
-  border-radius: var(--ai-chat-radius-md, 8px);
-  overflow: hidden;
-}
+@layer ai-chat-components {
+  /* 容器：单一卡片，仅外层圆角；overflow:hidden 让 header 与 code 共享外层圆角，视觉合为一体 */
+  .ai-chat-code-block {
+    position: relative;
+    margin: 12px 0;
+    background: var(--ai-chat-color-code-bg, #1a1a1a);
+    border: 1px solid var(--ai-chat-color-border, #2e2e2e);
+    border-radius: var(--ai-chat-radius-md, 8px);
+    overflow: hidden;
+  }
 
-/* header：顶部信息条 + 右侧复制按钮，紧贴 code，下方一条分隔线 */
-.ai-chat-code-block .ai-chat-code-block__header {
-  display: flex;
-  align-items: center;
-  padding: 6px 8px 6px 12px;
-  font-size: 12px;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--ai-chat-color-text-muted, #9ca3af);
-  background: var(--ai-chat-color-code-header-bg, #242427);
-  border-bottom: 1px solid var(--ai-chat-color-border, #2e2e2e);
-}
+  /* header：顶部信息条 + 右侧复制按钮，紧贴 code，下方一条分隔线 */
+  .ai-chat-code-block .ai-chat-code-block__header {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px 6px 12px;
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ai-chat-color-text-muted, #9ca3af);
+    background: var(--ai-chat-color-code-header-bg, #242427);
+    border-bottom: 1px solid var(--ai-chat-color-border, #2e2e2e);
+  }
 
-/* 复制按钮：右对齐、弱化态，hover/已复制切换为强调色 */
-.ai-chat-code-block .ai-chat-code-block__copy {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--ai-chat-color-text-muted, #9ca3af);
-  cursor: pointer;
-  transition:
-    background var(--ai-chat-duration-fast, 0.12s),
-    color var(--ai-chat-duration-fast, 0.12s);
-}
-.ai-chat-code-block .ai-chat-code-block__copy:hover {
-  background: var(--ai-chat-hover-neutral, rgba(128, 128, 128, 0.15));
-  color: var(--ai-chat-color-text-primary, #fafafa);
-}
-.ai-chat-code-block .ai-chat-code-block__copy:focus-visible {
-  outline: 2px solid var(--ai-chat-color-accent, #6366f1);
-  outline-offset: 1px;
-}
-.ai-chat-code-block .ai-chat-code-block__copy.is-copied {
-  color: var(--ai-chat-color-accent, #6366f1);
-}
+  /* 复制按钮：右对齐、弱化态，hover/已复制切换为强调色 */
+  .ai-chat-code-block .ai-chat-code-block__copy {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ai-chat-color-text-muted, #9ca3af);
+    cursor: pointer;
+    transition:
+      background var(--ai-chat-duration-fast, 0.12s),
+      color var(--ai-chat-duration-fast, 0.12s);
+  }
+  .ai-chat-code-block .ai-chat-code-block__copy:hover {
+    background: var(--ai-chat-hover-neutral, rgba(128, 128, 128, 0.15));
+    color: var(--ai-chat-color-text-primary, #fafafa);
+  }
+  .ai-chat-code-block .ai-chat-code-block__copy:focus-visible {
+    outline: 2px solid var(--ai-chat-color-accent, #6366f1);
+    outline-offset: 1px;
+  }
+  .ai-chat-code-block .ai-chat-code-block__copy.is-copied {
+    color: var(--ai-chat-color-accent, #6366f1);
+  }
 
-/* pre 自身零 margin / 无边框 / 无圆角，紧贴 header；背景透明沿用容器 */
-/* 用 .ai-chat-code-block 父级提升特异性到 (0,2,0)，压制宿主 .ai-chat-message-content pre 等外泄规则 */
-.ai-chat-code-block .ai-chat-code-block__pre {
-  margin: 0;
-  padding: 12px 16px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  overflow-x: auto;
-  font-family: var(
-    --ai-chat-font-mono,
-    'SF Mono',
-    'Fira Code',
-    'Consolas',
-    monospace
-  );
-  font-size: 13px;
-  line-height: 1.6;
-  /* 无 token 变量的裸文本回退色，随主题自适应 */
-  color: var(--ai-chat-color-text-primary, #fafafa);
-}
+  /* pre 自身零 margin / 无边框 / 无圆角，紧贴 header；背景透明沿用容器 */
+  /* 用 .ai-chat-code-block 父级提升特异性到 (0,2,0)，压制宿主 .ai-chat-message-content pre 等外泄规则 */
+  .ai-chat-code-block .ai-chat-code-block__pre {
+    margin: 0;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow-x: auto;
+    font-family: var(
+      --ai-chat-font-mono,
+      'SF Mono',
+      'Fira Code',
+      'Consolas',
+      monospace
+    );
+    font-size: 13px;
+    line-height: 1.6;
+    /* 无 token 变量的裸文本回退色，随主题自适应 */
+    color: var(--ai-chat-color-text-primary, #fafafa);
+  }
 
-/* token span 读取自身携带的 --shiki-* 变量；项目默认为暗色（--shiki-dark），无需重新高亮 */
-.ai-chat-code-block .ai-chat-code-block__code span {
-  color: var(--shiki-dark, var(--shiki-light, inherit));
-}
+  /* token span 读取自身携带的 --shiki-* 变量；项目默认为暗色（--shiki-dark），无需重新高亮 */
+  .ai-chat-code-block .ai-chat-code-block__code span {
+    color: var(--shiki-dark, var(--shiki-light, inherit));
+  }
 
-/* 亮色主题覆盖（项目约定：默认暗色，[data-theme='light'] 为亮色） */
-[data-theme='light'] .ai-chat-code-block .ai-chat-code-block__code span {
-  color: var(--shiki-light, var(--shiki-dark, inherit));
+  /* 亮色主题覆盖（项目约定：默认暗色，[data-theme='light'] 为亮色） */
+  [data-theme='light'] .ai-chat-code-block .ai-chat-code-block__code span {
+    color: var(--shiki-light, var(--shiki-dark, inherit));
+  }
 }
 </style>

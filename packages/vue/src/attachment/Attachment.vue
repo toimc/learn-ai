@@ -16,7 +16,9 @@ provide('attachmentData', props.data)
 </template>
 
 <style>
-.ai-chat-attachment {
-  position: relative;
+@layer ai-chat-components {
+  .ai-chat-attachment {
+    position: relative;
+  }
 }
 </style>

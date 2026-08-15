@@ -15,9 +15,11 @@ const data = inject<ToolCallInfo>('toolCallData')!
 </template>
 
 <style>
-.ai-chat-tool-call-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+@layer ai-chat-components {
+  .ai-chat-tool-call-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 </style>

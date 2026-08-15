@@ -67,12 +67,14 @@ const localTheme = computed(() => {
 </template>
 
 <style>
-.ai-chat-conversation {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  background: var(--ai-chat-color-bg-chat);
+@layer ai-chat-components {
+  .ai-chat-conversation {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    background: var(--ai-chat-color-bg-chat);
+  }
 }
 </style>

@@ -5,10 +5,12 @@
 </template>
 
 <style>
-.ai-chat-message-attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+@layer ai-chat-components {
+  .ai-chat-message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
 }
 </style>

@@ -5,9 +5,11 @@
 </template>
 
 <style>
-.ai-chat-attachment-empty {
-  font-size: 13px;
-  color: var(--ai-chat-color-text-muted);
-  padding: 8px 0;
+@layer ai-chat-components {
+  .ai-chat-attachment-empty {
+    font-size: 13px;
+    color: var(--ai-chat-color-text-muted);
+    padding: 8px 0;
+  }
 }
 </style>

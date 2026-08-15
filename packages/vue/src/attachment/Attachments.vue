@@ -14,21 +14,23 @@ withDefaults(
 </template>
 
 <style>
-.ai-chat-attachments--grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 8px;
-}
+@layer ai-chat-components {
+  .ai-chat-attachments--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+  }
 
-.ai-chat-attachments--inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+  .ai-chat-attachments--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 
-.ai-chat-attachments--list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  .ai-chat-attachments--list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 }
 </style>
