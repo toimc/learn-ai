@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, provide } from 'vue'
+import type { Attachment } from '@ai-chat/core'
+import { usePendingFiles } from '../composables/usePendingFiles'
+import Toast from '../shared/Toast.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -9,6 +12,9 @@ const props = withDefaults(
     accept?: string
     multiple?: boolean
     maxFiles?: number
+    maxSize?: number
+    sendKey?: 'alt-enter' | 'enter'
+    beforeSend?: (files: File[]) => Promise<Attachment[]>
   }>(),
   {
     disabled: false,
@@ -17,40 +23,92 @@ const props = withDefaults(
     accept: '',
     multiple: false,
     maxFiles: 5,
+    maxSize: undefined,
+    sendKey: 'alt-enter',
+    beforeSend: undefined,
   },
 )
 
 const emit = defineEmits<{
-  send: [payload: { text: string; files?: File[] }]
+  send: [payload: { text: string; files?: File[]; attachments?: Attachment[] }]
   abort: []
+  error: [payload: { files: File[]; reason: string }]
 }>()
 
 const inputText = ref('')
-const files = ref<File[]>([])
 const status = ref<'ready' | 'streaming'>('ready')
+const toastMessage = ref('')
+
+const pf = usePendingFiles({
+  accept: props.accept,
+  maxFiles: props.maxFiles,
+  maxSize: props.maxSize,
+})
+
+function addFilesAndNotify(files: Parameters<typeof pf.addFiles>[0]) {
+  const { rejected } = pf.addFiles(files)
+  if (!rejected.length) return
+  const message =
+    rejected.length > 1
+      ? `${rejected[0].reason} 等 ${rejected.length} 个文件被拒绝`
+      : rejected[0].reason
+  toastMessage.value = message
+  emit('error', {
+    files: rejected.map((r) => r.file),
+    reason: rejected[0].reason,
+  })
+}
 
 provide('promptInput', {
   inputText,
-  files,
+  pendingFiles: pf.pendingFiles,
   status,
   disabled: () => props.disabled,
   maxHeight: () => props.maxHeight,
   placeholder: () => props.placeholder,
+  addFiles: addFilesAndNotify,
+  remove: pf.remove,
+  sendKey: () => props.sendKey,
+  multiple: () => props.multiple,
+  accept: () => props.accept,
+  submit: () => submit(),
 })
 
-function handleSubmit() {
+async function submit() {
   const text = inputText.value.trim()
-  if (!text || props.disabled) return
-  emit('send', { text, files: files.value.length ? files.value : undefined })
+  const pending = pf.pendingFiles.value
+  if ((!text && !pending.length) || props.disabled) return
+  if (pending.some((p) => p.status === 'uploading')) return
+
+  if (props.beforeSend && pending.length > 0) {
+    const files = pending.map((p) => p.file)
+    pending.forEach((p) => pf.setStatus(p.id, 'uploading'))
+    try {
+      const attachments = await props.beforeSend(files)
+      emit('send', { text, attachments })
+      inputText.value = ''
+      pf.clear()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      pending.forEach((p) => pf.setStatus(p.id, 'error', message))
+      toastMessage.value = `附件上传失败：${message}`
+    }
+    return
+  }
+
+  emit('send', {
+    text,
+    files: pending.length ? pending.map((p) => p.file) : undefined,
+  })
   inputText.value = ''
-  files.value = []
+  pf.clear()
 }
 
 function handleAbort() {
   emit('abort')
 }
 
-provide('promptSubmit', handleSubmit)
+provide('promptSubmit', submit)
 provide('promptAbort', handleAbort)
 </script>
 
@@ -64,6 +122,12 @@ provide('promptAbort', handleAbort)
         >AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性</slot
       >
     </p>
+    <Toast
+      v-if="toastMessage"
+      :message="toastMessage"
+      type="error"
+      @close="toastMessage = ''"
+    />
   </div>
 </template>
 
