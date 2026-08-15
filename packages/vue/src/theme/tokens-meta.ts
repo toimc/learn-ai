@@ -381,6 +381,17 @@ export const tokensMeta: TokenMeta[] = [
     min: 0,
     max: 2000,
   },
+  {
+    key: '--ai-chat-z-popup',
+    layer: 'primitive',
+    group: '原始·尺寸',
+    label: '弹层层级',
+    type: 'size',
+    light: '1000',
+    unit: '',
+    min: 0,
+    max: 2000,
+  },
 
   // ===== 原始·断点 =====
   {
