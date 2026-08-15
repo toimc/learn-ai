@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
+import { aiChatI18n } from '@ai-chat/vue'
 import {
   renderCodeStreaming,
   renderCodeFinal,
 } from './composables/useShikiTokenizer'
+
+const { t } = aiChatI18n.global
 
 const props = defineProps<{
   /** 代码块内容（围栏完整） */
@@ -69,7 +72,7 @@ watchEffect(async () => {
         type="button"
         class="ai-chat-code-block__copy"
         :class="{ 'is-copied': copied }"
-        :title="copied ? '已复制' : '复制代码'"
+        :title="copied ? t('shared.copied') : t('shared.copy')"
         @click="copyCode"
       >
         <!-- 复制图标 / 已复制对勾 -->

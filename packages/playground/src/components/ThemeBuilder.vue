@@ -9,6 +9,7 @@ import {
   onUnmounted,
 } from 'vue'
 import {
+  aiChatI18n,
   tokensMeta,
   presets,
   type TokenMeta,
@@ -29,6 +30,9 @@ import {
   buildOverridesFromCss,
   type Overrides,
 } from './theme-css'
+import '../locales' // 副作用：合并 pg 字典
+
+const { t: tr } = aiChatI18n.global
 
 const STORAGE_KEY = 'ai-chat-theme-builder'
 
@@ -146,7 +150,7 @@ function save(): void {
 }
 
 function reset(): void {
-  if (!confirm('确定清空所有自定义覆盖?')) return
+  if (!confirm(tr('pg.theme.clearConfirm'))) return
   overrides.value = {}
   save()
 }
@@ -379,30 +383,34 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
         <select
           v-model="presetSel"
           class="tb-select"
-          title="应用主题预设"
+          :title="tr('pg.theme.applyPreset')"
           @change="onPresetChange"
         >
-          <option value="">预设…</option>
+          <option value="">{{ tr('pg.theme.presetPlaceholder') }}</option>
           <option v-for="(p, k) in presets" :key="k" :value="k">
             {{ p.name }}
           </option>
         </select>
-        <div class="tb-mode-switch" role="group" aria-label="编辑模式">
+        <div
+          class="tb-mode-switch"
+          role="group"
+          :aria-label="tr('pg.theme.editMode')"
+        >
           <button
             class="tb-mode-btn"
             :class="{ active: editMode === 'light' }"
-            title="编辑亮色"
+            :title="tr('pg.theme.editLight')"
             @click="editMode = 'light'"
           >
-            ☀ 亮色
+            ☀ {{ tr('pg.theme.light') }}
           </button>
           <button
             class="tb-mode-btn"
             :class="{ active: editMode === 'dark' }"
-            title="编辑暗色"
+            :title="tr('pg.theme.editDark')"
             @click="editMode = 'dark'"
           >
-            🌙 暗色
+            🌙 {{ tr('pg.theme.dark') }}
           </button>
         </div>
       </div>
@@ -411,22 +419,32 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
           v-model="search"
           class="tb-search"
           type="search"
-          placeholder="搜索令牌…"
+          :placeholder="tr('pg.theme.searchTokens')"
         />
       </div>
       <div class="tb-toolbar-group">
-        <label class="tb-checkbox" title="导出全部令牌(否则仅导出改动)">
+        <label class="tb-checkbox" :title="tr('pg.theme.exportAll')">
           <input v-model="includeAll" type="checkbox" />
-          <span>全量导出</span>
+          <span>{{ tr('pg.theme.exportAllLabel') }}</span>
         </label>
-        <button class="tb-btn" title="使用说明" @click="helpVisible = true">
-          说明
+        <button
+          class="tb-btn"
+          :title="tr('pg.theme.helpTitle')"
+          @click="helpVisible = true"
+        >
+          {{ tr('pg.theme.helpLabel') }}
         </button>
-        <button class="tb-btn" @click="reset">重置</button>
-        <button class="tb-btn" @click="openImport">导入</button>
-        <button class="tb-btn tb-btn-primary" @click="save">保存</button>
+        <button class="tb-btn" @click="reset">
+          {{ tr('pg.theme.reset') }}
+        </button>
+        <button class="tb-btn" @click="openImport">
+          {{ tr('pg.theme.import') }}
+        </button>
+        <button class="tb-btn tb-btn-primary" @click="save">
+          {{ tr('pg.theme.save') }}
+        </button>
         <button class="tb-btn tb-btn-primary" @click="exportCss">
-          导出 CSS
+          {{ tr('pg.theme.exportCss') }}
         </button>
       </div>
     </header>
@@ -612,14 +630,16 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
             </div>
           </div>
         </div>
-        <div v-if="!groups.length" class="tb-empty">未找到匹配的令牌</div>
+        <div v-if="!groups.length" class="tb-empty">
+          {{ tr('pg.theme.noMatch') }}
+        </div>
       </aside>
 
       <div
         v-show="isDesktop"
         class="tb-splitter"
         :class="{ dragging }"
-        title="拖拽调整宽度"
+        :title="tr('pg.theme.dragWidth')"
         @mousedown="onSplitterDown"
       ></div>
 
@@ -635,19 +655,23 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
             <Message from="assistant">
               <MessageContent :content="previewMarkdown" />
               <MessageActions>
-                <MessageAction title="复制">复制</MessageAction>
-                <MessageAction title="重新生成">重新生成</MessageAction>
+                <MessageAction :title="tr('pg.actions.copy')">{{
+                  tr('pg.actions.copy')
+                }}</MessageAction>
+                <MessageAction :title="tr('pg.actions.regenerate')">{{
+                  tr('pg.actions.regenerate')
+                }}</MessageAction>
               </MessageActions>
             </Message>
           </ConversationContent>
           <div class="tb-preview-input">
             <PromptInput>
-              <PromptInputTextarea placeholder="预览输入框…" />
+              <PromptInputTextarea :placeholder="tr('pg.theme.previewInput')" />
               <PromptInputSubmit />
               <template #footer>
                 <PromptInputFooter>
                   <template #hint>
-                    <span>Enter 发送,Shift+Enter 换行</span>
+                    <span>{{ tr('pg.input.hint') }}</span>
                   </template>
                 </PromptInputFooter>
               </template>

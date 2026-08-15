@@ -55,6 +55,10 @@ pnpm clean        # 清理所有 dist
 - 需兼容明暗主题的 hover 背景用中性 `rgba(128,128,128,0.15)`，不用 white/black 系 rgba
 - 主题相关的颜色值（focus 背景、active 状态等）必须用 CSS Variables，不硬编码具体色值
 
+### i18n 规范
+
+- 所有 UI 文案进 `packages/vue/src/locales/` 字典（中英双语同步更新），组件内用 `aiChatI18n.global` 的 `t()`；详见 `.claude/skills/i18n/SKILL.md`，新建/修改组件时必须遵循
+
 ## 目录约定
 
 ```

@@ -20,7 +20,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ai-chat/core": "workspace:*"
+    "@ai-chat/core": "workspace:*",
+    "vue-i18n": "^11.4.8"
   },
   "optionalDependencies": {
     "@ai-chat/markdown": "workspace:*"

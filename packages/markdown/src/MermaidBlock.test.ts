@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { aiChatI18n } from '@ai-chat/vue'
 
 const { renderMock } = vi.hoisted(() => ({ renderMock: vi.fn() }))
 vi.mock('mermaid', () => ({
@@ -24,7 +25,10 @@ describe('MermaidBlock', () => {
     const wrapper = mount(MermaidBlock, { props: { code: 'broken' } })
     await flushPromises()
     expect(wrapper.find('.ai-chat-mermaid__error').exists()).toBe(true)
-    expect(wrapper.text()).toContain('图表渲染失败')
+    // 失败占位走字典（与当前 locale 联动）
+    expect(wrapper.text()).toContain(
+      aiChatI18n.global.t('markdown.renderFailed'),
+    )
     expect(wrapper.text()).toContain('broken')
   })
 

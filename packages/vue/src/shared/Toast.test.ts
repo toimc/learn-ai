@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Toast from './Toast.vue'
+import { setAiChatLocale } from '../locales'
+
+beforeEach(() => setAiChatLocale('zh-CN', { persist: false }))
+afterEach(() => setAiChatLocale('zh-CN', { persist: false }))
 
 type ToastType = 'info' | 'success' | 'error' | 'warning'
 type ToastPlacement =

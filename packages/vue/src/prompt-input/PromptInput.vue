@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue'
+import { ref, provide, computed } from 'vue'
 import type { Attachment } from '@ai-chat/core'
 import { usePendingFiles } from '../composables/usePendingFiles'
 import Toast from '../shared/Toast.vue'
 import { PROMPT_INPUT_KEY } from './context'
+import { aiChatI18n } from '../locales'
 
 const props = withDefaults(
   defineProps<{
@@ -19,7 +20,6 @@ const props = withDefaults(
   }>(),
   {
     disabled: false,
-    placeholder: '给 AI Chat UI 发送消息...',
     maxHeight: 200,
     accept: '',
     multiple: false,
@@ -60,13 +60,18 @@ function addFilesAndNotify(files: Parameters<typeof pf.addFiles>[0]) {
   })
 }
 
+const { t } = aiChatI18n.global
+const displayPlaceholder = computed(
+  () => props.placeholder ?? t('promptInput.placeholder'),
+)
+
 provide(PROMPT_INPUT_KEY, {
   inputText,
   pendingFiles: pf.pendingFiles,
   status,
   disabled: () => props.disabled,
   maxHeight: () => props.maxHeight,
-  placeholder: () => props.placeholder,
+  placeholder: () => displayPlaceholder.value,
   addFiles: addFilesAndNotify,
   remove: pf.remove,
   sendKey: () => props.sendKey,
@@ -160,9 +165,7 @@ provide('promptAbort', handleAbort)
       <slot />
     </div>
     <p class="ai-chat-prompt-input__disclaimer">
-      <slot name="disclaimer"
-        >AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性</slot
-      >
+      <slot name="disclaimer">{{ t('promptInput.disclaimer') }}</slot>
     </p>
     <Toast
       v-if="toastMessage"

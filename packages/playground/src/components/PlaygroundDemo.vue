@@ -4,6 +4,8 @@ import { useChat, generateId } from '@ai-chat/core'
 import type { Attachment } from '@ai-chat/core'
 import { mockMessages } from '../mock/mock-messages'
 import {
+  LanguageToggle,
+  aiChatI18n,
   Conversation,
   ConversationContent,
   ConversationEmpty,
@@ -27,6 +29,9 @@ import {
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
 import { comparisonMock } from '../mock/mock-comparison'
+import '../locales' // 副作用：合并 pg 字典
+
+const { t } = aiChatI18n.global
 // FR-4（spec 04）：KaTeX 样式已改为可选子路径，playground 显式引入保持公式渲染体验。
 // 走 workspace 源码路径；发布包对应 '@ai-chat/markdown/katex.css'
 import '../../../markdown/src/styles/katex.css'
@@ -101,11 +106,11 @@ const editingTitle = ref('')
 
 const groupedConversations = computed(() => [
   {
-    label: '今天',
+    label: t('pg.sidebar.today'),
     items: conversations.value.filter((c) => c.group === 'today'),
   },
   {
-    label: '过去 7 天',
+    label: t('pg.sidebar.last7'),
     items: conversations.value.filter((c) => c.group === 'week'),
   },
 ])
@@ -184,7 +189,8 @@ function cancelEdit() {
 function removeConversation(id: string) {
   const conv = conversations.value.find((c) => c.id === id)
   if (!conv) return
-  if (!window.confirm(`确定删除「${conv.title}」吗？`)) return
+  if (!window.confirm(t('pg.sidebar.confirmRemove', { title: conv.title })))
+    return
   const wasActive = conv.active
   conversations.value = conversations.value.filter((c) => c.id !== id)
   // 删除的是当前选中项：把高亮转移到剩余列表的第一项
@@ -253,7 +259,11 @@ watch(() => chat.messages.length, scrollToBottom)
           </svg>
           AI Chat UI
         </div>
-        <button class="pg-btn-icon" title="收起侧边栏" @click="collapseSidebar">
+        <button
+          class="pg-btn-icon"
+          :title="t('pg.sidebar.collapse')"
+          @click="collapseSidebar"
+        >
           <svg
             width="18"
             height="18"
@@ -281,7 +291,7 @@ watch(() => chat.messages.length, scrollToBottom)
         >
           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
         </svg>
-        <span>新对话</span>
+        <span>{{ t('pg.sidebar.newChat') }}</span>
         <span class="pg-shortcut">⌘K</span>
       </button>
 
@@ -297,7 +307,7 @@ watch(() => chat.messages.length, scrollToBottom)
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <input type="text" placeholder="搜索对话..." />
+        <input type="text" :placeholder="t('pg.sidebar.searchPlaceholder')" />
       </div>
 
       <div class="pg-sidebar-scroll">
@@ -342,7 +352,7 @@ watch(() => chat.messages.length, scrollToBottom)
             >
               <button
                 class="pg-conv-action"
-                title="重命名"
+                :title="t('pg.sidebar.rename')"
                 @click="startEdit(conv)"
               >
                 <svg
@@ -363,7 +373,7 @@ watch(() => chat.messages.length, scrollToBottom)
               </button>
               <button
                 class="pg-conv-action"
-                title="删除"
+                :title="t('pg.sidebar.remove')"
                 @click="removeConversation(conv.id)"
               >
                 <svg
@@ -383,7 +393,9 @@ watch(() => chat.messages.length, scrollToBottom)
             </div>
           </div>
         </template>
-        <div v-if="!conversations.length" class="pg-conv-empty">暂无对话</div>
+        <div v-if="!conversations.length" class="pg-conv-empty">
+          {{ t('pg.sidebar.empty') }}
+        </div>
       </div>
 
       <div class="pg-sidebar-footer">
@@ -446,7 +458,9 @@ watch(() => chat.messages.length, scrollToBottom)
           <button
             class="pg-btn-icon"
             :title="
-              layoutMode === 'stacked' ? '切换为 IM 左右分列' : '切换为统一对齐'
+              layoutMode === 'stacked'
+                ? t('pg.layout.switchToIm')
+                : t('pg.layout.switchToStacked')
             "
             @click="layoutMode = layoutMode === 'stacked' ? 'im' : 'stacked'"
           >
@@ -464,7 +478,11 @@ watch(() => chat.messages.length, scrollToBottom)
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
           </button>
-          <button class="pg-btn-icon" title="切换主题" @click="toggleTheme">
+          <button
+            class="pg-btn-icon"
+            :title="t('pg.theme.toggle')"
+            @click="toggleTheme"
+          >
             <svg
               v-if="resolvedTheme === 'dark'"
               width="18"
@@ -500,6 +518,7 @@ watch(() => chat.messages.length, scrollToBottom)
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
+          <LanguageToggle />
         </div>
       </header>
 
@@ -524,9 +543,11 @@ watch(() => chat.messages.length, scrollToBottom)
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
               </div>
-              <h1 class="pg-welcome-title">有什么可以帮你的？</h1>
+              <h1 class="pg-welcome-title">
+                {{ t('pg.welcome.title') }}
+              </h1>
               <p class="pg-welcome-subtitle">
-                选择一个话题开始，或直接输入你的问题
+                {{ t('pg.welcome.subtitle') }}
               </p>
               <div class="pg-suggestions">
                 <button
@@ -555,7 +576,7 @@ watch(() => chat.messages.length, scrollToBottom)
             <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
 
             <MessageActions v-if="msg.role === 'assistant'">
-              <MessageAction title="复制">
+              <MessageAction :title="t('pg.actions.copy')">
                 <svg
                   width="15"
                   height="15"
@@ -572,7 +593,7 @@ watch(() => chat.messages.length, scrollToBottom)
                   />
                 </svg>
               </MessageAction>
-              <MessageAction title="重新生成">
+              <MessageAction :title="t('pg.actions.regenerate')">
                 <svg
                   width="15"
                   height="15"
@@ -604,7 +625,7 @@ watch(() => chat.messages.length, scrollToBottom)
             />
           </template>
           <div v-if="lastPrefer" class="pg-comparison-result">
-            你更喜欢的回复：{{ lastPrefer.chosen }}
+            {{ t('pg.actions.preferred', { chosen: lastPrefer.chosen }) }}
           </div>
 
           <!-- Typing indicator -->
@@ -643,7 +664,7 @@ watch(() => chat.messages.length, scrollToBottom)
         <div class="pg-input-area">
           <PromptInput :before-send="mockUpload" @send="onSend">
             <PromptInputAttachments />
-            <PromptInputTextarea placeholder="给 AI Chat UI 发送消息..." />
+            <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
             <PromptInputSubmit />
             <template #footer>
               <PromptInputFooter>
@@ -651,7 +672,7 @@ watch(() => chat.messages.length, scrollToBottom)
                   <PromptInputTools>
                     <PromptInputUploadButton kind="image" />
                     <PromptInputUploadButton kind="file" />
-                    <PromptInputButton title="网页搜索">
+                    <PromptInputButton :title="t('pg.tools.webSearch')">
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -667,7 +688,7 @@ watch(() => chat.messages.length, scrollToBottom)
                         />
                       </svg>
                     </PromptInputButton>
-                    <PromptInputButton title="代码解释器">
+                    <PromptInputButton :title="t('pg.tools.codeInterpreter')">
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -680,7 +701,7 @@ watch(() => chat.messages.length, scrollToBottom)
                         <polyline points="8 6 2 12 8 18" />
                       </svg>
                     </PromptInputButton>
-                    <PromptInputButton title="图片生成">
+                    <PromptInputButton :title="t('pg.tools.imageGen')">
                       <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -704,9 +725,7 @@ watch(() => chat.messages.length, scrollToBottom)
                   </PromptInputTools>
                 </template>
                 <template #hint>
-                  <span class="pg-input-hint"
-                    >Enter 换行，Alt+Enter 发送；支持粘贴/拖拽上传</span
-                  >
+                  <span class="pg-input-hint">{{ t('pg.input.hint') }}</span>
                 </template>
               </PromptInputFooter>
             </template>
@@ -1037,7 +1056,8 @@ watch(() => chat.messages.length, scrollToBottom)
 
 .pg-header-actions {
   display: flex;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ===== Welcome Screen ===== */

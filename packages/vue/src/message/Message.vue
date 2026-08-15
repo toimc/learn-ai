@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { provide, computed } from 'vue'
 import { useMessageLayout } from '../composables/layout-types'
+import { aiChatI18n } from '../locales'
+
+const { t } = aiChatI18n.global
 
 const props = defineProps<{
   from: 'user' | 'assistant' | 'system'
@@ -50,7 +53,9 @@ const layoutClass = computed<string[]>(() => {
     </div>
     <div class="ai-chat-message__body">
       <div class="ai-chat-message__role">
-        <slot name="role">{{ from === 'user' ? '你' : 'AI Chat UI' }}</slot>
+        <slot name="role">{{
+          from === 'user' ? t('message.you') : t('message.assistant')
+        }}</slot>
       </div>
       <slot />
     </div>
