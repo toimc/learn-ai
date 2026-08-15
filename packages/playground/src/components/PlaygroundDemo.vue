@@ -15,6 +15,7 @@ import {
   MessageActions,
   MessageAction,
   PromptInput,
+  PromptInputBody,
   PromptInputTextarea,
   PromptInputSubmit,
   PromptInputUploadButton,
@@ -664,8 +665,10 @@ watch(() => chat.messages.length, scrollToBottom)
         <div class="pg-input-area">
           <PromptInput :before-send="mockUpload" @send="onSend">
             <PromptInputAttachments />
-            <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
-            <PromptInputSubmit />
+            <PromptInputBody>
+              <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
+              <PromptInputSubmit />
+            </PromptInputBody>
             <template #footer>
               <PromptInputFooter>
                 <template #tools>

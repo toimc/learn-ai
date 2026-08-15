@@ -40,6 +40,7 @@ import {
   MessageList,
   MessageBubble,
   PromptInput,
+  PromptInputBody,
   PromptInputTextarea,
   PromptInputSubmit,
 } from '@ai-chat/vue'
@@ -83,8 +84,10 @@ const chat = useChat(adapter)
         @send="(payload) => chat.send(payload.text)"
         @abort="chat.abort"
       >
-        <PromptInputTextarea />
-        <PromptInputSubmit />
+        <PromptInputBody>
+          <PromptInputTextarea />
+          <PromptInputSubmit />
+        </PromptInputBody>
       </PromptInput>
     </template>
   </ChatWindow>

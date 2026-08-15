@@ -3,6 +3,7 @@
 可组合的富输入系统，包含 10 个子组件：
 
 - **PromptInput** — 外层容器，provide 输入上下文
+- **PromptInputBody** — 输入行容器（flex 行：Textarea 占满剩余宽度 + Submit 靠右）
 - **PromptInputTextarea** — 自适应高度输入框（键位模式由 PromptInput 的 `sendKey` 决定，粘贴文件进入附件管道）
 - **PromptInputSubmit** — 发送/停止按钮
 - **PromptInputBody** — 输入行容器
@@ -20,8 +21,10 @@
   placeholder="输入消息..."
   @send="(payload) => chat.send(payload.text)"
 >
-  <PromptInputTextarea />
-  <PromptInputSubmit />
+  <PromptInputBody>
+    <PromptInputTextarea />
+    <PromptInputSubmit />
+  </PromptInputBody>
   <template #footer>
     <PromptInputFooter>
       <template #tools>
@@ -50,8 +53,10 @@
 
 ```vue
 <PromptInput send-key="enter" @send="onSend">
-  <PromptInputTextarea />
-  <PromptInputSubmit />
+  <PromptInputBody>
+    <PromptInputTextarea />
+    <PromptInputSubmit />
+  </PromptInputBody>
 </PromptInput>
 ```
 
@@ -70,8 +75,10 @@
 ```vue
 <PromptInput :before-send="upload" @send="onSend" @error="onError">
   <PromptInputAttachments />
-  <PromptInputTextarea />
-  <PromptInputSubmit />
+  <PromptInputBody>
+    <PromptInputTextarea />
+    <PromptInputSubmit />
+  </PromptInputBody>
 </PromptInput>
 ```
 
@@ -176,8 +183,10 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 ```vue
 <PromptInput v-model="..." @send="...">
   <PromptInputAttachments />
-  <PromptInputTextarea />
-  <PromptInputSubmit />
+  <PromptInputBody>
+    <PromptInputTextarea />
+    <PromptInputSubmit />
+  </PromptInputBody>
 </PromptInput>
 ```
 

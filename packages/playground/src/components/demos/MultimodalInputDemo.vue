@@ -5,6 +5,7 @@ import {
   aiChatI18n,
   PromptInput,
   PromptInputAttachments,
+  PromptInputBody,
   PromptInputTextarea,
   PromptInputSubmit,
   PromptInputFooter,
@@ -61,8 +62,10 @@ function formatBytes(bytes?: number) {
       @send="onSend"
     >
       <PromptInputAttachments />
-      <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
-      <PromptInputSubmit />
+      <PromptInputBody>
+        <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
+        <PromptInputSubmit />
+      </PromptInputBody>
       <template #footer>
         <PromptInputFooter>
           <template #tools>

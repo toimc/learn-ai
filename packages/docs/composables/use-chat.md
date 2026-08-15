@@ -73,8 +73,10 @@ const errorInfo = ref('')
           @send="(payload) => chat.send(payload.text)"
           @abort="chat.abort"
         >
-          <PromptInputTextarea />
-          <PromptInputSubmit />
+          <PromptInputBody>
+            <PromptInputTextarea />
+            <PromptInputSubmit />
+          </PromptInputBody>
         </PromptInput>
       </template>
     </ChatWindow>
