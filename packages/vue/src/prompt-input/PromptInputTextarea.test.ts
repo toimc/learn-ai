@@ -30,7 +30,7 @@ function mountTextarea(
     sendKey: () => opts.sendKey ?? 'alt-enter',
     multiple: () => true,
     accept: () => '',
-    submit: vi.fn(),
+    submit: submit as unknown as () => Promise<void>,
   }
   const w = mount(PromptInputTextarea, {
     global: {
@@ -45,7 +45,12 @@ function mountTextarea(
 
 function keydown(
   el: HTMLTextAreaElement,
-  mods: { alt?: boolean; meta?: boolean; shift?: boolean },
+  mods: {
+    alt?: boolean
+    meta?: boolean
+    shift?: boolean
+    isComposing?: boolean
+  },
 ) {
   const evt = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -54,6 +59,7 @@ function keydown(
     altKey: !!mods.alt,
     metaKey: !!mods.meta,
     shiftKey: !!mods.shift,
+    isComposing: !!mods.isComposing,
   })
   el.dispatchEvent(evt)
   return evt
@@ -115,6 +121,12 @@ describe('PromptInputTextarea sendKey=enter（传统模式）', () => {
     keydown(textarea(w), { shift: true })
     expect(submit).toHaveBeenCalledTimes(1)
   })
+
+  it('IME 组合中（isComposing）Enter 不提交', () => {
+    const { w, submit } = mountTextarea({ sendKey: 'enter' })
+    keydown(textarea(w), { isComposing: true })
+    expect(submit).not.toHaveBeenCalled()
+  })
 })
 
 describe('PromptInputTextarea 粘贴', () => {
@@ -132,5 +144,15 @@ describe('PromptInputTextarea 粘贴', () => {
     const evt = paste(textarea(w), { files: [] })
     expect(evt.defaultPrevented).toBe(false)
     expect(addFiles).not.toHaveBeenCalled()
+  })
+
+  it('剪贴板 FileList 形态同样走通', () => {
+    const { w, addFiles } = mountTextarea()
+    const file = png('b.png')
+    const evt = paste(textarea(w), {
+      files: { 0: file, length: 1 } as unknown as FileList,
+    })
+    expect(evt.defaultPrevented).toBe(true)
+    expect(addFiles).toHaveBeenCalledWith({ 0: file, length: 1 })
   })
 })

@@ -15,6 +15,7 @@ function handleInput(e: Event) {
 }
 
 function handleKeydown(e: KeyboardEvent) {
+  if (e.isComposing || e.keyCode === 229) return // IME 组合中，交给输入法
   if (e.key !== 'Enter') return
   if (sendKey() === 'enter') {
     if (!e.shiftKey) {
