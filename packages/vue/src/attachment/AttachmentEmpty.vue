@@ -1,6 +1,12 @@
+<script setup lang="ts">
+import { aiChatI18n } from '../locales'
+
+const { t } = aiChatI18n.global
+</script>
+
 <template>
   <div class="ai-chat-attachment-empty">
-    <slot>暂无附件</slot>
+    <slot>{{ t('attachments.empty') }}</slot>
   </div>
 </template>
 

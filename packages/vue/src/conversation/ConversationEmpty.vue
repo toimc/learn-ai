@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
+import { computed, type Component } from 'vue'
+import { aiChatI18n } from '../locales'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     icon?: Component
     title?: string
     description?: string
   }>(),
-  {
-    icon: undefined,
-    title: '有什么可以帮你的？',
-    description: '选择一个话题开始，或直接输入你的问题',
-  },
+  { icon: undefined },
+)
+
+const { t } = aiChatI18n.global
+const displayTitle = computed(() => props.title ?? t('conversation.emptyTitle'))
+const displayDescription = computed(
+  () => props.description ?? t('conversation.emptyDescription'),
 )
 </script>
 
@@ -33,8 +36,8 @@ withDefaults(
         <component :is="icon" v-else />
       </slot>
     </div>
-    <h1 class="ai-chat-conversation-empty__title">{{ title }}</h1>
-    <p class="ai-chat-conversation-empty__desc">{{ description }}</p>
+    <h1 class="ai-chat-conversation-empty__title">{{ displayTitle }}</h1>
+    <p class="ai-chat-conversation-empty__desc">{{ displayDescription }}</p>
     <div class="ai-chat-conversation-empty__suggestions">
       <slot name="suggestions" />
     </div>
