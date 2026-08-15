@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import ConversationEmpty from './ConversationEmpty.vue'
 import { setAiChatLocale } from '../locales'
 
 beforeEach(() => setAiChatLocale('zh-CN', { persist: false }))
+afterEach(() => setAiChatLocale('zh-CN', { persist: false }))
 
 describe('ConversationEmpty i18n', () => {
   it('未传 props：渲染中文字典文案', () => {

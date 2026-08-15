@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, type Component } from 'vue'
 import ComparisonMessage from './ComparisonMessage.vue'
@@ -6,6 +6,7 @@ import { markdownRendererKey } from '../composables/useMarkdownRenderer'
 import { setAiChatLocale } from '../locales'
 
 beforeEach(() => setAiChatLocale('zh-CN', { persist: false }))
+afterEach(() => setAiChatLocale('zh-CN', { persist: false }))
 
 const FakeRenderer = defineComponent({
   props: { content: { type: String, default: '' } },

@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import zhCN from './zh-CN'
 import enUS from './en-US'
 import { aiChatI18n, setAiChatLocale, getInitialLocale } from './index'
+
+// 模块级单例跨文件共享：跑完必须还原，避免把 en-US 泄漏给同 worker 的其他测试文件
+afterEach(() => setAiChatLocale('zh-CN', { persist: false }))
 
 function flattenKeys(obj: Record<string, unknown>, prefix = ''): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>

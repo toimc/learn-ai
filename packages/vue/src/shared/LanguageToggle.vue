@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
     padding: 4px;
     list-style: none;
     min-width: 148px;
-    background: var(--ai-chat-neutral-0);
+    background: var(--ai-chat-color-bg-primary);
     border: 1px solid var(--ai-chat-color-border);
     border-radius: var(--ai-chat-radius-md);
     box-shadow: var(--ai-chat-shadow-popup);
