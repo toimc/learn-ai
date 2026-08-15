@@ -64,7 +64,7 @@ function openPreview(p: PendingFile) {
         'ai-chat-prompt-attachments__item--uploading': p.status === 'uploading',
         'ai-chat-prompt-attachments__item--error': p.status === 'error',
       }"
-      :aria-busy="p.status === 'uploading'"
+      :aria-busy="p.status === 'uploading' || undefined"
       :title="p.error || p.file.name"
     >
       <button

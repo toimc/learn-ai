@@ -151,8 +151,8 @@ describe('PromptInputAttachments 状态标记', () => {
     expect(items[1].attributes('aria-busy')).toBe('true')
     expect(items[1].find('.ai-chat-sr-only').text()).toBe('上传中')
 
-    // error 项状态文本
-    expect(items[2].attributes('aria-busy')).toBe('false')
+    // error 项状态文本（非上传态不渲染 aria-busy，避免噪音）
+    expect(items[2].attributes('aria-busy')).toBeUndefined()
     expect(items[2].find('.ai-chat-sr-only').text()).toBe('上传失败')
   })
 })
@@ -215,5 +215,26 @@ describe('PromptInputAttachments 图片预览兜底链', () => {
       },
     ])
     expect(index).toBe(1)
+  })
+
+  it('宿主动态添加 onPreview：setProps 后点击走 emit，不再弹内置 Lightbox', async () => {
+    const onPreview = vi.fn()
+    const { w } = mountAttachments(imgs)
+
+    // 初始未监听：点击打开内置 Lightbox
+    await w.findAll('.ai-chat-prompt-attachments__thumb')[0].trigger('click')
+    expect(w.findComponent(ImageLightbox).exists()).toBe(true)
+    expect(onPreview).not.toHaveBeenCalled()
+
+    // 关闭内置 Lightbox，避免遗留 open 状态干扰后续断言
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await nextTick()
+
+    // 宿主动态添加监听：再点击只 emit preview，Lightbox 不再弹出
+    await w.setProps({ onPreview })
+    await w.findAll('.ai-chat-prompt-attachments__thumb')[0].trigger('click')
+    expect(onPreview).toHaveBeenCalledTimes(1)
+    expect(w.emitted('preview')).toHaveLength(1)
+    expect(w.findComponent(ImageLightbox).exists()).toBe(false)
   })
 })

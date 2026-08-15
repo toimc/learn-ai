@@ -22,7 +22,6 @@ const category = getMediaCategory(data.mediaType)
       :src="data.url"
       :alt="data.name"
       class="ai-chat-attachment-preview__img"
-      style="cursor: pointer"
       @click="emit('preview')"
     />
     <span v-else class="ai-chat-attachment-preview__icon">
@@ -49,6 +48,7 @@ const category = getMediaCategory(data.mediaType)
     width: 100%;
     height: 100%;
     object-fit: cover;
+    cursor: pointer;
   }
 
   .ai-chat-attachment-preview__icon {
