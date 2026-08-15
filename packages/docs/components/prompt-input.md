@@ -3,7 +3,7 @@
 可组合的富输入系统，包含 10 个子组件：
 
 - **PromptInput** — 外层容器，provide 输入上下文
-- **PromptInputTextarea** — 自适应高度输入框（Enter 发送 / Shift+Enter 换行）
+- **PromptInputTextarea** — 自适应高度输入框（键位模式由 PromptInput 的 `sendKey` 决定，粘贴文件进入附件管道）
 - **PromptInputSubmit** — 发送/停止按钮
 - **PromptInputBody** — 输入行容器
 - **PromptInputFooter** — 底部工具栏容器
@@ -32,12 +32,69 @@
         </PromptInputTools>
       </template>
       <template #hint>
-        <span>Enter 发送，Shift+Enter 换行</span>
+        <span>Enter 换行，Alt+Enter 发送</span>
       </template>
     </PromptInputFooter>
   </template>
 </PromptInput>
 ```
+
+## 发送键位
+
+`sendKey` 支持两种模式：
+
+| 模式 | 发送 | 换行 | 适用场景 |
+|------|------|------|----------|
+| `'alt-enter'`（默认） | `Alt+Enter` / `⌥+Enter` | `Enter` | 长文输入为主，换行是高频操作（对齐 Claude/ChatGPT 桌面端） |
+| `'enter'` | `Enter` | `Shift+Enter` | 短问答为主，发送是高频操作 |
+
+```vue
+<PromptInput send-key="enter" @send="onSend">
+  <PromptInputTextarea />
+  <PromptInputSubmit />
+</PromptInput>
+```
+
+两种模式下 IME 组合输入期间的 Enter（选字/确认候选词）均不会触发发送，中文/日文输入无渗字风险。
+
+## 附件上传
+
+附件有三个统一入口，全部走 PromptInput 的同一条校验管道（`accept` / `maxFiles` / `maxSize`）：
+
+1. **按钮选择**：`PromptInputUploadButton`（`kind="image"` 限定图片，`kind="file"` 跟随 `accept`）
+2. **粘贴**：在输入框内直接 `⌘V` / `Ctrl+V` 粘贴文件（如截图）
+3. **拖拽**：拖动文件到输入框区域，边框高亮后松手
+
+被管道拒绝的文件触发 `error` 事件并弹出内置 Toast 提示拒绝原因：
+
+```vue
+<PromptInput :before-send="upload" @send="onSend" @error="onError">
+  <PromptInputAttachments />
+  <PromptInputTextarea />
+  <PromptInputSubmit />
+</PromptInput>
+```
+
+### beforeSend 上传钩子
+
+配置 `beforeSend` 后，发送时附件会先经过该钩子上传（期间附件项显示呼吸遮罩），resolve 返回的 `Attachment[]` 随 `send` 事件抛出；上传失败自动回置 `error` 态并 Toast：
+
+```ts
+import type { Attachment } from '@ai-chat/core'
+
+async function upload(files: File[]): Promise<Attachment[]> {
+  const form = new FormData()
+  files.forEach((f) => form.append('files', f))
+  const res = await fetch('/api/upload', { method: 'POST', body: form })
+  return res.json()
+}
+
+function onSend(payload: { text: string; attachments?: Attachment[] }) {
+  chat.send(payload.text, payload.attachments)
+}
+```
+
+未配置 `beforeSend` 时，`send` 事件携带原始 `files: File[]`，上传逻辑完全交由宿主。
 
 ## API
 
@@ -82,7 +139,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 
 | 事件名 | 参数 | 说明 |
 |--------|------|------|
-| send | `(content: string)` | 用户按 Enter 提交 |
+| send | `(content: string)` | 用户按发送快捷键提交（由 PromptInput 的 `sendKey` 决定） |
 
 ### PromptInputSubmit
 

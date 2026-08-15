@@ -67,11 +67,15 @@ const errorInfo = ref('')
         </MessageBubble>
       </MessageList>
       <template #footer>
-        <InputArea
+        <PromptInput
           :disabled="chat.isStreaming"
-          @send="chat.send"
+          send-key="enter"
+          @send="(payload) => chat.send(payload.text)"
           @abort="chat.abort"
-        />
+        >
+          <PromptInputTextarea />
+          <PromptInputSubmit />
+        </PromptInput>
       </template>
     </ChatWindow>
     <div style="margin-top: 8px; display: flex; gap: 8px">
