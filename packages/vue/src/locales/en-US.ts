@@ -11,6 +11,8 @@ export default {
     placeholder: 'Send a message to AI Chat UI...',
     disclaimer:
       'AI Chat UI may produce inaccurate information. Please double-check.',
+    send: 'Send',
+    stop: 'Stop',
   },
   conversation: {
     emptyTitle: 'How can I help you?',

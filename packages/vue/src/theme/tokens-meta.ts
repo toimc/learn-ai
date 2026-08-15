@@ -461,6 +461,14 @@ export const tokensMeta: TokenMeta[] = [
     ref: '--ai-chat-color-accent-400',
   },
   {
+    key: '--ai-chat-color-text-on-accent',
+    layer: 'semantic',
+    group: '语义·强调',
+    label: '主色上的文字',
+    type: 'color',
+    light: '#ffffff',
+  },
+  {
     key: '--ai-chat-color-accent-dim',
     layer: 'semantic',
     group: '语义·强调',

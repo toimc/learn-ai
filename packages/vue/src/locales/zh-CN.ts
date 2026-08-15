@@ -10,6 +10,8 @@ const zhCN = {
   promptInput: {
     placeholder: '给 AI Chat UI 发送消息...',
     disclaimer: 'AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性',
+    send: '发送',
+    stop: '停止',
   },
   conversation: {
     emptyTitle: '有什么可以帮你的？',

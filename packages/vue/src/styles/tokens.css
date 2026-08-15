@@ -81,6 +81,7 @@
     /* 强调 */
     --ai-chat-color-accent: var(--ai-chat-color-accent-500);
     --ai-chat-color-accent-hover: var(--ai-chat-color-accent-400);
+    --ai-chat-color-text-on-accent: #ffffff;
     --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.15);
 
     /* 背景 */
@@ -134,6 +135,7 @@
     /* 强调 */
     --ai-chat-color-accent: var(--ai-chat-color-accent-500);
     --ai-chat-color-accent-hover: var(--ai-chat-color-accent-400);
+    --ai-chat-color-text-on-accent: #ffffff;
     --ai-chat-color-accent-dim: rgba(99, 102, 241, 0.2);
 
     /* 背景 */

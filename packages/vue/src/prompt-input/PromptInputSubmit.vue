@@ -1,62 +1,82 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
+import { aiChatI18n } from '../locales/index'
 import { PROMPT_INPUT_KEY } from './context'
 
 const { status, disabled } = inject(PROMPT_INPUT_KEY)!
 
 const submit = inject<() => void>('promptSubmit')!
 const abort = inject<() => void>('promptAbort')!
+
+const { t } = aiChatI18n.global
+const label = computed(() =>
+  status.value === 'streaming' ? t('promptInput.stop') : t('promptInput.send'),
+)
 </script>
 
 <template>
   <button
     class="ai-chat-prompt-submit"
+    type="button"
+    :aria-label="label"
     :disabled="disabled()"
     @click="status === 'streaming' ? abort() : submit()"
   >
-    <svg v-if="status === 'ready'" viewBox="0 0 24 24" fill="currentColor">
-      <path
-        d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404z"
-      />
-    </svg>
-    <svg v-else viewBox="0 0 24 24" fill="currentColor">
-      <rect x="6" y="6" width="12" height="12" rx="2" />
-    </svg>
+    <slot>
+      <svg
+        v-if="status === 'ready'"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+      <svg v-else viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6.5" y="6.5" width="11" height="11" rx="2" />
+      </svg>
+    </slot>
   </button>
 </template>
 
-<style>
-@layer ai-chat-components {
-  .ai-chat-prompt-submit {
-    width: 36px;
-    height: 36px;
-    margin: 6px 8px;
-    border-radius: 10px;
-    border: none;
-    background: var(--ai-chat-color-input-bg);
-    color: var(--ai-chat-color-text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-      background var(--ai-chat-duration-fast) var(--ai-chat-easing),
-      opacity var(--ai-chat-duration-fast) var(--ai-chat-easing);
-    flex-shrink: 0;
-  }
+<!-- scoped：悬浮圆形按钮（主题色），不占布局空间；data-v 特异性可抵御
+     宿主（如 VitePress base.css）未分层的 button 元素级 reset -->
+<style scoped>
+.ai-chat-prompt-submit {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--ai-chat-color-accent);
+  color: var(--ai-chat-color-text-on-accent, #ffffff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    background var(--ai-chat-duration-fast) var(--ai-chat-easing),
+    opacity var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
 
-  .ai-chat-prompt-submit:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
+.ai-chat-prompt-submit:hover:not(:disabled) {
+  background: var(--ai-chat-color-accent-hover);
+}
 
-  .ai-chat-prompt-submit:not(:disabled):hover {
-    background: var(--ai-chat-hover-neutral);
-  }
+.ai-chat-prompt-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 
-  .ai-chat-prompt-submit svg {
-    width: 18px;
-    height: 18px;
-  }
+.ai-chat-prompt-submit svg {
+  width: 18px;
+  height: 18px;
 }
 </style>
