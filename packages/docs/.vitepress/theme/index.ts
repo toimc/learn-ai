@@ -55,7 +55,11 @@ import { MarkdownRenderer, CodeBlock, LatexBlock } from '@ai-chat/markdown'
 import '../../../markdown/src/styles/katex.css'
 
 import DemoContainer from '../components/DemoContainer.vue'
-import { PlaygroundPage, ThemeBuilderPage } from '@ai-chat/playground'
+import {
+  PlaygroundPage,
+  ThemeBuilderPage,
+  MultimodalDemoPage,
+} from '@ai-chat/playground'
 
 import './style.css'
 
@@ -125,5 +129,6 @@ export default {
     app.component('DemoContainer', DemoContainer)
     app.component('PlaygroundPage', PlaygroundPage)
     app.component('ThemeBuilderPage', ThemeBuilderPage)
+    app.component('MultimodalDemoPage', MultimodalDemoPage)
   },
 } satisfies Theme

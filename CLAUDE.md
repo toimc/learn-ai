@@ -69,6 +69,12 @@ packages/<pkg>/tsconfig.json
 packages/<pkg>/package.json
 ```
 
+### Playground 演示组织（每功能一文件）
+
+- 每个功能演示自动创建独立组件：`packages/playground/src/components/demos/<Feature>Demo.vue`，自包含（自己的 mock、状态、`pg.<feature>` 文案 key），不往 PlaygroundDemo.vue 里堆
+- 页面壳 `<Feature>DemoPage.vue` 只做布局包装；经 `packages/docs/<feature>-demo.md` 的 `layout` frontmatter 挂载
+- 新演示四件套同步：`playground/src/index.ts` 导出 + `.vitepress/theme/index.ts` 全局注册 + `.vitepress/config.ts` 导航 + `playground.md` 链接
+
 ## 测试
 
 - 单元测试用 Vitest，放在对应模块的 `.test.ts` 文件旁

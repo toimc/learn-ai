@@ -158,6 +158,15 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 |--------|------|
 | default | 按钮图标/内容 |
 
+### PromptInputFooter
+
+底部工具栏容器，左右分列。无 Props。
+
+| 插槽名 | 说明 |
+|--------|------|
+| tools | 左侧工具区（通常放 `PromptInputTools` + 上传/功能按钮） |
+| hint | 右侧提示区（如键位说明文案） |
+
 ### PromptInputAttachments
 
 待发送附件（pendingFiles）预览列表，通常放在 Textarea 上方。图片渲染 40px 缩略图，非图片按类型渲染图标占位（📄 文档 / 🎵 音频 / 🎬 视频）；`uploading` 态叠加呼吸遮罩，`error` 态红色边框且 `title` 显示错误信息；每项带文件名（单行省略）、大小与移除按钮。

@@ -53,6 +53,7 @@ export default defineConfig({
         ],
       },
       { text: 'Playground', link: '/playground' },
+      { text: '多模态输入演示', link: '/multimodal-demo' },
       { text: '主题配置器', link: '/theme-builder' },
     ],
 
