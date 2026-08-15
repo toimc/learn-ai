@@ -45,6 +45,7 @@ import {
   ToolCallOutput,
   // Shared
   Shimmer,
+  Toast,
   // Markdown renderer inject key
   markdownRendererKey,
 } from '@ai-chat/vue'
@@ -111,6 +112,7 @@ export default {
 
     // Shared
     app.component('Shimmer', Shimmer)
+    app.component('Toast', Toast)
 
     // Markdown
     app.component('MarkdownRenderer', MarkdownRenderer)

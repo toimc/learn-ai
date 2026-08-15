@@ -6,6 +6,7 @@ import './styles/animations.css'
 export { default as StreamText } from './shared/StreamText.vue'
 export { default as Button } from './shared/Button.vue'
 export { default as Shimmer } from './shared/Shimmer.vue'
+export { default as Toast } from './shared/Toast.vue'
 
 // Conversation series
 export {
