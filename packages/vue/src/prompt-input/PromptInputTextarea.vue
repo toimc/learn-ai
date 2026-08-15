@@ -57,6 +57,8 @@ function handlePaste(e: ClipboardEvent) {
 @layer ai-chat-components {
   .ai-chat-prompt-textarea {
     flex: 1;
+    width: 100%;
+    min-width: 0;
     background: transparent;
     border: none;
     color: var(--ai-chat-color-text-primary);

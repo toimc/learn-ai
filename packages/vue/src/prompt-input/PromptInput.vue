@@ -189,6 +189,8 @@ provide('promptAbort', handleAbort)
 
   .ai-chat-prompt-input__wrapper {
     position: relative;
+    display: flex;
+    flex-direction: column;
     background: var(--ai-chat-color-input-bg);
     border-radius: var(--ai-chat-radius-xl);
     border: 1px solid var(--ai-chat-color-input-border);
