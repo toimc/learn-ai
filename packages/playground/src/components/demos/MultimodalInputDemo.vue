@@ -64,7 +64,6 @@ function formatBytes(bytes?: number) {
       <PromptInputAttachments />
       <PromptInputBody>
         <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
-        <PromptInputSubmit />
       </PromptInputBody>
       <template #footer>
         <PromptInputFooter>
@@ -75,7 +74,7 @@ function formatBytes(bytes?: number) {
             </PromptInputTools>
           </template>
           <template #hint>
-            <span class="pg-demo-card__hint">{{ t('pg.input.hint') }}</span>
+            <PromptInputSubmit />
           </template>
         </PromptInputFooter>
       </template>

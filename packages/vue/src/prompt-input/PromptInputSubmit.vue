@@ -41,8 +41,8 @@ const label = computed(() =>
   </button>
 </template>
 
-<!-- scoped：悬浮圆形按钮（主题色），不占布局空间；data-v 特异性可抵御
-     宿主（如 VitePress base.css）未分层的 button 元素级 reset -->
+<!-- scoped：圆形主题色按钮，常置于 PromptInputFooter 右侧动作区；
+     data-v 特异性可抵御宿主（如 VitePress base.css）未分层的 button 元素级 reset -->
 <style scoped>
 .ai-chat-prompt-submit {
   position: absolute;
