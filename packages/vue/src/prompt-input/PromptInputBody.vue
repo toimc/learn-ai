@@ -10,6 +10,9 @@
     position: relative;
     display: flex;
     align-items: flex-end;
+    /* 外层统一横向 inset：左侧=文字起点，右侧=滚动条离边（WebKit 滚动条
+       钉在 padding-box 最右缘，textarea 跟随收窄后自然离边） */
+    padding: 0 14px;
   }
 }
 </style>
