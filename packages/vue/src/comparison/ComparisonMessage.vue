@@ -101,87 +101,85 @@ function choose(side: Side) {
   </div>
 </template>
 
-<style>
-@layer ai-chat-components {
-  .ai-chat-comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--ai-chat-msg-gap);
-    /* 给骑底边按钮的下半部分留空间 */
-    margin-bottom: 6px;
-  }
+<style scoped>
+.ai-chat-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ai-chat-msg-gap);
+  /* 给骑底边按钮的下半部分留空间 */
+  margin-bottom: 6px;
+}
 
-  .ai-chat-comparison__col {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 12px 26px;
-    border: 1px solid var(--ai-chat-color-border);
-    border-radius: var(--ai-chat-radius-lg);
-    background: var(--ai-chat-color-msg-assistant-bg);
-    transition:
-      border-color var(--ai-chat-duration-normal) var(--ai-chat-easing),
-      box-shadow var(--ai-chat-duration-normal) var(--ai-chat-easing);
-  }
+.ai-chat-comparison__col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 26px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: var(--ai-chat-radius-lg);
+  background: var(--ai-chat-color-msg-assistant-bg);
+  transition:
+    border-color var(--ai-chat-duration-normal) var(--ai-chat-easing),
+    box-shadow var(--ai-chat-duration-normal) var(--ai-chat-easing);
+}
 
-  .ai-chat-comparison__col.is-selected {
-    border-color: var(--ai-chat-color-accent);
-    box-shadow: 0 0 0 2px var(--ai-chat-color-accent-dim);
-  }
+.ai-chat-comparison__col.is-selected {
+  border-color: var(--ai-chat-color-accent);
+  box-shadow: 0 0 0 2px var(--ai-chat-color-accent-dim);
+}
 
-  .ai-chat-comparison__label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ai-chat-color-text-secondary);
-  }
+.ai-chat-comparison__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ai-chat-color-text-secondary);
+}
 
-  .ai-chat-comparison__content {
-    flex: 1;
-    min-width: 0;
-  }
+.ai-chat-comparison__content {
+  flex: 1;
+  min-width: 0;
+}
 
-  /* 操作区：铺在卡片底边，按钮骑边界水平居中 */
-  .ai-chat-comparison__action {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-  }
+/* 操作区：铺在卡片底边，按钮骑边界水平居中 */
+.ai-chat-comparison__action {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
 
-  .ai-chat-comparison__btn {
-    transform: translateY(50%);
-    pointer-events: auto;
-    padding: 6px 16px;
-    border: none;
-    border-radius: var(--ai-chat-radius-md);
-    background: var(--ai-chat-color-accent);
-    color: var(--ai-chat-neutral-0, #ffffff);
-    font-size: 13px;
-    font-family: inherit;
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-    transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
-  }
+.ai-chat-comparison__btn {
+  transform: translateY(50%);
+  pointer-events: auto;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--ai-chat-radius-md);
+  background: var(--ai-chat-color-accent);
+  color: var(--ai-chat-neutral-0, #ffffff);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
 
-  .ai-chat-comparison__btn:hover:not(:disabled) {
-    background: var(--ai-chat-color-accent-hover);
-  }
+.ai-chat-comparison__btn:hover:not(:disabled) {
+  background: var(--ai-chat-color-accent-hover);
+}
 
-  .ai-chat-comparison__btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.ai-chat-comparison__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-  /* 窄屏堆叠：容器查询条件不支持 var()，640px 为字面量（= --ai-chat-breakpoint-md 默认）。 */
-  @container (max-width: 640px) {
-    .ai-chat-comparison.is-stack-mobile {
-      grid-template-columns: 1fr;
-    }
+/* 窄屏堆叠：容器查询条件不支持 var()，640px 为字面量（= --ai-chat-breakpoint-md 默认）。 */
+@container (max-width: 640px) {
+  .ai-chat-comparison.is-stack-mobile {
+    grid-template-columns: 1fr;
   }
 }
 </style>
