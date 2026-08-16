@@ -46,8 +46,8 @@ const label = computed(() =>
 <style scoped>
 .ai-chat-prompt-submit {
   position: absolute;
-  /* 右缘 14 与文字左内边距 14 对称；底 8 让单行时按钮垂直居中（行高 52 - 36）/2 */
-  right: 14px;
+  /* 右缘 8 收紧（滚动条同距），文字左 14 保持；底 8 让单行时按钮垂直居中（行高 52 - 36）/2 */
+  right: 8px;
   bottom: 8px;
   width: 36px;
   height: 36px;
