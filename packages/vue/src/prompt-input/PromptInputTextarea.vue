@@ -66,8 +66,8 @@ function handlePaste(e: ClipboardEvent) {
   color: var(--ai-chat-color-text-primary);
   font-size: 15px;
   font-family: var(--ai-chat-font-sans);
-  /* 右侧预留悬浮发送按钮的空间；滚动条位于 padding 右缘、贴近按钮 */
-  padding: 14px 56px 14px 20px;
+  /* 左 14 与发送按钮右缘 14 对称；右侧预留悬浮按钮空间，滚动条贴近按钮 */
+  padding: 14px 56px 14px 14px;
   resize: none;
   outline: none;
   /* 输入行弹性高度：随内容增长，超过上限后内部滚动（类 ChatGPT/豆包） */
