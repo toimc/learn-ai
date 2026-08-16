@@ -75,6 +75,9 @@ function handlePaste(e: ClipboardEvent) {
   min-height: 24px;
   line-height: 1.5;
   overflow-y: auto;
+  /* 滚动条贴 padding 右缘全程直角，会穿透外层 wrapper 的上圆角——
+     给自身加上圆角裁切滚动条顶部，圆角与 wrapper 对齐 */
+  border-radius: var(--ai-chat-radius-xl) var(--ai-chat-radius-xl) 0 0;
 }
 
 .ai-chat-prompt-textarea::placeholder {
