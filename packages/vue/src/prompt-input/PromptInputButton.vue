@@ -62,6 +62,9 @@ defineEmits<{ click: [] }>()
   .ai-chat-prompt-input-btn svg {
     width: 18px;
     height: 18px;
+    /* 部分 icon path 贴 viewBox 边缘（如回形针 x≈1），描边一半出界，
+       SVG 默认 overflow:hidden 会裁掉——放行绘制出界 */
+    overflow: visible;
   }
 }
 </style>
