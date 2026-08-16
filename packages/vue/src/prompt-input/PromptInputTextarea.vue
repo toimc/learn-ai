@@ -87,9 +87,9 @@ function handlePaste(e: ClipboardEvent) {
   color: var(--ai-chat-color-text-muted);
 }
 
-/* 豆包/ChatGPT 风格：细胶囊滚动条，thumb 四周内缩、顶部让出圆角区 */
+/* 豆包/ChatGPT 风格：细胶囊滚动条，thumb 四周内缩、顶部让出圆角区、右侧离边 */
 .ai-chat-prompt-textarea::-webkit-scrollbar {
-  width: 6px;
+  width: 14px;
 }
 
 .ai-chat-prompt-textarea::-webkit-scrollbar-track {
@@ -99,9 +99,11 @@ function handlePaste(e: ClipboardEvent) {
 .ai-chat-prompt-textarea::-webkit-scrollbar-thumb {
   background: var(--ai-chat-scrollbar-thumb);
   border-radius: 999px;
-  /* 透明 border + background-clip 让绘制区四边内缩：顶部 12px 让出圆角，左右各 1px */
+  /* 透明 border + background-clip 内缩绘制区：顶部 12px 让出圆角，
+     右侧 8px 离开输入框右缘，绘制宽 14-1-8=5px */
   border: 1px solid transparent;
   border-top-width: 12px;
+  border-right-width: 8px;
   background-clip: padding-box;
 }
 </style>
