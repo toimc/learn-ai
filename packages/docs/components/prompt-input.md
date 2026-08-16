@@ -3,11 +3,10 @@
 可组合的富输入系统，包含 10 个子组件：
 
 - **PromptInput** — 外层容器，provide 输入上下文
-- **PromptInputBody** — 输入行容器（flex 行：Textarea 占满剩余宽度 + Submit 靠右）
+- **PromptInputBody** — 输入行容器（Textarea 占满整行；横向内边距在此层统一提供）
 - **PromptInputTextarea** — 弹性高度输入框：随内容自动增高，超过 `--ai-chat-input-max-height`（默认 200px）后内部滚动；键位模式由 PromptInput 的 `sendKey` 决定，粘贴文件进入附件管道
-- **PromptInputSubmit** — 发送/停止按钮
-- **PromptInputBody** — 输入行容器
-- **PromptInputFooter** — 底部工具栏容器
+- **PromptInputSubmit** — 发送/停止按钮（圆形主题色，置于 Footer 右侧动作区）
+- **PromptInputFooter** — 底部工具栏容器（左 tools / 右 hint 动作区）
 - **PromptInputTools** — 工具按钮组
 - **PromptInputButton** — 单个工具按钮
 - **PromptInputUploadButton** — 图片/附件上传入口（触发文件选择管道）
@@ -23,7 +22,6 @@
 >
   <PromptInputBody>
     <PromptInputTextarea />
-    <PromptInputSubmit />
   </PromptInputBody>
   <template #footer>
     <PromptInputFooter>
@@ -33,6 +31,9 @@
             <!-- 图标 -->
           </PromptInputButton>
         </PromptInputTools>
+      </template>
+      <template #hint>
+        <PromptInputSubmit />
       </template>
       <template #hint>
         <span>Enter 换行，Alt+Enter 发送</span>
@@ -55,8 +56,14 @@
 <PromptInput send-key="enter" @send="onSend">
   <PromptInputBody>
     <PromptInputTextarea />
-    <PromptInputSubmit />
   </PromptInputBody>
+  <template #footer>
+    <PromptInputFooter>
+      <template #hint>
+        <PromptInputSubmit />
+      </template>
+    </PromptInputFooter>
+  </template>
 </PromptInput>
 ```
 
@@ -77,8 +84,20 @@
   <PromptInputAttachments />
   <PromptInputBody>
     <PromptInputTextarea />
-    <PromptInputSubmit />
   </PromptInputBody>
+  <template #footer>
+    <PromptInputFooter>
+      <template #tools>
+        <PromptInputTools>
+          <PromptInputUploadButton kind="image" />
+          <PromptInputUploadButton kind="file" />
+        </PromptInputTools>
+      </template>
+      <template #hint>
+        <PromptInputSubmit />
+      </template>
+    </PromptInputFooter>
+  </template>
 </PromptInput>
 ```
 
@@ -144,7 +163,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 
 ### PromptInputSubmit
 
-无 Props。**悬浮式圆形发送按钮**：主题色（`--ai-chat-color-accent`）背景 + 白色上箭头图标，绝对定位在输入行右下角、不占据布局空间（输入框占满整行，滚动条贴近右缘）；流式输出中自动切换为停止方块。颜色跟随主题预设变化。
+无 Props。**圆形主题色发送按钮**（`--ai-chat-color-accent` 背景 + 白色上箭头），置于 `PromptInputFooter` 的 `hint` 右侧动作区（输入框右下方）；流式输出中自动切换为停止方块，颜色跟随主题预设变化。
 
 | 插槽名 | 说明 |
 |--------|------|
@@ -176,7 +195,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 | 插槽名 | 说明 |
 |--------|------|
 | tools | 左侧工具区（通常放 `PromptInputTools` + 上传/功能按钮） |
-| hint | 右侧提示区（如键位说明文案） |
+| hint | 右侧动作区（常放 `PromptInputSubmit`，也可放提示文案） |
 
 ### PromptInputAttachments
 
@@ -189,7 +208,6 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
   <PromptInputAttachments />
   <PromptInputBody>
     <PromptInputTextarea />
-    <PromptInputSubmit />
   </PromptInputBody>
 </PromptInput>
 ```

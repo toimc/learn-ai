@@ -667,7 +667,6 @@ watch(() => chat.messages.length, scrollToBottom)
             <PromptInputAttachments />
             <PromptInputBody>
               <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
-              <PromptInputSubmit />
             </PromptInputBody>
             <template #footer>
               <PromptInputFooter>
@@ -728,7 +727,7 @@ watch(() => chat.messages.length, scrollToBottom)
                   </PromptInputTools>
                 </template>
                 <template #hint>
-                  <span class="pg-input-hint">{{ t('pg.input.hint') }}</span>
+                  <PromptInputSubmit />
                 </template>
               </PromptInputFooter>
             </template>
