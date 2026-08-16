@@ -78,9 +78,30 @@ function handlePaste(e: ClipboardEvent) {
   /* 滚动条贴 padding 右缘全程直角，会穿透外层 wrapper 的上圆角——
      给自身加上圆角裁切滚动条顶部，圆角与 wrapper 对齐 */
   border-radius: var(--ai-chat-radius-xl) var(--ai-chat-radius-xl) 0 0;
+  /* Firefox 标准属性：细滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--ai-chat-scrollbar-thumb) transparent;
 }
 
 .ai-chat-prompt-textarea::placeholder {
   color: var(--ai-chat-color-text-muted);
+}
+
+/* 豆包/ChatGPT 风格：细胶囊滚动条，thumb 四周内缩、顶部让出圆角区 */
+.ai-chat-prompt-textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-chat-prompt-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ai-chat-prompt-textarea::-webkit-scrollbar-thumb {
+  background: var(--ai-chat-scrollbar-thumb);
+  border-radius: 999px;
+  /* 透明 border + background-clip 让绘制区四边内缩：顶部 12px 让出圆角，左右各 1px */
+  border: 1px solid transparent;
+  border-top-width: 12px;
+  background-clip: padding-box;
 }
 </style>
