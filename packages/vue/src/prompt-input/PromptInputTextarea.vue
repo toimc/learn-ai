@@ -66,9 +66,9 @@ function handlePaste(e: ClipboardEvent) {
   color: var(--ai-chat-color-text-primary);
   font-size: 15px;
   font-family: var(--ai-chat-font-sans);
-  /* 横向 inset 全由外层 PromptInputBody 提供，自身左右为 0；
-     按钮在 footer 行，文字无需避让 */
-  padding: 4px 0 14px 0;
+  /* 上下对称：单行时文字/光标在输入区垂直居中；
+     横向 inset 全由外层 PromptInputBody 提供（左右为 0） */
+  padding: 12px 0 12px 0;
   resize: none;
   outline: none;
   /* 输入行弹性高度：随内容增长，超过上限后内部滚动（类 ChatGPT/豆包） */
