@@ -66,8 +66,9 @@ function handlePaste(e: ClipboardEvent) {
   color: var(--ai-chat-color-text-primary);
   font-size: 15px;
   font-family: var(--ai-chat-font-sans);
-  /* 左 14 与发送按钮右缘 14 对称；右侧预留悬浮按钮空间，滚动条贴近按钮 */
-  padding: 14px 56px 14px 14px;
+  /* 横向 inset 由外层 PromptInputBody 的 padding 提供（左 14/右 14）；
+     自身右侧只补悬浮按钮避让净量：按钮 36 + 间隙 6 = 42（56 - 外层 14） */
+  padding: 14px 42px 14px 0;
   resize: none;
   outline: none;
   /* 输入行弹性高度：随内容增长，超过上限后内部滚动（类 ChatGPT/豆包） */
@@ -87,9 +88,10 @@ function handlePaste(e: ClipboardEvent) {
   color: var(--ai-chat-color-text-muted);
 }
 
-/* 豆包/ChatGPT 风格：细胶囊滚动条，thumb 四周内缩、顶部让出圆角区、右侧离边 */
+/* 豆包/ChatGPT 风格：细胶囊滚动条；右侧离边由外层 Body padding 提供，
+   这里只做 thumb 四周内缩与顶部让出圆角区 */
 .ai-chat-prompt-textarea::-webkit-scrollbar {
-  width: 14px;
+  width: 6px;
 }
 
 .ai-chat-prompt-textarea::-webkit-scrollbar-track {
@@ -102,8 +104,7 @@ function handlePaste(e: ClipboardEvent) {
   /* 透明 border + background-clip 内缩绘制区：顶部 12px 让出圆角，
      右侧 8px 离开输入框右缘，绘制宽 14-1-8=5px */
   border: 1px solid transparent;
-  border-top-width: 12px;
-  border-right-width: 8px;
+  border-top-width: 10px;
   background-clip: padding-box;
 }
 </style>
