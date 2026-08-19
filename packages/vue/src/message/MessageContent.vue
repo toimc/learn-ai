@@ -1,16 +1,41 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useMarkdownRenderer } from '../composables/useMarkdownRenderer'
+import ThinkingBlock from '../thinking/ThinkingBlock.vue'
+import type { ThinkingInfo } from '@ai-chat/core'
 
-const props = defineProps<{ content?: string }>()
+const props = defineProps<{
+  content?: string
+  thinking?: ThinkingInfo
+  streaming?: boolean
+}>()
+
 const renderer = useMarkdownRenderer()
+
+// 计算思考内容的props
+const thinkingProps = computed(() => {
+  if (!props.thinking) return undefined
+
+  return {
+    content: props.thinking.content,
+    duration: props.thinking.duration,
+    showDuration: true,
+    streaming: props.streaming,
+  }
+})
 </script>
 
 <template>
   <div class="ai-chat-message-content">
+    <!-- 思考过程展示 -->
+    <ThinkingBlock v-if="thinkingProps" v-bind="thinkingProps" />
+
+    <!-- 消息内容 -->
     <component
       :is="renderer"
       v-if="renderer && props.content !== undefined"
       :content="props.content"
+      :streaming="props.streaming"
     />
     <slot v-else />
   </div>

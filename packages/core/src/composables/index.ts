@@ -30,6 +30,8 @@ export function useChat(
     state.isStreaming = true
     state.error = null
 
+    let thinkingStartTime: number | null = null
+
     currentController = new AbortController()
 
     try {
@@ -39,7 +41,13 @@ export function useChat(
       })
 
       for await (const chunk of stream) {
-        if (chunk.type === 'done') break
+        if (chunk.type === 'done') {
+          // 计算思考时长
+          if (assistantMessage.thinking && thinkingStartTime) {
+            assistantMessage.thinking.duration = Date.now() - thinkingStartTime
+          }
+          break
+        }
 
         if (chunk.type === 'error') {
           state.error = new Error(chunk.content)
@@ -49,6 +57,17 @@ export function useChat(
 
         if (chunk.type === 'text') {
           assistantMessage.content += chunk.content
+        }
+
+        if (chunk.type === 'thinking') {
+          if (!assistantMessage.thinking) {
+            assistantMessage.thinking = {
+              content: '',
+              startTime: new Date(),
+            }
+            thinkingStartTime = Date.now()
+          }
+          assistantMessage.thinking.content += chunk.content
         }
 
         if (chunk.type === 'tool_call') {

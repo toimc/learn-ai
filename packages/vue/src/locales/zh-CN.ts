@@ -43,6 +43,11 @@ const zhCN = {
     rendering: '图表渲染中…',
     renderFailed: '图表渲染失败：',
   },
+  thinking: {
+    title: '思考过程',
+    thoughtFor: '已思考 {duration} 秒',
+    thinking: '正在思考…',
+  },
 }
 
 export type MessageSchema = typeof zhCN

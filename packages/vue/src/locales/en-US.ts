@@ -44,4 +44,9 @@ export default {
     rendering: 'Rendering diagram…',
     renderFailed: 'Failed to render diagram: ',
   },
+  thinking: {
+    title: 'Thinking Process',
+    thoughtFor: 'Thought for {duration}s',
+    thinking: 'Thinking…',
+  },
 } satisfies MessageSchema

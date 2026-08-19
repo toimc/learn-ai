@@ -43,7 +43,31 @@
 
 ### MessageContent
 
-无 Props。slot 放消息正文。
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| content | `string` | — | 消息正文内容 |
+| thinking | `ThinkingInfo` | — | 思考过程信息 |
+| streaming | `boolean` | — | 是否正在流式更新 |
+
+**思考过程展示**：
+
+MessageContent 集成了思考过程展示功能，当提供 `thinking` 参数时会自动显示 ThinkingBlock：
+
+```vue
+<MessageContent
+  :content="message.content"
+  :thinking="message.thinking"
+  :streaming="chat.isStreaming"
+/>
+```
+
+展示形态对标主流 AI 聊天工具：
+
+- **流式中** — 低调的「正在思考…」触发器（图标呼吸动画），思考内容实时展开显示
+- **完成后** — 自动折叠为「已思考 X 秒」一行小字，点击展开查看完整推理过程
+- 展开内容以左侧细线 + 缩进的引用式排版呈现，`duration` 由 `useChat` 在流式结束时自动计算
+
+文案支持 i18n（`thinking.thoughtFor` / `thinking.thinking` / `thinking.title`）。
 
 ### MessageActions
 
