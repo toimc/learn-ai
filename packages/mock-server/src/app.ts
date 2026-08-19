@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createChatRoutes } from './routes/chat'
 import { createConversationsRoutes } from './routes/conversations'
+import { openApiSpec } from './openapi'
 
 const models = [
   { id: 'mock-pro', name: 'Mock Pro', description: '全场景剧本，默认选择' },
@@ -29,6 +30,9 @@ export function createMockApp() {
   app.get('/models', (c) => c.json({ models }))
 
   app.get('/health', (c) => c.json({ status: 'ok' }))
+
+  // OpenAPI 规范：文档站 Scalar 页面加载（Test Request 直接打到 servers[0].url）
+  app.get('/openapi.json', (c) => c.json(openApiSpec))
 
   return app
 }

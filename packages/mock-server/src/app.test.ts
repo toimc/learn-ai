@@ -149,3 +149,34 @@ describe('辅助路由', () => {
     expect(await res.json()).toEqual({ status: 'ok' })
   })
 })
+
+describe('OpenAPI 规范', () => {
+  it('GET /api/openapi.json 覆盖全部业务端点且 servers 指向本机', async () => {
+    const res = await createMockApp().request('/api/openapi.json')
+    expect(res.status).toBe(200)
+    const spec = (await res.json()) as {
+      openapi: string
+      servers: { url: string }[]
+      paths: Record<string, Record<string, { tags?: string[] }>>
+    }
+    expect(spec.openapi).toBe('3.1.0')
+    expect(spec.servers[0].url).toBe('http://localhost:8787')
+
+    const expected = [
+      '/api/conversations',
+      '/api/conversations/{id}/messages',
+      '/api/chat',
+      '/api/models',
+      '/api/health',
+    ]
+    for (const path of expected) {
+      expect(Object.keys(spec.paths)).toContain(path)
+    }
+    // 每个操作都打了 tag（Scalar 左侧按 tag 分组）
+    for (const ops of Object.values(spec.paths)) {
+      for (const op of Object.values(ops)) {
+        expect(op.tags?.length ?? 0).toBeGreaterThan(0)
+      }
+    }
+  })
+})
