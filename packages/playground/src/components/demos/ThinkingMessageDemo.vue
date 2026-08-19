@@ -20,6 +20,13 @@ const isBusy = computed(
   () => phase.value === 'thinking' || phase.value === 'answering',
 )
 
+// 模板内对象字面量不会解包 ref（只有顶层 ref 才解包），必须在这里组装好
+const thinkingInfo = computed<ThinkingInfo | undefined>(() =>
+  thinkingContent.value
+    ? { content: thinkingContent.value, duration: duration.value }
+    : undefined,
+)
+
 const thinkingSteps = [
   '用户问的是设计动机，需要对比 Vue 2 的局限性。',
   '\nVue 2 用 Object.defineProperty 劫持读写：',
@@ -96,11 +103,7 @@ onUnmounted(() => clearTimeout(timer))
     <Message from="assistant">
       <MessageContent
         :content="answerContent"
-        :thinking="
-          thinkingContent
-            ? ({ content: thinkingContent, duration } as ThinkingInfo)
-            : undefined
-        "
+        :thinking="thinkingInfo"
         :streaming="isBusy"
       />
     </Message>

@@ -104,7 +104,8 @@ function choose(side: Side) {
 <style scoped>
 .ai-chat-comparison {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0,·) 防止列内长代码行把列撑出容器（1fr 等价 minmax(auto,1fr) 会被 min-content 撑开） */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--ai-chat-msg-gap);
   /* 给骑底边按钮的下半部分留空间 */
   margin-bottom: 6px;
