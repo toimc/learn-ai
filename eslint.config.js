@@ -66,6 +66,8 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/.vitepress/cache/**',
       '**/*.d.ts',
+      // 遗留 worktree 内含重复 tsconfig，会触发 tsconfigRootDir 解析错误
+      '.claude/worktrees/**',
     ],
   },
 )
