@@ -24,7 +24,9 @@ export function useChat(
     const userMessage = createUserMessage(content, attachments)
     state.messages.push(userMessage)
 
-    const assistantMessage = createAssistantMessage()
+    // 必须先 reactive 再入列：直接改 raw 对象不会触发依赖更新，
+    // 流式追加将完全失去响应性（UI 冻结到流结束才一次性渲染）
+    const assistantMessage = reactive(createAssistantMessage())
     state.messages.push(assistantMessage)
 
     state.isStreaming = true
