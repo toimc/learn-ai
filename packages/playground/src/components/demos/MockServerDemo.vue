@@ -4,6 +4,7 @@ import { useChat } from '@ai-chat/core'
 import type { Message as ChatMessage } from '@ai-chat/core'
 import {
   aiChatI18n,
+  Button,
   Conversation,
   ConversationContent,
   ConversationEmpty,
@@ -16,6 +17,8 @@ import {
   PromptInputTextarea,
   PromptInputFooter,
   PromptInputSubmit,
+  PromptInputTools,
+  PromptInputButton,
 } from '@ai-chat/vue'
 import {
   createSseAdapter,
@@ -68,6 +71,15 @@ watch(() => chat.messages.length, scrollToBottom)
 function onSend(payload: { text: string }) {
   void chat.send(payload.text)
 }
+
+// 场景触发词快捷按钮：点击即发送（同 Playground 建议词模式）
+const triggers = [
+  { word: '思考', tipKey: 'pg.mockServer.triggerThinking' },
+  { word: '工具 天气', tipKey: 'pg.mockServer.triggerTool' },
+  { word: '错误', tipKey: 'pg.mockServer.triggerError' },
+  { word: '慢速', tipKey: 'pg.mockServer.triggerSlow' },
+  { word: 'markdown', tipKey: 'pg.mockServer.triggerMarkdown' },
+] as const
 
 async function loadConversations() {
   status.value = 'connecting'
@@ -164,13 +176,14 @@ onMounted(async () => {
                 : t('pg.mockServer.statusOffline')
           }}
         </span>
-        <button
+        <Button
           v-if="status === 'offline'"
-          class="ms-demo__retry"
+          type="secondary"
+          size="small"
           @click="retryConnect"
         >
           {{ t('pg.mockServer.retry') }}
-        </button>
+        </Button>
       </div>
     </header>
 
@@ -183,13 +196,13 @@ onMounted(async () => {
       <aside class="ms-demo__sidebar">
         <div class="ms-demo__sidebar-head">
           <span>{{ t('pg.mockServer.conversationLabel') }}</span>
-          <button
-            class="ms-demo__new"
+          <Button
+            size="small"
             :disabled="status !== 'online'"
             @click="newConversation"
           >
             {{ t('pg.mockServer.newChat') }}
-          </button>
+          </Button>
         </div>
         <ul class="ms-demo__conv-list">
           <li
@@ -256,9 +269,18 @@ onMounted(async () => {
               </PromptInputBody>
               <template #footer>
                 <PromptInputFooter>
-                  <span class="ms-demo__hint">{{
-                    t('pg.mockServer.scenarioHint')
-                  }}</span>
+                  <template #tools>
+                    <PromptInputTools>
+                      <PromptInputButton
+                        v-for="trg in triggers"
+                        :key="trg.word"
+                        :tooltip="t(trg.tipKey)"
+                        @click="onSend({ text: trg.word })"
+                      >
+                        {{ trg.word }}
+                      </PromptInputButton>
+                    </PromptInputTools>
+                  </template>
                   <PromptInputSubmit :disabled="status !== 'online'" />
                 </PromptInputFooter>
               </template>
@@ -328,14 +350,8 @@ onMounted(async () => {
   background: #ef4444;
 }
 
-.ms-demo__retry {
+.ms-demo__status :deep(.ai-chat-btn) {
   margin-left: 4px;
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  background: transparent;
-  padding: 2px 8px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .ms-demo__offline {
@@ -369,21 +385,6 @@ onMounted(async () => {
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 600;
-}
-
-.ms-demo__new {
-  border: none;
-  border-radius: 6px;
-  background: var(--ai-chat-color-accent-500, #6366f1);
-  color: #fff;
-  padding: 3px 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.ms-demo__new:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .ms-demo__conv-list {
@@ -457,11 +458,6 @@ onMounted(async () => {
 
 .ms-demo__input {
   padding: 8px 12px 12px;
-}
-
-.ms-demo__hint {
-  font-size: 11px;
-  opacity: 0.55;
 }
 
 @media (max-width: 640px) {

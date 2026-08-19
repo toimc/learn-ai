@@ -11,11 +11,39 @@ type Script = Array<
   [StreamChunk['type'], string, number, StreamChunk['metadata']?]
 >
 
-function compile(script: Script): ScriptedChunk[] {
-  return script.map(([type, content, delayMs, metadata]) => ({
-    chunk: metadata ? { type, content, metadata } : { type, content },
-    delayMs,
-  }))
+/** 打字机粒度：每 token 字符数与间隔（模拟 LLM 逐 token 输出的手感） */
+const TOKEN_CHARS = 4
+const TOKEN_DELAY_MS = 45
+
+/**
+ * 编译剧本：text / thinking 内容按 token 粒度展开（首 token 前保留
+ * 原始 delayMs 的停顿，后续 token 按 tokenDelay 间隔连续吐出），
+ * tool_call / tool_result / error / done 为原子事件不拆分。
+ */
+function compile(
+  script: Script,
+  tokenDelayMs = TOKEN_DELAY_MS,
+): ScriptedChunk[] {
+  const out: ScriptedChunk[] = []
+  for (const [type, content, delayMs, metadata] of script) {
+    if (
+      (type === 'text' || type === 'thinking') &&
+      content.length > TOKEN_CHARS
+    ) {
+      for (let i = 0; i < content.length; i += TOKEN_CHARS) {
+        out.push({
+          chunk: { type, content: content.slice(i, i + TOKEN_CHARS) },
+          delayMs: i === 0 ? delayMs : tokenDelayMs,
+        })
+      }
+    } else {
+      out.push({
+        chunk: metadata ? { type, content, metadata } : { type, content },
+        delayMs,
+      })
+    }
+  }
+  return out
 }
 
 /** 思维链演示：先流式思考，再输出正文 */
@@ -171,7 +199,8 @@ const scenarios: Scenario[] = [
   {
     name: 'slow',
     match: (s) => /慢|slow/i.test(s),
-    build: () => compile(slowScript),
+    // 每个 token 都间隔 500ms，保持弱网手感
+    build: () => compile(slowScript, 500),
   },
   {
     name: 'markdown',
