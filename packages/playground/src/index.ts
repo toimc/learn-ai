@@ -2,6 +2,7 @@ export { default as PlaygroundPage } from './components/PlaygroundPage.vue'
 export { default as PlaygroundDemo } from './components/PlaygroundDemo.vue'
 export { default as ThemeBuilderPage } from './components/ThemeBuilderPage.vue'
 export { default as MultimodalDemoPage } from './components/MultimodalDemoPage.vue'
+export { default as MockServerDemoPage } from './components/MockServerDemoPage.vue'
 export { default as MultimodalInputDemo } from './components/demos/MultimodalInputDemo.vue'
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'
 export { default as MessageShowcaseDemo } from './components/demos/MessageShowcaseDemo.vue'
@@ -11,3 +12,14 @@ export { default as ComparisonFlowDemo } from './components/demos/ComparisonFlow
 export { default as AttachmentsMessageDemo } from './components/demos/AttachmentsMessageDemo.vue'
 export { mockAdapter } from './mock/mock-adapter'
 export { mockMessages } from './mock/mock-messages'
+export {
+  createSseAdapter,
+  parseSseStream,
+  fetchConversations,
+  fetchConversationMessages,
+  createConversation,
+} from './mock/sse-adapter'
+export type {
+  ConversationSummary,
+  ConversationMessageDTO,
+} from './mock/sse-adapter'

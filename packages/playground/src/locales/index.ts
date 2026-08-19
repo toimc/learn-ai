@@ -71,6 +71,24 @@ const zhCN = {
     replay: '重播',
     userQuestion: 'Vue 3 的响应式系统为什么用 Proxy 重写？',
   },
+  mockServer: {
+    title: 'Mock 服务端演示',
+    description:
+      '会话数据与流式回复均来自本地 mock-server（Hono + streamSSE）：切换会话从服务端拉取历史，发送消息经真实 HTTP/SSE 传输，DevTools Network 面板可见 text/event-stream 响应。',
+    statusOnline: '已连接',
+    statusConnecting: '连接中…',
+    statusOffline: '未连接',
+    retry: '重试',
+    offlineHint:
+      '无法连接 mock-server（http://localhost:8787）。请在项目根目录运行 pnpm dev（同时启动文档站与 mock 服务）后重试。',
+    loadingMessages: '正在从服务端加载会话消息…',
+    loadFailed: '会话消息加载失败',
+    newChat: '新建会话',
+    inputPlaceholder: '连接 mock-server，发送消息体验真实 SSE 流式…',
+    scenarioHint: '触发词：思考 / 工具 天气 / 错误 / 慢速 / markdown',
+    conversationLabel: '服务端会话',
+    localConversation: '本地新建（未同步服务端列表）',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -144,6 +162,26 @@ const enUS: typeof zhCN = {
     simulate: 'Simulate streaming thinking',
     replay: 'Replay',
     userQuestion: 'Why was Vue 3 reactivity rewritten with Proxy?',
+  },
+  mockServer: {
+    title: 'Mock Server Demo',
+    description:
+      'Conversations and streaming replies come from the local mock-server (Hono + streamSSE): switching conversations fetches history from the server; sending messages goes over real HTTP/SSE — watch the text/event-stream response in DevTools Network panel.',
+    statusOnline: 'Connected',
+    statusConnecting: 'Connecting…',
+    statusOffline: 'Offline',
+    retry: 'Retry',
+    offlineHint:
+      'Cannot reach mock-server (http://localhost:8787). Run pnpm dev at the project root (starts the docs site and the mock server together), then retry.',
+    loadingMessages: 'Loading conversation messages from server…',
+    loadFailed: 'Failed to load messages',
+    newChat: 'New conversation',
+    inputPlaceholder:
+      'Connected to mock-server — send a message to see real SSE streaming…',
+    scenarioHint:
+      'Trigger words: thinking / tool weather / error / slow / markdown',
+    conversationLabel: 'Server conversations',
+    localConversation: 'Created locally (not synced to server list)',
   },
 }
 
