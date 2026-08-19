@@ -8,7 +8,7 @@
 - **PromptInputSubmit** — 发送/停止按钮（圆形主题色，置于 Footer 右侧动作区）
 - **PromptInputFooter** — 底部工具栏容器（左 tools / 右 hint 动作区）
 - **PromptInputTools** — 工具按钮组
-- **PromptInputButton** — 单个工具按钮
+- **PromptInputButton** — 单个工具按钮。按钮宽度自适应：只放图标时保持 32px 方形；放文字（快捷指令 chip）时按内容自然撑开，不换行
 - **PromptInputUploadButton** — 图片/附件上传入口（触发文件选择管道）
 - **PromptInputAttachments** — 待发送附件预览列表（图片缩略图 + Lightbox 兜底预览）
 - **PromptInputHeader** — 顶部附件预览区域

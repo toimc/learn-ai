@@ -462,6 +462,12 @@ onMounted(async () => {
   padding: 8px 12px 12px;
 }
 
+/* 文字触发词 chip 间距与窄屏换行（库默认 gap 按图标按钮设计） */
+.ms-demo__input :deep(.ai-chat-prompt-input-tools) {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 640px) {
   .ms-demo__sidebar {
     display: none;
