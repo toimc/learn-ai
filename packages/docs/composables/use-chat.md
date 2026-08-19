@@ -43,6 +43,8 @@ interface ChatAdapter {
 | abort | `() => void` | 中止当前流式输出 |
 | clear | `() => void` | 清空所有消息和错误 |
 
+> 💡 流式期间 assistant 消息的 `content` / `thinking` / `toolCalls` 均为**实时响应式更新**——每个 chunk 到达即触发界面重渲染，可直接绑定到模板做逐字输出效果。
+
 ## 完整示例
 
 <script setup>

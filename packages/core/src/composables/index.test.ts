@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { watchEffect } from 'vue'
 import { useChat } from '../composables'
 import type { ChatAdapter, StreamChunk } from '../types'
 
@@ -169,5 +170,56 @@ describe('useChat', () => {
     const tc = state.messages[1].toolCalls![0]
     expect(tc.status).toBe('error')
     expect(tc.error).toBe('timeout')
+  })
+})
+
+describe('useChat 流式响应性（回归：raw 对象 mutation 不触发更新）', () => {
+  it('流式过程中消息内容变化应实时触发响应式更新', async () => {
+    const adapter: ChatAdapter = {
+      async *sendMessage() {
+        yield { type: 'text', content: '你' }
+        yield { type: 'text', content: '好' }
+        yield { type: 'done', content: '' }
+      },
+    }
+    const state = useChat(adapter)
+
+    // 收集每次响应式触发时的最新内容快照
+    const seen: string[] = []
+    const unwatch = watchEffect(() => {
+      const content = state.messages[1]?.content
+      if (content !== undefined) seen.push(content)
+    })
+
+    await state.send('hi')
+    unwatch()
+
+    // 每个文本块到达时都应触发更新（而非流结束才一次性渲染）；
+    // 首帧 '' 是 assistant 占位消息入列时的触发
+    expect(seen).toEqual(['', '你', '你好'])
+  })
+
+  it('thinking 内容流式追加同样保持响应性', async () => {
+    const adapter: ChatAdapter = {
+      async *sendMessage() {
+        yield { type: 'thinking', content: '步骤一' }
+        yield { type: 'thinking', content: '；步骤二' }
+        yield { type: 'text', content: '结论' }
+        yield { type: 'done', content: '' }
+      },
+    }
+    const state = useChat(adapter)
+
+    const seen: string[] = []
+    const unwatch = watchEffect(() => {
+      const t = state.messages[1]?.thinking?.content
+      if (t !== undefined) seen.push(t)
+    })
+
+    await state.send('q')
+    unwatch()
+
+    expect(seen).toEqual(['步骤一', '步骤一；步骤二'])
+    expect(state.messages[1].thinking?.duration).toBeGreaterThanOrEqual(0)
   })
 })
