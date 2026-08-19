@@ -50,6 +50,9 @@ ai-chat-ui/
 │   ├── markdown/              # @ai-chat/markdown — Markdown 渲染
 │   │   └── src/               # MarkdownRenderer / CodeBlock / LatexBlock
 │   │
+│   ├── mock-server/           # @ai-chat/mock-server — 本地 mock 服务端（私有，Hono + streamSSE）
+│   │   └── src/               # 会话种子数据 / SSE 场景剧本 / REST 路由，pnpm dev 随文档站一起启动
+│   │
 │   └── docs/                  # @ai-chat/docs — VitePress 文档站
 │       └── .vitepress/
 │           ├── components/    # PlaygroundDemo（完整 Playground）
