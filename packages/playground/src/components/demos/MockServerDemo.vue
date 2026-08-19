@@ -281,7 +281,9 @@ onMounted(async () => {
                       </PromptInputButton>
                     </PromptInputTools>
                   </template>
-                  <PromptInputSubmit :disabled="status !== 'online'" />
+                  <template #hint>
+                    <PromptInputSubmit :disabled="status !== 'online'" />
+                  </template>
                 </PromptInputFooter>
               </template>
             </PromptInput>
