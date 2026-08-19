@@ -90,25 +90,22 @@ export default defineConfig({
           items: [{ text: 'PromptInput', link: '/components/prompt-input' }],
         },
         {
-          text: '附件与工具调用',
+          text: '工具调用',
+          items: [{ text: 'ToolCall', link: '/components/tool-call' }],
+        },
+        {
+          text: '附件组件',
           items: [
             { text: 'Attachments', link: '/components/attachments' },
-            { text: 'LanguageToggle', link: '/components/language-toggle' },
-            { text: 'ToolCall', link: '/components/tool-call' },
-            { text: 'Shimmer', link: '/components/shimmer' },
-            { text: 'Toast', link: '/components/toast' },
             { text: 'ImageLightbox', link: '/components/image-lightbox' },
           ],
         },
         {
-          text: '旧版组件',
+          text: '通用组件',
           items: [
-            { text: 'ChatWindow', link: '/components/chat-window' },
-            { text: 'MessageList', link: '/components/message-list' },
-            { text: 'MessageBubble', link: '/components/message-bubble' },
-            { text: 'InputArea', link: '/components/input-area' },
-            { text: 'StreamText', link: '/components/stream-text' },
-            { text: 'Button', link: '/components/button' },
+            { text: 'LanguageToggle', link: '/components/language-toggle' },
+            { text: 'Shimmer', link: '/components/shimmer' },
+            { text: 'Toast', link: '/components/toast' },
           ],
         },
         {

@@ -59,6 +59,9 @@ import {
   PlaygroundPage,
   ThemeBuilderPage,
   MultimodalDemoPage,
+  ConversationLayoutDemo,
+  MessageShowcaseDemo,
+  ConversationScrollDemo,
 } from '@ai-chat/playground'
 
 import './style.css'
@@ -130,5 +133,9 @@ export default {
     app.component('PlaygroundPage', PlaygroundPage)
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
+    // 组件文档内嵌交互演示
+    app.component('ConversationLayoutDemo', ConversationLayoutDemo)
+    app.component('MessageShowcaseDemo', MessageShowcaseDemo)
+    app.component('ConversationScrollDemo', ConversationScrollDemo)
   },
 } satisfies Theme
