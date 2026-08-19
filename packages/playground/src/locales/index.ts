@@ -89,6 +89,13 @@ const zhCN = {
     conversationLabel: '服务端会话',
     localConversation: '本地新建（未同步服务端列表）',
   },
+  mockApi: {
+    bannerOnline: '接口文档已连接 mock-server，可直接执行 Test Request',
+    bannerConnecting: '正在连接 mock-server…',
+    bannerOffline:
+      'mock-server 未启动（http://localhost:8787），请先运行 pnpm dev',
+    goDemo: '去流式演示 →',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -182,6 +189,13 @@ const enUS: typeof zhCN = {
       'Trigger words: thinking / tool weather / error / slow / markdown',
     conversationLabel: 'Server conversations',
     localConversation: 'Created locally (not synced to server list)',
+  },
+  mockApi: {
+    bannerOnline: 'API docs connected to mock-server — Test Request is ready',
+    bannerConnecting: 'Connecting to mock-server…',
+    bannerOffline:
+      'mock-server is not running (http://localhost:8787). Run pnpm dev first',
+    goDemo: 'Streaming demo →',
   },
 }
 

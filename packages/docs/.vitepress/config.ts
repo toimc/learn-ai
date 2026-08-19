@@ -24,6 +24,11 @@ export default defineConfig({
         '@ai-chat/vue': resolve(root, '../vue/src/index.ts'),
         '@ai-chat/markdown': resolve(root, '../markdown/src/index.ts'),
         '@ai-chat/playground': resolve(root, '../playground/src/index.ts'),
+        // Scalar 免 React 的 standalone 构建（exports 未放行深路径，alias 绕过）
+        '@scalar/api-reference-standalone': resolve(
+          root,
+          'node_modules/@scalar/api-reference/dist/browser/standalone.esm.js',
+        ),
       },
     },
   },
@@ -54,6 +59,7 @@ export default defineConfig({
       },
       { text: 'Playground', link: '/playground' },
       { text: 'Mock 演示', link: '/mock-server-demo' },
+      { text: '接口文档', link: '/mock-api' },
       { text: '主题配置器', link: '/theme-builder' },
     ],
 
