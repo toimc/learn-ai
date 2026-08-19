@@ -58,11 +58,15 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* 定高占满视口剩余高度（不是 min-height：那会让 Scalar 按内容撑开，
+   页面整体变成长滚动）。Scalar 自身依赖页面滚动（.scalar-app overflow
+   visible），因此把滚动容器设在 host 上：banner 固定、host 内部滚 */
 .mock-api-page {
-  min-height: calc(100vh - var(--vp-nav-height, 64px));
-  min-height: calc(100dvh - var(--vp-nav-height, 64px));
+  height: calc(100vh - var(--vp-nav-height, 64px));
+  height: calc(100dvh - var(--vp-nav-height, 64px));
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .mock-api-page__banner {
@@ -100,13 +104,11 @@ onMounted(async () => {
   text-decoration: none;
 }
 
+/* host 即滚动容器：Scalar 内容在其中滚，sticky 侧栏相对它定位 */
 .mock-api-page__host {
   flex: 1;
   min-height: 0;
-}
-
-/* Scalar 需要挂载点有确定高度 */
-.mock-api-page__host :deep(.scalar-app) {
-  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 </style>

@@ -347,7 +347,11 @@ onMounted(async () => {
 
 .ms-demo__body {
   display: flex;
-  height: 520px;
+  /* 占满视口剩余高度：160 = 导航 64 + 页面标题/导语与 demo 头部 96；
+     24 为底部留白。矮视口用 min-height 兜底，超出部分页面整体滚动 */
+  height: calc(100vh - 184px);
+  height: calc(100dvh - 184px);
+  min-height: 480px;
 }
 
 .ms-demo__sidebar {
