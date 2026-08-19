@@ -19,6 +19,7 @@ import {
   MessageContent,
   MessageActions,
   MessageAction,
+  MessageAttachments,
   // Comparison series
   ComparisonMessage,
   // PromptInput series
@@ -62,6 +63,9 @@ import {
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
+  ThinkingMessageDemo,
+  ComparisonFlowDemo,
+  AttachmentsMessageDemo,
 } from '@ai-chat/playground'
 
 import './style.css'
@@ -88,6 +92,7 @@ export default {
     app.component('MessageContent', MessageContent)
     app.component('MessageActions', MessageActions)
     app.component('MessageAction', MessageAction)
+    app.component('MessageAttachments', MessageAttachments)
 
     // Comparison
     app.component('ComparisonMessage', ComparisonMessage)
@@ -137,5 +142,8 @@ export default {
     app.component('ConversationLayoutDemo', ConversationLayoutDemo)
     app.component('MessageShowcaseDemo', MessageShowcaseDemo)
     app.component('ConversationScrollDemo', ConversationScrollDemo)
+    app.component('ThinkingMessageDemo', ThinkingMessageDemo)
+    app.component('ComparisonFlowDemo', ComparisonFlowDemo)
+    app.component('AttachmentsMessageDemo', AttachmentsMessageDemo)
   },
 } satisfies Theme

@@ -6,5 +6,8 @@ export { default as MultimodalInputDemo } from './components/demos/MultimodalInp
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'
 export { default as MessageShowcaseDemo } from './components/demos/MessageShowcaseDemo.vue'
 export { default as ConversationScrollDemo } from './components/demos/ConversationScrollDemo.vue'
+export { default as ThinkingMessageDemo } from './components/demos/ThinkingMessageDemo.vue'
+export { default as ComparisonFlowDemo } from './components/demos/ComparisonFlowDemo.vue'
+export { default as AttachmentsMessageDemo } from './components/demos/AttachmentsMessageDemo.vue'
 export { mockAdapter } from './mock/mock-adapter'
 export { mockMessages } from './mock/mock-messages'

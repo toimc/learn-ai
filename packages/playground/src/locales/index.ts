@@ -66,6 +66,11 @@ const zhCN = {
     payloadEmpty: '尚未发送——输入文字、附一张图片，然后按 Alt+Enter 试试',
     reset: '清空',
   },
+  thinkingDemo: {
+    simulate: '模拟一次流式思考',
+    replay: '重播',
+    userQuestion: 'Vue 3 的响应式系统为什么用 Proxy 重写？',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -134,6 +139,11 @@ const enUS: typeof zhCN = {
     payloadEmpty:
       'Nothing sent yet — type something, attach an image, then press Alt+Enter',
     reset: 'Clear',
+  },
+  thinkingDemo: {
+    simulate: 'Simulate streaming thinking',
+    replay: 'Replay',
+    userQuestion: 'Why was Vue 3 reactivity rewritten with Proxy?',
   },
 }
 
