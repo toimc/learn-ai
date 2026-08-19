@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
-import { useChat, generateId } from '@ai-chat/core'
+import { useChat } from '@ai-chat/core'
 import type { Attachment } from '@ai-chat/core'
-import { mockMessages } from '../mock/mock-messages'
+import {
+  mockMessages,
+  thinkingDemoMessages,
+  emptyMessages,
+  comparisonDemoMessages,
+} from '../mock/mock-messages'
 import {
   LanguageToggle,
   aiChatI18n,
@@ -29,7 +34,6 @@ import {
   useTheme,
 } from '@ai-chat/vue'
 import { mockAdapter } from '../mock/mock-adapter'
-import { comparisonMock } from '../mock/mock-comparison'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
@@ -37,7 +41,8 @@ const { t } = aiChatI18n.global
 // 走 workspace 源码路径；发布包对应 '@ai-chat/markdown/katex.css'
 import '../../../markdown/src/styles/katex.css'
 
-const chat = useChat(mockAdapter, { initialMessages: mockMessages })
+// 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
+const chat = useChat(mockAdapter)
 
 const sidebarOpen = ref(false)
 // 桌面端折叠状态（挤压式收起，与移动端抽屉 sidebarOpen 解耦）
@@ -53,32 +58,14 @@ const layout = useLayoutConfig(
     messageMaxWidth: 520,
   })),
 )
-// ComparisonMessage 偏好回调
-const lastPrefer = ref<{
-  chosen: 'A' | 'B'
-  left: string
-  right: string
-} | null>(null)
-// 对比卡是否已选择：选中后移除卡片，把内容固化为消息流
-const comparisonChosen = ref(false)
-function onPrefer(p: { chosen: 'A' | 'B'; left: string; right: string }) {
-  lastPrefer.value = p
-  if (comparisonChosen.value) return
-  comparisonChosen.value = true
-  chat.messages.push(
-    {
-      id: generateId(),
-      role: 'user',
-      content: comparisonMock.question,
-      createdAt: new Date(),
-    },
-    {
-      id: generateId(),
-      role: 'assistant',
-      content: p.chosen === 'A' ? p.left : p.right,
-      createdAt: new Date(),
-    },
-  )
+// ComparisonMessage 偏好回调：选中后原地固化为普通 assistant 消息（content = 选中内容），
+// 状态存于消息本身，切换会话再回来依然保留
+function onPrefer(
+  msg: typeof import('@ai-chat/core').Message,
+  p: { chosen: 'A' | 'B'; left: string; right: string },
+) {
+  msg.content = p.chosen === 'A' ? p.left : p.right
+  msg.comparison = undefined
 }
 
 // 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
@@ -91,16 +78,73 @@ interface PlaygroundConv {
   title: string
   group: 'today' | 'week'
   active: boolean
+  messages: (typeof import('@ai-chat/core').Message)[]
 }
 
 const conversations = ref<PlaygroundConv[]>([
-  { id: '1', title: 'Vue 3 组件库架构设计', group: 'today', active: true },
-  { id: '2', title: 'CSS Variables 主题系统', group: 'today', active: false },
-  { id: '3', title: 'StreamText 流式渲染优化', group: 'today', active: false },
-  { id: '4', title: 'Vitest 单元测试覆盖率', group: 'week', active: false },
-  { id: '5', title: 'Markdown 渲染与代码高亮', group: 'week', active: false },
-  { id: '6', title: 'pnpm workspace 最佳实践', group: 'week', active: false },
+  {
+    id: '1',
+    title: '✨ 思考过程演示',
+    group: 'today',
+    active: true,
+    messages: [...thinkingDemoMessages],
+  },
+  {
+    id: '2',
+    title: '⚖️ A/B 回复对比',
+    group: 'today',
+    active: false,
+    messages: [...comparisonDemoMessages],
+  },
+  {
+    id: '3',
+    title: 'Vue 3 组件库架构设计',
+    group: 'today',
+    active: false,
+    messages: [mockMessages[0], mockMessages[1]],
+  },
+  {
+    id: '4',
+    title: 'CSS Variables 主题系统',
+    group: 'today',
+    active: false,
+    messages: [mockMessages[2], mockMessages[3]],
+  },
+  {
+    id: '5',
+    title: 'StreamText 流式渲染优化',
+    group: 'today',
+    active: false,
+    messages: [mockMessages[4], mockMessages[5]],
+  },
+  {
+    id: '6',
+    title: 'Vitest 单元测试覆盖率',
+    group: 'week',
+    active: false,
+    messages: [...emptyMessages],
+  },
+  {
+    id: '7',
+    title: 'Markdown 渲染与代码高亮',
+    group: 'week',
+    active: false,
+    messages: [...emptyMessages],
+  },
+  {
+    id: '8',
+    title: 'pnpm workspace 最佳实践',
+    group: 'week',
+    active: false,
+    messages: [...emptyMessages],
+  },
 ])
+
+// 当前激活的会话ID
+const activeConversationId = ref('1')
+
+// 初始化时加载第一个会话的消息
+chat.messages.push(...conversations.value[0].messages)
 
 const editingId = ref<string | null>(null)
 const editingTitle = ref('')
@@ -140,11 +184,53 @@ function openSidebar() {
 }
 
 function selectConversation(id: string) {
+  // 保存当前会话的消息
+  const currentConv = conversations.value.find(
+    (c) => c.id === activeConversationId.value,
+  )
+  if (currentConv) {
+    currentConv.messages = [...chat.messages]
+  }
+
+  // 切换到新会话
+  activeConversationId.value = id
   conversations.value.forEach((c) => (c.active = c.id === id))
+
+  // 加载新会话的消息
+  const selectedConv = conversations.value.find((c) => c.id === id)
+  if (selectedConv) {
+    // 使用 reactive 方式更新消息
+    chat.messages.length = 0
+    chat.messages.push(...selectedConv.messages)
+  }
+
   if (window.innerWidth <= 768) sidebarOpen.value = false
 }
 
 function newChat() {
+  // 保存当前会话的消息
+  const currentConv = conversations.value.find(
+    (c) => c.id === activeConversationId.value,
+  )
+  if (currentConv) {
+    currentConv.messages = [...chat.messages]
+  }
+
+  // 创建新会话
+  const newId = `${Date.now()}`
+  const newConv: PlaygroundConv = {
+    id: newId,
+    title: '新对话',
+    group: 'today',
+    active: true,
+    messages: [],
+  }
+
+  // 取消其他会话的激活状态
+  conversations.value.forEach((c) => (c.active = false))
+  conversations.value.unshift(newConv)
+  activeConversationId.value = newId
+
   chat.clear()
   if (window.innerWidth <= 768) sidebarOpen.value = false
 }
@@ -218,6 +304,29 @@ async function mockUpload(files: File[]): Promise<Attachment[]> {
 
 function onSend(payload: { text: string; attachments?: Attachment[] }) {
   chat.send(payload.text, payload.attachments)
+
+  // 保存消息到当前会话
+  const currentConv = conversations.value.find(
+    (c) => c.id === activeConversationId.value,
+  )
+  if (currentConv) {
+    // 延迟保存，等待消息添加到 chat.messages
+    setTimeout(() => {
+      currentConv.messages = [...chat.messages]
+      // 更新会话标题为第一条消息的前20个字符
+      if (currentConv.messages.length >= 2) {
+        const lastMsg = currentConv.messages[currentConv.messages.length - 1]
+        if (lastMsg.role === 'user' && lastMsg.content) {
+          const title =
+            lastMsg.content.slice(0, 20) +
+            (lastMsg.content.length > 20 ? '...' : '')
+          if (currentConv.title.startsWith('新对话')) {
+            currentConv.title = title
+          }
+        }
+      }
+    }, 100)
+  }
 }
 
 function scrollToBottom() {
@@ -565,69 +674,66 @@ watch(() => chat.messages.length, scrollToBottom)
 
           <!-- Messages -->
           <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
-            <MessageContent
-              v-if="msg.role === 'assistant'"
-              :content="msg.content"
-            />
-            <MessageContent v-else>
-              {{ msg.content }}
-            </MessageContent>
-
-            <!-- ToolCalls -->
-            <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
-
-            <MessageActions v-if="msg.role === 'assistant'">
-              <MessageAction :title="t('pg.actions.copy')">
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path
-                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                  />
-                </svg>
-              </MessageAction>
-              <MessageAction :title="t('pg.actions.regenerate')">
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="23 4 23 10 17 10" />
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                </svg>
-              </MessageAction>
-            </MessageActions>
-          </Message>
-
-          <!-- A/B 偏好对比演示：选中后固化为消息流（用户问题 + 选中的回复） -->
-          <template v-if="!comparisonChosen">
-            <Message from="user">
-              <MessageContent>{{ comparisonMock.question }}</MessageContent>
-            </Message>
+            <!-- A/B 回复对比：消息类型驱动渲染，选中后固化为普通消息 -->
             <ComparisonMessage
-              :left="comparisonMock.left"
-              :right="comparisonMock.right"
-              :left-label="comparisonMock.leftLabel"
-              :right-label="comparisonMock.rightLabel"
-              @prefer="onPrefer"
+              v-if="msg.comparison"
+              :left="msg.comparison.left"
+              :right="msg.comparison.right"
+              :left-label="msg.comparison.leftLabel"
+              :right-label="msg.comparison.rightLabel"
+              @prefer="(p) => onPrefer(msg, p)"
             />
-          </template>
-          <div v-if="lastPrefer" class="pg-comparison-result">
-            {{ t('pg.actions.preferred', { chosen: lastPrefer.chosen }) }}
-          </div>
+
+            <template v-else>
+              <MessageContent
+                v-if="msg.role === 'assistant'"
+                :content="msg.content"
+                :thinking="msg.thinking"
+                :streaming="chat.isStreaming"
+              />
+              <MessageContent v-else>
+                {{ msg.content }}
+              </MessageContent>
+
+              <!-- ToolCalls -->
+              <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
+
+              <MessageActions v-if="msg.role === 'assistant'">
+                <MessageAction :title="t('pg.actions.copy')">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </MessageAction>
+                <MessageAction :title="t('pg.actions.regenerate')">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="23 4 23 10 17 10" />
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                  </svg>
+                </MessageAction>
+              </MessageActions>
+            </template>
+          </Message>
 
           <!-- Typing indicator -->
           <div
@@ -1220,13 +1326,6 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-input-hint {
   font-size: 12px;
   color: var(--ai-chat-color-text-muted);
-}
-
-.pg-comparison-result {
-  text-align: center;
-  font-size: 12px;
-  color: var(--ai-chat-color-text-muted);
-  padding: 8px 0;
 }
 
 /* ===== Mobile ===== */

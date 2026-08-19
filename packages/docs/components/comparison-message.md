@@ -32,6 +32,36 @@ const last = ref<{ chosen: 'A' | 'B'; left: string; right: string } | null>(null
 
 点击任一列底部的按钮即触发 `prefer` 事件，`chosen` 标识用户偏好的那一列。
 
+## 消息类型驱动渲染
+
+服务端响应可直接在 `Message` 上携带 `comparison` 载荷（`ComparisonPayload`），宿主按消息类型决定渲染 `ComparisonMessage` 还是普通消息；用户选中后把选中内容固化回 `content`、清空 `comparison`，状态随消息持久（切换会话再回来依然保留）：
+
+```vue
+<template>
+  <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+    <ComparisonMessage
+      v-if="msg.comparison"
+      :left="msg.comparison.left"
+      :right="msg.comparison.right"
+      :left-label="msg.comparison.leftLabel"
+      :right-label="msg.comparison.rightLabel"
+      @prefer="(p) => onPrefer(msg, p)"
+    />
+    <MessageContent v-else :content="msg.content" />
+  </Message>
+</template>
+
+<script setup lang="ts">
+function onPrefer(
+  msg: Message,
+  p: { chosen: 'A' | 'B'; left: string; right: string },
+) {
+  msg.content = p.chosen === 'A' ? p.left : p.right
+  msg.comparison = undefined
+}
+</script>
+```
+
 ## API
 
 ### Props
@@ -62,4 +92,4 @@ const last = ref<{ chosen: 'A' | 'B'; left: string; right: string } | null>(null
 | action-left | — | 自定义左列底部按钮 |
 | action-right | — | 自定义右列底部按钮 |
 
-> 列内容默认经 `MessageContent` 渲染为 markdown（支持代码高亮、公式等，与消息流一致）。组件本身不改动 `@ai-chat/core` 的 `Message` 类型，后端无关。
+> 列内容默认经 `MessageContent` 渲染为 markdown（支持代码高亮、公式等，与消息流一致）。`Message.comparison` 为可选字段（渐进增强），不携带时组件库行为不变，后端无关。

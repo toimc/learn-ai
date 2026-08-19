@@ -26,6 +26,97 @@ interface StreamChunk {
 }
 ```
 
+## 思考过程支持
+
+AI Chat UI 支持展示模型的思考过程，让用户了解 AI 的推理步骤。
+
+### 在适配器中添加 thinking chunk
+
+```typescript
+export const adapterWithThinking: ChatAdapter = {
+  async *sendMessage({ messages, signal }) {
+    // 1. 发送思考过程
+    yield { type: 'thinking', content: '正在分析用户请求...\n' }
+    await new Promise(r => setTimeout(r, 100))
+    
+    yield { type: 'thinking', content: '拆解问题为关键概念...\n' }
+    await new Promise(r => setTimeout(r, 100))
+    
+    yield { type: 'thinking', content: '考虑最佳实践和性能影响...\n' }
+    
+    // 2. 发送实际响应
+    yield { type: 'text', content: '根据分析，这里是关键概念：\n\n' }
+    
+    // 3. 完成
+    yield { type: 'done', content: '' }
+  },
+}
+```
+
+### 组件中使用思考过程
+
+```vue
+<template>
+  <MessageContent
+    :content="message.content"
+    :thinking="message.thinking"
+    :streaming="chat.isStreaming"
+  />
+</template>
+```
+
+### Message 类型扩展
+
+```typescript
+interface Message {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  thinking?: ThinkingInfo      // 思考过程信息
+  comparison?: ComparisonPayload // A/B 回复对比载荷（消息类型驱动渲染）
+  // ... 其他字段
+}
+
+interface ThinkingInfo {
+  content: string          // 思考内容
+  duration?: number        // 思考耗时（毫秒）
+  startTime?: Date         // 思考开始时间
+}
+
+interface ComparisonPayload {
+  left: string             // 候选 A 内容（markdown）
+  right: string            // 候选 B 内容（markdown）
+  leftLabel?: string       // 左列标题
+  rightLabel?: string      // 右列标题
+}
+```
+
+### 自动计算思考耗时
+
+`useChat` 会自动计算思考耗时：
+
+```typescript
+// 在 useChat 中自动处理
+if (chunk.type === 'thinking') {
+  if (!assistantMessage.thinking) {
+    assistantMessage.thinking = {
+      content: '',
+      startTime: new Date(),
+    }
+  }
+  assistantMessage.thinking.content += chunk.content
+}
+
+// done 时计算耗时
+if (chunk.type === 'done') {
+  if (assistantMessage.thinking && thinkingStartTime) {
+    assistantMessage.thinking.duration = Date.now() - thinkingStartTime
+  }
+}
+```
+
+详细用法请参考 [Message 组件文档](../components/message.md#思考过程展示)。
+
 ## 实现 OpenAI 兼容适配器
 
 ```typescript

@@ -1,4 +1,5 @@
 import { generateId, type Message } from '@ai-chat/core'
+import { comparisonMock } from './mock-comparison'
 
 const baseTime = Date.now()
 
@@ -59,7 +60,6 @@ const themeContent = [
   '这种分层让品牌定制非常灵活——改一个变量，就能切换整站风格。',
 ].join('\n')
 
-// 全特性展示：覆盖文本样式、引用、列表、任务列表、表格、多语言代码、公式、图表
 const showcaseContent = [
   '# Markdown 全特性展示',
   '',
@@ -173,5 +173,51 @@ export const mockMessages: Message[] = [
     role: 'assistant',
     content: showcaseContent,
     createdAt: new Date(baseTime + 5000),
+  },
+]
+
+// 思考过程演示的mock消息
+export const thinkingDemoMessages: Message[] = [
+  {
+    id: generateId(),
+    role: 'user',
+    content: '请演示一下思考过程功能',
+    createdAt: new Date(baseTime),
+  },
+  {
+    id: generateId(),
+    role: 'assistant',
+    content: '好的，我将展示思考过程功能。',
+    thinking: {
+      content:
+        '正在分析用户的请求...\n\n分解问题为关键概念：\n\n- 思考过程展示机制\n- 流式更新实现\n- 折叠/展开交互\n\n考虑最佳实践和用户体验...\n\n准备生成完整响应。\n',
+      duration: 2340,
+      startTime: new Date(baseTime - 2340),
+    },
+    createdAt: new Date(baseTime + 1000),
+  },
+]
+
+export const emptyMessages: Message[] = []
+
+// A/B 回复对比演示：assistant 消息携带 comparison 载荷，由消息类型驱动渲染 ComparisonMessage
+export const comparisonDemoMessages: Message[] = [
+  {
+    id: generateId(),
+    role: 'user',
+    content: comparisonMock.question,
+    createdAt: new Date(baseTime),
+  },
+  {
+    id: generateId(),
+    role: 'assistant',
+    content: '',
+    comparison: {
+      left: comparisonMock.left,
+      right: comparisonMock.right,
+      leftLabel: comparisonMock.leftLabel,
+      rightLabel: comparisonMock.rightLabel,
+    },
+    createdAt: new Date(baseTime + 1000),
   },
 ]

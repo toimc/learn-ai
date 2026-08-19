@@ -2,6 +2,8 @@ export type {
   Message,
   Attachment,
   ToolCallInfo,
+  ThinkingInfo,
+  ComparisonPayload,
   StreamChunk,
   ChatAdapter,
   SendMessageOptions,
