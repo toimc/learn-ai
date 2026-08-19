@@ -7,6 +7,8 @@ title: Playground
 
 ## 功能演示
 
+> 💡 想体验**真实 HTTP + SSE 流式**（会话数据来自本地 mock 服务端）？前往 [Mock 服务端演示](/mock-server-demo)。
+
 ### 🧠 思考过程展示
 - **触发方式**：选择「✨ 思考过程演示」会话查看静态效果；发送包含"思考"、"thinking"关键词的消息体验流式思考
 - **展示效果**（对标 Claude / ChatGPT）：

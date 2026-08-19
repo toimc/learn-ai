@@ -53,6 +53,7 @@ export default defineConfig({
         ],
       },
       { text: 'Playground', link: '/playground' },
+      { text: 'Mock 演示', link: '/mock-server-demo' },
       { text: '主题配置器', link: '/theme-builder' },
     ],
 

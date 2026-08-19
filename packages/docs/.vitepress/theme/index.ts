@@ -60,6 +60,7 @@ import {
   PlaygroundPage,
   ThemeBuilderPage,
   MultimodalDemoPage,
+  MockServerDemoPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
@@ -138,6 +139,7 @@ export default {
     app.component('PlaygroundPage', PlaygroundPage)
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
+    app.component('MockServerDemoPage', MockServerDemoPage)
     // 组件文档内嵌交互演示
     app.component('ConversationLayoutDemo', ConversationLayoutDemo)
     app.component('MessageShowcaseDemo', MessageShowcaseDemo)
