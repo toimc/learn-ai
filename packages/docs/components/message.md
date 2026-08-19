@@ -261,7 +261,9 @@ interface ThinkingInfo {
 
 | 属性名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
-| title | `string` | — | 按钮 title 属性 |
+| label | `string` | — | 无障碍文本（不渲染视觉内容，作为 title 的兜底） |
+| tooltip | `string` | — | 悬停提示，优先于 label 作为按钮 `title` |
+| disabled | `boolean` | `false` | 禁用按钮 |
 
 | 插槽名 | 说明 |
 |--------|------|

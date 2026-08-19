@@ -9,6 +9,8 @@
 - **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
 - **样式隔离**：全部库样式收在 `@layer` 级联层内，不污染宿主；宿主一行未分层 CSS 即可覆盖任意组件样式，无需 `!important`
 - **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
+- **思考过程展示**：`thinking` chunk 流式呈现推理内容，done 时自动计算耗时并折叠为一行触发器（内置 ThinkingBlock，经 `MessageContent` 的 `thinking` prop 驱动）
+- **A/B 回复对比**：`Message.comparison` 载荷驱动 ComparisonMessage 双列对比，用户点选后选中内容原地固化为普通消息
 - **AsyncGenerator 流式渲染**：`sendMessage` 返回 `AsyncGenerator<StreamChunk>`，原生支持流式输出
 - **零 CSS 框架依赖**：不绑定 Tailwind / UnoCSS 等框架
 - **Monorepo 按需安装**：每个包独立发布，只装需要的
@@ -136,7 +138,7 @@ const chat = useChat(adapter)
 | 组件 | 说明 |
 |------|------|
 | Message | 消息项，avatar + body 布局 |
-| MessageContent | 消息正文容器 |
+| MessageContent | 消息正文容器（`content` 走 Markdown 渲染；`thinking` 显示折叠式思考块；`streaming` 驱动流式状态） |
 | MessageActions | 操作按钮容器（hover 显示） |
 | MessageAction | 单个操作按钮（30px 方形） |
 | MessageAttachments | 附件容器 |
@@ -211,8 +213,23 @@ interface Message {
   content: string
   attachments?: Attachment[]
   toolCalls?: ToolCallInfo[]
+  thinking?: ThinkingInfo // 思考过程（thinking chunk 自动累积，done 时补耗时）
+  comparison?: ComparisonPayload // A/B 回复对比载荷
   metadata?: Record<string, unknown>
   createdAt: Date
+}
+
+interface ThinkingInfo {
+  content: string
+  duration?: number // 思考耗时（毫秒），useChat 在 done 时自动计算
+  startTime?: Date
+}
+
+interface ComparisonPayload {
+  left: string
+  right: string
+  leftLabel?: string
+  rightLabel?: string
 }
 
 interface ToolCallInfo {
