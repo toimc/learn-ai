@@ -30,8 +30,12 @@ defineEmits<{ click: [] }>()
 <style>
 @layer ai-chat-components {
   .ai-chat-prompt-input-btn {
-    width: 32px;
+    /* min-width 而非固定 width：图标按钮仍为 32px 方形，
+       文字按钮（快捷指令 chip）可按内容自然撑开 */
+    min-width: 32px;
     height: 32px;
+    padding: 0 8px;
+    white-space: nowrap;
     border: none;
     background: transparent;
     color: var(--ai-chat-color-text-muted);
