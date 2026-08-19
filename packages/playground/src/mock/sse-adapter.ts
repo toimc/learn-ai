@@ -64,6 +64,18 @@ export async function createConversation(
   return (await res.json()) as ConversationSummary
 }
 
+/** 探活：接口文档页顶部状态条用 */
+export async function checkHealth(
+  baseUrl = DEFAULT_BASE_URL,
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${baseUrl}/api/health`)
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 /**
  * 真实网络版 ChatAdapter：POST /api/chat 消费 SSE 流。
  * 与 mock-adapter（本地 AsyncGenerator）相对，走完整 HTTP 层，
