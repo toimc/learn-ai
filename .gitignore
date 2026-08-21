@@ -12,6 +12,8 @@ packages/docs/.vitepress/dist/
 
 # Playwright MCP 测试日志和截图
 .playwright-mcp/
+playwright-report/
+test-results/
 
 # Git Flow worktree 与部署锁
 .claude/worktrees/
