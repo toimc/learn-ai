@@ -47,6 +47,7 @@ packages/server / core / vue  ← 零改动
 
 - `chat(request)`：`agent.generate()` 取 `.text` / `.usage`（映射 promptTokens/completionTokens），组装 `ChatResponse`
 - 记忆映射：`request.passthrough.conversationId`（网关已透传）→ `memory: { thread, resource }`；无 conversationId 时生成一次性 thread id（`generateId`）兜底——有 memory 的 Agent 缺 thread 会报错，无 memory 的 Agent 不传 memory 配置
+  > 实施偏差：以 agent.hasOwnMemory() 探测代替 enableMemory 选项——探测是运行时事实，宿主无需重复声明（评审 I2）
 - 中断：`request.signal` 直通 `abortSignal`；中断不算错误，不发 error chunk（对齐 openai-compat 语义）
 - 依赖缺失：`@mastra/core` 未安装时子路径 import 报含安装命令的清晰错误
 

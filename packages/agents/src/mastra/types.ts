@@ -6,8 +6,13 @@ export interface MastraModelConfig {
   id: string
   name?: string
   description?: string
-  /** Mastra model 字段：'provider/model' 字符串 | { id, url, apiKey? } 对象 | AI SDK 实例 */
-  model: string | Record<string, unknown>
+  /**
+   * Mastra model 字段，三种形态：
+   * - 'provider/model' 字符串（走 Mastra 模型路由）
+   * - { id, url, apiKey? } 对象（OpenAICompatibleConfig 形态，自建/网关端点）
+   * - AI SDK LanguageModel 实例（宿主自行构造的 provider 实例）
+   */
+  model: string | Record<string, unknown> | object
   instructions?: string
   /** createTool 产物字典，如 { getWeatherTool } */
   tools?: Record<string, unknown>
@@ -20,6 +25,8 @@ export interface MastraModelConfig {
 export interface MastraAdapterOptions {
   /** memory.resource，默认 'ai-chat' */
   resource?: string
+  /** chat() 返回的 model 标识；缺省 'mastra-agent'（工厂默认传配置 id） */
+  modelId?: string
 }
 
 export interface MastraModel {

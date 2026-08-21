@@ -64,7 +64,11 @@ function toArguments(value: unknown): Record<string, unknown> | undefined {
  *   与流式路径按 toolCallId 去重，避免双发
  * - `tool-result` → tool_result（`isError` 时映射 toolError）；`tool-error` → tool_result（toolError）
  * - `error` → error 后终止；适配器不发 done 帧（网关兜底补帧）
- * - 会话记忆：passthrough.conversationId 作为 thread，缺省生成 `mastra_thread` 前缀 id
+ * - 会话记忆：passthrough.conversationId 作为 thread，缺省生成 `mastra_thread` 前缀 id；
+ *   仅当 agent.hasOwnMemory() 为 true 时透传 memory 配置
+ * - 静默丢弃的已知事件：source/file（引用来源）、tool-call-approval/tool-call-suspended
+ *   （HITL 审批/挂起）、tool-output（输出处理器流）、raw（原始帧）——
+ *   后续接入 citation / HITL 能力时从这里扩展
  */
 export class MastraAdapter implements IModelAdapter {
   constructor(
@@ -87,12 +91,16 @@ export class MastraAdapter implements IModelAdapter {
   /** stream / generate 共用的执行项；temperature 在 Mastra 1.60 走 modelSettings */
   private executionOptions(request: ChatRequest): {
     abortSignal: AbortSignal | undefined
-    memory: { thread: string; resource: string }
+    memory?: { thread: string; resource: string }
     modelSettings?: { temperature: number }
   } {
     return {
       abortSignal: request.signal,
-      memory: this.memoryConfig(request),
+      // 无 Memory 的 Agent 透传 memory 字段无意义且可能触发 Mastra 记忆装配，
+      // 以 hasOwnMemory() 运行时探测代替宿主声明（评审 I2）
+      ...(this.agent.hasOwnMemory()
+        ? { memory: this.memoryConfig(request) }
+        : {}),
       ...(request.temperature !== undefined
         ? { modelSettings: { temperature: request.temperature } }
         : {}),
@@ -150,7 +158,8 @@ export class MastraAdapter implements IModelAdapter {
           let args: Record<string, unknown> | undefined
           if (raw) {
             try {
-              args = JSON.parse(raw) as Record<string, unknown>
+              // 合法 JSON 但非对象（"42"/true 等标量）不是工具入参，与解析失败同退 { raw }
+              args = toArguments(JSON.parse(raw)) ?? { raw }
             } catch {
               args = { raw }
             }
@@ -231,7 +240,7 @@ export class MastraAdapter implements IModelAdapter {
     const usage = result.usage
     return {
       content: result.text,
-      model: 'mastra-agent',
+      model: this.options.modelId ?? 'mastra-agent',
       usage:
         typeof usage?.inputTokens === 'number' ||
         typeof usage?.outputTokens === 'number'
@@ -261,7 +270,10 @@ export function createMastraModel(config: MastraModelConfig): MastraModel {
       ? { memory: config.memory as AgentCtorConfig['memory'] }
       : {}),
   })
-  const adapter = new MastraAdapter(agent, { resource: config.resource })
+  const adapter = new MastraAdapter(agent, {
+    resource: config.resource,
+    modelId: config.id,
+  })
   return {
     adapter,
     info: {

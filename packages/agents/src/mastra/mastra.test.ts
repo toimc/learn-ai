@@ -25,6 +25,7 @@ type GenerateFn = (
 function fakeAgent(
   parts: unknown[],
   generateResult?: unknown,
+  opts: { hasMemory?: boolean } = {},
 ): { agent: Agent; stream: Mock<StreamFn>; generate: Mock<GenerateFn> } {
   const stream = vi.fn<StreamFn>(async () => ({
     fullStream: (async function* () {
@@ -32,7 +33,16 @@ function fakeAgent(
     })(),
   }))
   const generate = vi.fn<GenerateFn>(async () => generateResult ?? { text: '' })
-  return { agent: { stream, generate } as unknown as Agent, stream, generate }
+  return {
+    agent: {
+      stream,
+      generate,
+      // 默认带记忆：适配器以 hasOwnMemory() 探测决定是否透传 memory 配置
+      hasOwnMemory: () => opts.hasMemory ?? true,
+    } as unknown as Agent,
+    stream,
+    generate,
+  }
 }
 
 const textDelta = (text: string) => ({
@@ -170,6 +180,31 @@ describe('MastraAdapter.chatStream 流事件映射', () => {
           toolCallId: 'call_9',
           toolName: 'search',
           toolArguments: { raw: '{"q": broken}' },
+        },
+      },
+    ])
+  })
+
+  it('delta 拼出合法 JSON 标量（非对象）时同样退为 { raw }，不透传标量', async () => {
+    const { agent } = fakeAgent([
+      toolStart('call_num', 'calc'),
+      toolDelta('call_num', '42'),
+      toolEnd('call_num'),
+    ])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(chunks).toEqual([
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 'call_num', toolName: 'calc' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 'call_num',
+          toolName: 'calc',
+          toolArguments: { raw: '42' },
         },
       },
     ])
@@ -351,6 +386,22 @@ describe('MastraAdapter.chatStream 请求参数映射', () => {
     await collect(new MastraAdapter(plain.agent).chatStream(request()))
     expect('modelSettings' in (plain.stream.mock.calls[0][1] ?? {})).toBe(false)
   })
+
+  it('agent 无 Memory（hasOwnMemory 为 false）时第二参不含 memory 字段', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')], undefined, {
+      hasMemory: false,
+    })
+    await collect(new MastraAdapter(agent).chatStream(request()))
+    expect('memory' in (stream.mock.calls[0][1] ?? {})).toBe(false)
+  })
+
+  it('agent 有 Memory（hasOwnMemory 为 true）时第二参携带 memory 字段', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')], undefined, {
+      hasMemory: true,
+    })
+    await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(stream.mock.calls[0][1]?.memory?.resource).toBe('ai-chat')
+  })
 })
 
 describe('MastraAdapter.chat', () => {
@@ -364,7 +415,7 @@ describe('MastraAdapter.chat', () => {
     expect(response.content).toBe('答案')
     expect(response.usage).toEqual({ promptTokens: 10, completionTokens: 5 })
     expect(typeof response.model).toBe('string')
-    expect(response.model.length).toBeGreaterThan(0)
+    expect(response.model).toBe('mastra-agent')
   })
 
   it('usage 缺失或无数字 token 字段时为 undefined', async () => {
@@ -401,5 +452,23 @@ describe('createMastraModel', () => {
     expect(agent).not.toBeNull()
     expect(typeof agent.stream).toBe('function')
     expect(typeof agent.generate).toBe('function')
+  })
+
+  it('chat() 返回的 model 为配置 id（工厂把 id 作为 modelId 透传给适配器）', async () => {
+    const model = createMastraModel({
+      id: 'deepseek-chat',
+      model: 'mock/mock-model',
+    })
+    // 拦截底层 generate，避免真实模型解析；只验证 adapter 层的 model 映射
+    const generate = vi
+      .spyOn(
+        model.agent as unknown as { generate: () => Promise<unknown> },
+        'generate',
+      )
+      .mockResolvedValue({ text: 'ok' })
+    const response = await model.adapter.chat(request())
+    expect(response.model).toBe('deepseek-chat')
+    expect(generate).toHaveBeenCalledTimes(1)
+    generate.mockRestore()
   })
 })
