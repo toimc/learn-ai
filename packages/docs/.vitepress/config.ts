@@ -45,6 +45,8 @@ export default defineConfig({
           { text: '使用指南', link: '/guide/usage' },
           { text: '主题定制', link: '/guide/theming' },
           { text: '国际化', link: '/guide/i18n' },
+          { text: '开发指南', link: '/guide/development' },
+          { text: '测试指南', link: '/guide/testing' },
         ],
       },
       { text: '组件', link: '/components/conversation' },
@@ -74,6 +76,13 @@ export default defineConfig({
             { text: '主题定制', link: '/guide/theming' },
             { text: '国际化', link: '/guide/i18n' },
             { text: '主题配置器', link: '/theme-builder' },
+          ],
+        },
+        {
+          text: '开发与测试',
+          items: [
+            { text: '开发指南', link: '/guide/development' },
+            { text: '测试指南', link: '/guide/testing' },
           ],
         },
       ],
