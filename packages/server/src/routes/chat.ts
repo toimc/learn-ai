@@ -147,6 +147,17 @@ function createAssistantCollector(id: string) {
       const meta = (chunk.metadata ?? {}) as Record<string, unknown>
       if (chunk.type === 'tool_call') {
         const toolCallId = String(meta.toolCallId ?? '')
+        // 同 toolCallId 可能来多帧（流式起点帧 + 完整参数帧）：命中则原位更新，
+        // 避免重复 entry 停在 calling 状态
+        const existingIndex = toolIndex.get(toolCallId)
+        if (existingIndex !== undefined) {
+          const existing = toolCalls[existingIndex]
+          if (meta.toolArguments) {
+            existing.arguments = meta.toolArguments as Record<string, unknown>
+          }
+          if (meta.toolName) existing.name = String(meta.toolName)
+          return
+        }
         toolIndex.set(toolCallId, toolCalls.length)
         toolCalls.push({
           id: toolCallId,

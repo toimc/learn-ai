@@ -3,7 +3,7 @@ import { createMockApp } from './app'
 
 const port = Number(process.env.MOCK_SERVER_PORT ?? 8787)
 
-const app = createMockApp()
+const app = await createMockApp()
 const server = serve({ fetch: app.fetch, port }, (info) => {
   console.log(`[mock-server] listening on http://localhost:${info.port}`)
   console.log(

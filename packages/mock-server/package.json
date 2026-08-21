@@ -11,10 +11,14 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.5",
+    "@mastra/core": "^1.60.0",
+    "@mastra/libsql": "^1.21.0",
+    "@mastra/memory": "^1.27.0",
     "@toimc/agents": "workspace:*",
     "@toimc/core": "workspace:*",
     "@toimc/server": "workspace:*",
-    "hono": "^4.10.0"
+    "hono": "^4.10.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

@@ -87,13 +87,32 @@ export function useChat(
 
         if (chunk.type === 'tool_call') {
           if (!assistantMessage.toolCalls) assistantMessage.toolCalls = []
-          assistantMessage.toolCalls.push({
-            id: (chunk.metadata?.toolCallId as string) || '',
-            name: (chunk.metadata?.toolName as string) || 'unknown',
-            arguments:
-              (chunk.metadata?.toolArguments as Record<string, unknown>) || {},
-            status: 'calling',
-          })
+          // 同 toolCallId 可能来多帧（流式起点帧 + 完整参数帧）：命中则原位更新，
+          // 避免重复 entry 停在 calling 状态与渲染层重复 key
+          const callId = (chunk.metadata?.toolCallId as string) || ''
+          const existing = assistantMessage.toolCalls.find(
+            (t) => t.id === callId,
+          )
+          if (existing) {
+            if (chunk.metadata?.toolArguments) {
+              existing.arguments = chunk.metadata.toolArguments as Record<
+                string,
+                unknown
+              >
+            }
+            if (chunk.metadata?.toolName) {
+              existing.name = chunk.metadata.toolName as string
+            }
+          } else {
+            assistantMessage.toolCalls.push({
+              id: callId,
+              name: (chunk.metadata?.toolName as string) || 'unknown',
+              arguments:
+                (chunk.metadata?.toolArguments as Record<string, unknown>) ||
+                {},
+              status: 'calling',
+            })
+          }
         }
 
         if (chunk.type === 'tool_result') {
