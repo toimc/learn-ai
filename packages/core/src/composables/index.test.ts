@@ -140,6 +140,41 @@ describe('useChat', () => {
     })
   })
 
+  it('同 toolCallId 的双帧 tool_call（起点帧 + 完整参数帧）合并为单 entry', async () => {
+    // 复现 MastraAdapter 双帧线协议：start 发无参起点帧，end 发完整参数帧
+    const adapter = createMockAdapter([
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 't1', toolName: 'get_weather' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 't1',
+          toolName: 'get_weather',
+          toolArguments: { city: 'Beijing' },
+        },
+      },
+      {
+        type: 'tool_result',
+        content: '',
+        metadata: { toolCallId: 't1', toolResult: { temp: 22 } },
+      },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('What is the weather?')
+
+    const toolCalls = state.messages[1].toolCalls!
+    expect(toolCalls).toHaveLength(1)
+    expect(toolCalls[0].arguments).toEqual({ city: 'Beijing' })
+    expect(toolCalls[0].status).toBe('completed')
+    expect(toolCalls[0].result).toEqual({ temp: 22 })
+  })
+
   it('should handle tool_result with error', async () => {
     const adapter = createMockAdapter([
       {

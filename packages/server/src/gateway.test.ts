@@ -371,6 +371,61 @@ describe('onComplete 流收尾钩子', () => {
   })
 })
 
+describe('onComplete 工具调用合并', () => {
+  it('同 toolCallId 的双帧 tool_call（起点帧 + 完整参数帧）合并为单 entry，tool_result 收尾 completed', async () => {
+    // 复现 MastraAdapter 双帧线协议：start 发无参起点帧，end 发完整参数帧
+    const script: StreamChunk[] = [
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 't1', toolName: 'get_weather' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 't1',
+          toolName: 'get_weather',
+          toolArguments: { city: 'Beijing' },
+        },
+      },
+      {
+        type: 'tool_result',
+        content: '',
+        metadata: { toolCallId: 't1', toolResult: { temp: 22 }, duration: 120 },
+      },
+      { type: 'done', content: '' },
+    ]
+    const fake = fakeAdapter(script)
+    const registry = new ModelRegistry().registerAdapter('m1', fake.adapter, {
+      name: '模型一',
+      description: '演示模型一',
+      provider: 'mock',
+    })
+    const results: ChatCompletionResult[] = []
+    const app = createChatGateway({
+      models: registry,
+      chat: {
+        onComplete: (result) => {
+          results.push(result)
+        },
+      },
+    })
+
+    const res = await postChat(app, {
+      messages: [{ role: 'user', content: 'hi' }],
+    })
+    await res.text()
+    await vi.waitFor(() => expect(results.length).toBe(1))
+
+    const toolCalls = results[0].assistant.toolCalls!
+    expect(toolCalls).toHaveLength(1)
+    expect(toolCalls[0].arguments).toEqual({ city: 'Beijing' })
+    expect(toolCalls[0].status).toBe('completed')
+    expect(toolCalls[0].result).toEqual({ temp: 22 })
+  })
+})
+
 describe('CORS', () => {
   it('默认开启：带 Origin 的请求响应 access-control-allow-origin 回源', async () => {
     const { registry } = makeRegistry()
