@@ -40,13 +40,24 @@ export default defineConfig({
       {
         text: '指南',
         items: [
-          { text: '快速开始', link: '/guide/getting-started' },
-          { text: '安装', link: '/guide/installation' },
-          { text: '使用指南', link: '/guide/usage' },
-          { text: '主题定制', link: '/guide/theming' },
-          { text: '国际化', link: '/guide/i18n' },
-          { text: '开发指南', link: '/guide/development' },
-          { text: '测试指南', link: '/guide/testing' },
+          {
+            text: '使用',
+            items: [
+              { text: '快速开始', link: '/guide/getting-started' },
+              { text: '安装', link: '/guide/installation' },
+              { text: '使用指南', link: '/guide/usage' },
+              { text: '主题定制', link: '/guide/theming' },
+              { text: '国际化', link: '/guide/i18n' },
+            ],
+          },
+          {
+            text: '开发与测试',
+            items: [
+              { text: '开发指南', link: '/guide/development' },
+              { text: '测试指南', link: '/guide/testing' },
+              { text: '单元测试实战', link: '/guide/unit-testing' },
+            ],
+          },
         ],
       },
       { text: '组件', link: '/components/conversation' },
@@ -83,6 +94,7 @@ export default defineConfig({
           items: [
             { text: '开发指南', link: '/guide/development' },
             { text: '测试指南', link: '/guide/testing' },
+            { text: '单元测试实战', link: '/guide/unit-testing' },
           ],
         },
       ],

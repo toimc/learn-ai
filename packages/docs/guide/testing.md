@@ -53,9 +53,12 @@
 | `corepack pnpm test:watch` | 监听模式，文件变更自动重跑 |
 | `corepack pnpm vitest run packages/vue/src/integration/chat-flow.test.ts` | 只跑单个测试文件 |
 | `corepack pnpm vitest run packages/core` | 按目录过滤，只跑某个包的测试 |
+| `corepack pnpm vitest run -t "maxHistory"` | 按用例名过滤（`-t` 匹配 describe/it 名称，跨文件生效） |
 | `corepack pnpm vitest run --coverage` | 带覆盖率报告（见下文门禁说明） |
 
 提交前三绿：`pnpm test` / `pnpm type-check` / `pnpm lint`。worktree 或全新环境中跑 type-check 前，需先 `pnpm build` 出 `core` 的 dist（类型检查消费构建产物，详见 [开发指南](/guide/development)）。
+
+用例如何设计（正常 / 边界 / 异常三场景 + AAA）、组件与 composable 测试的实操技巧，见 [单元测试实战](/guide/unit-testing)。
 
 ## 写集成测试：宿主视角
 
@@ -214,10 +217,26 @@ coverage: {
 },
 ```
 
-即 `markdown` 包的语句 / 行 / 函数覆盖率 ≥ 80%、分支 ≥ 75%，低于阈值时 `vitest run --coverage` 直接以失败退出。`core` / `vue` 包暂未纳入覆盖率统计与门禁（按仓库 `.claude/rules/frontend-testing.md` 的口径，目标是 core 90%+ / vue 70%+，后续逐步纳入）。
+即 `markdown` 包的语句 / 行 / 函数覆盖率 ≥ 80%、分支 ≥ 75%，低于阈值时 `vitest run --coverage` 直接以失败退出。`core` / `vue` 包暂未纳入门禁（按仓库 `.claude/rules/frontend-testing.md` 的口径，目标是 core 90%+ / vue 70%+，后续逐步纳入）。
+
+### 查看三包全量覆盖率
+
+门禁之外的日常摸底，可以临时把 `--coverage.include` 扩到三个发布包、阈值归零，只看报告不拦截：
+
+```bash
+corepack pnpm vitest run --coverage \
+  --coverage.include='packages/core/src/**' \
+  --coverage.include='packages/vue/src/**' \
+  --coverage.include='packages/markdown/src/**' \
+  --coverage.thresholds.statements=0 --coverage.thresholds.branches=0 \
+  --coverage.thresholds.functions=0 --coverage.thresholds.lines=0
+```
+
+报告按文件列出未覆盖行号（`Uncovered Line #s` 列），直接对着源码补用例。2026-08 全量补测后的基线：**61 个测试文件 / 483 个用例，三包语句 96.6% / 分支 90.7% / 函数 95.2% / 行 98.2%**——新改动不应让这个基线回退。
 
 ## 延伸阅读
 
+- 下一篇：[单元测试实战](/guide/unit-testing)——三场景用例设计、组件/composable 测试技巧与真实 bug 案例
 - 上一篇：[开发指南](/guide/development)——项目结构、常用命令与编码规范
 - [使用指南](/guide/usage)——ChatAdapter 接口与 useChat 的完整用法
 - [PromptInput 组件文档](/components/prompt-input)、[Message 组件文档](/components/message)
