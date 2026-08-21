@@ -10,6 +10,12 @@ export default defineConfig({
       '@toimc/core': fileURLToPath(
         new URL('./packages/core/src/index.ts', import.meta.url),
       ),
+      '@toimc/agents': fileURLToPath(
+        new URL('./packages/agents/src/index.ts', import.meta.url),
+      ),
+      '@toimc/server': fileURLToPath(
+        new URL('./packages/server/src/index.ts', import.meta.url),
+      ),
     },
   },
   test: {

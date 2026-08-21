@@ -1,0 +1,35 @@
+{
+  "name": "@toimc/server",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@toimc/agents": "workspace:*",
+    "@toimc/core": "workspace:*",
+    "hono": "^4.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.1",
+    "vite-plugin-dts": "^5.0.3",
+    "vitest": "^4.1.10"
+  }
+}

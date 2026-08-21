@@ -3,6 +3,13 @@
  * 由 GET /api/openapi.json 输出，文档站 Scalar 页面加载渲染，
  * Test Request 直接打到 servers[0].url（CORS 已放开）。
  */
+// Vercel 函数环境注入 VERCEL=1：servers 用空串相对 URL，
+// Scalar Test Request 相对当前部署域名（同源）；本地开发指向 8787。
+const serverUrl = process.env.VERCEL ? '' : 'http://localhost:8787'
+const runNote = process.env.VERCEL
+  ? '\n\n**执行说明**：页面上的 Test Request 会直接请求当前部署域名（同源）。'
+  : '\n\n**执行说明**：页面上的 Test Request 会直接请求 `http://localhost:8787`（已开 CORS）。请先在项目根目录运行 `pnpm dev` 同时启动文档站与本服务。'
+
 export const openApiSpec = {
   openapi: '3.1.0',
   info: {
@@ -10,13 +17,12 @@ export const openApiSpec = {
     version: '0.1.0',
     description: [
       '本地 mock 服务端：为组件库 Playground 与文档站提供多会话数据源与 SSE 流式响应。',
-      '\n\n**执行说明**：页面上的 Test Request 会直接请求 `http://localhost:8787`（已开 CORS）。',
-      '请先在项目根目录运行 `pnpm dev` 同时启动文档站与本服务。',
+      runNote,
       '\n\n**SSE 线格式**：`POST /api/chat` 的每个事件为 `event: chunk` + `data: <StreamChunk JSON>`，',
       '与 `@toimc/core` 的 `StreamChunk` 同构（text / thinking / tool_call / tool_result / error / done）。',
     ].join(''),
   },
-  servers: [{ url: 'http://localhost:8787', description: '本地 mock 服务' }],
+  servers: [{ url: serverUrl, description: '本地 mock 服务' }],
   tags: [
     { name: '会话', description: '多会话数据源：列表 / 历史 / 新建' },
     { name: '对话', description: '流式对话：SSE 逐块输出 StreamChunk' },

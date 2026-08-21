@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"packages/**/src/**/*.{ts,vue,css}\"",
     "format:check": "prettier --check \"packages/**/src/**/*.{ts,vue,css}\"",
-    "type-check": "pnpm -r --filter=\"./packages/core\" --filter=\"./packages/vue\" --filter=\"./packages/markdown\" exec vue-tsc --noEmit -p tsconfig.json",
+    "type-check": "pnpm -r --filter=\"./packages/core\" --filter=\"./packages/vue\" --filter=\"./packages/markdown\" --filter=\"./packages/agents\" --filter=\"./packages/server\" exec vue-tsc --noEmit -p tsconfig.json",
     "clean": "pnpm -r exec rm -rf dist",
     "prepare": "simple-git-hooks"
   },
