@@ -67,6 +67,19 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 - 颜色、圆角、动效一律引用 `--ai-chat-*` 变量，不硬编码色值
 - 第三方 CSS 走包的可选子路径导出（如 `@toimc/markdown/katex.css`），由宿主显式 import，禁止库代码隐式注入
 
+## 文档部署（GitHub Pages）
+
+文档站随 `master` 分支自动部署：<https://toimc.github.io/learn-ai/>（GitHub Actions `Deploy Docs` workflow，官方 `deploy-pages` 三件套，仅用内置 `GITHUB_TOKEN`，无需配置任何 secret）。
+
+**mock 页面开关**：`/mock-server-demo` 与 `/mock-api` 依赖本地 mock-server（`pnpm dev` 同时启动，端口 8787），静态站点不可用。发布构建通过 `DOCS_TARGET=pages` 环境变量在构建期剔除这两个页面（`srcExclude` + 导航过滤 + `ignoreDeadLinks` 精确豁免 + theme 条件注册避免 Scalar 进产物），并设置 `BASE_PATH=/learn-ai/` 资源前缀。
+
+本地开发不受影响：`pnpm dev` 与普通 `pnpm -C packages/docs build` 不设这两个变量，mock 页面照常可用。需要本地预览发布版效果时：
+
+```bash
+DOCS_TARGET=pages BASE_PATH=/learn-ai/ corepack pnpm -C packages/docs build
+corepack pnpm -C packages/docs preview
+```
+
 ## Git 分支模型
 
 标准 Git Flow：
