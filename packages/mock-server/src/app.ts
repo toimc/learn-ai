@@ -1,8 +1,11 @@
 import { createChatGateway } from '@toimc/server'
 import { ModelRegistry } from '@toimc/agents'
+import type { Agent } from '@mastra/core/agent'
 import { createMockAdapter } from './mock-adapter'
 import { createConversationsRoutes } from './routes/conversations'
 import { openApiSpec } from './openapi'
+import { readMastraEnv, registerMastraAgent } from './mastra/register'
+import { attachMastraInstance } from './mastra/index'
 
 /**
  * 组装 mock 演示服务：@toimc/server 网关 + mock 剧本适配器 + 会话演示路由。
@@ -25,6 +28,13 @@ export function createMockApp() {
     description: '始终先输出思考过程',
   })
 
+  // MASTRA_MODEL 存在时注册 Mastra Agent；缺省则行为与纯 mock 完全一致
+  const mastraEnv = readMastraEnv(process.env)
+  let mastraAgent: ReturnType<typeof registerMastraAgent> | undefined
+  if (mastraEnv) {
+    mastraAgent = registerMastraAgent(registry, mastraEnv)
+  }
+
   const app = createChatGateway({
     models: registry,
     chat: {
@@ -43,6 +53,12 @@ export function createMockApp() {
 
   app.route('/conversations', conversations.app)
   app.get('/openapi.json', (c) => c.json(openApiSpec))
+
+  // telemetry=true 时装配 Mastra 实例（npx mastra dev 起 Studio 的入口）
+  if (mastraAgent?.agent && process.env.MASTRA_TELEMETRY === 'true') {
+    // 上游 MastraModel.agent 类型声明为 unknown，实现固定为 new Agent(...)，收窄有依据
+    attachMastraInstance({ 'mastra-agent': mastraAgent.agent as Agent })
+  }
 
   return app
 }

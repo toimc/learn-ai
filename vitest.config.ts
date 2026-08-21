@@ -10,6 +10,10 @@ export default defineConfig({
       '@toimc/core': fileURLToPath(
         new URL('./packages/core/src/index.ts', import.meta.url),
       ),
+      // 子路径须列在主入口之前（alias 前缀匹配，先到先得）
+      '@toimc/agents/mastra': fileURLToPath(
+        new URL('./packages/agents/src/mastra/index.ts', import.meta.url),
+      ),
       '@toimc/agents': fileURLToPath(
         new URL('./packages/agents/src/index.ts', import.meta.url),
       ),
