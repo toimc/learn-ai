@@ -7,6 +7,8 @@
 | `@toimc/core` | 是 | 核心类型定义和 composables |
 | `@toimc/vue` | 是 | Vue 3 UI 组件 |
 | `@toimc/markdown` | 否 | Markdown / 代码 / LaTeX 渲染 |
+| `@toimc/agents` | 否 | 服务端模型适配层（多模型协议适配，零外部依赖，可脱离网关单独使用） |
+| `@toimc/server` | 否 | Hono 聊天网关（接收与转发，配套 [服务端网关](/guide/server) 指南） |
 
 ## 包管理器
 

@@ -10,8 +10,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@toimc/core": "workspace:*",
     "@hono/node-server": "^1.19.5",
+    "@toimc/agents": "workspace:*",
+    "@toimc/core": "workspace:*",
+    "@toimc/server": "workspace:*",
     "hono": "^4.10.0"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { StreamChunk } from '@toimc/core'
 import { createMockApp } from './app'
 
@@ -151,7 +151,7 @@ describe('辅助路由', () => {
 })
 
 describe('OpenAPI 规范', () => {
-  it('GET /api/openapi.json 覆盖全部业务端点且 servers 指向本机', async () => {
+  it('GET /api/openapi.json 结构完整且本地 servers 指向本机', async () => {
     const res = await createMockApp().request('/api/openapi.json')
     expect(res.status).toBe(200)
     const spec = (await res.json()) as {
@@ -161,6 +161,36 @@ describe('OpenAPI 规范', () => {
     }
     expect(spec.openapi).toBe('3.1.0')
     expect(spec.servers[0].url).toBe('http://localhost:8787')
+
+    // 每个操作都打了 tag（Scalar 左侧按 tag 分组）
+    for (const ops of Object.values(spec.paths)) {
+      for (const op of Object.values(ops)) {
+        expect(Array.isArray(op.tags)).toBe(true)
+      }
+    }
+  })
+
+  it('VERCEL 函数环境下 servers 为空串（Scalar Test Request 同源）', async () => {
+    vi.stubEnv('VERCEL', '1')
+    vi.resetModules()
+    const { createMockApp: freshCreateMockApp } = await import('./app')
+    const res = await freshCreateMockApp().request('/api/openapi.json')
+    const spec = (await res.json()) as { servers: { url: string }[] }
+    expect(spec.servers[0].url).toBe('')
+    vi.unstubAllEnvs()
+  })
+
+  it('本地环境 servers 指向 8787（环境变量复位后）', async () => {
+    const res = await createMockApp().request('/api/openapi.json')
+    const spec = (await res.json()) as { servers: { url: string }[] }
+    expect(spec.servers[0].url).toBe('http://localhost:8787')
+  })
+
+  it('端点清单完整（原用例拆分保留）', async () => {
+    const res = await createMockApp().request('/api/openapi.json')
+    const spec = (await res.json()) as {
+      paths: Record<string, Record<string, { tags?: string[] }>>
+    }
 
     const expected = [
       '/api/conversations',
