@@ -24,3 +24,9 @@ packages/docs/.vitepress/dist/
 # Python hook 缓存
 __pycache__/
 *.pyc
+
+# 临时测试文件和截图
+.temp/
+*.png
+*.jpg
+*.jpeg
