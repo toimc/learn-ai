@@ -10,6 +10,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./mastra": {
+      "types": "./dist/mastra/index.d.ts",
+      "import": "./dist/mastra.mjs",
+      "require": "./dist/mastra.cjs"
     }
   },
   "files": [
@@ -23,7 +28,17 @@
   "dependencies": {
     "@toimc/core": "workspace:*"
   },
+  "peerDependencies": {
+    "@mastra/core": ">=0.10.0",
+    "@toimc/core": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@mastra/core": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@mastra/core": "^1.60.0",
     "@types/node": "^24.10.1",
     "typescript": "^6.0.3",
     "vite": "^8.2.1",
