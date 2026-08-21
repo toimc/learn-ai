@@ -30,9 +30,9 @@
 
 默认（本地 dev/普通 build）行为完全不变：mock 页面、导航、Scalar 均保留。
 
-### FR-3 MockOnly 组件
+### FR-3 MockOnly 组件【执行时取消】
 
-新增 `packages/docs/.vitepress/components/MockOnly.vue`（≤10 行）：`import.meta.env.DOCS_TARGET !== 'pages'` 时渲染 slot，否则不渲染；theme 全局注册。`packages/docs/playground.md` 第 10 行 mock 提示块用它包裹（组件标签与内容间空行分隔，markdown 照常编译）。
+原方案：新增 `MockOnly.vue` 组件包裹 `playground.md` 的 mock 提示块。**执行时发现该方案无必要**：`PlaygroundPage` 布局组件只渲染 `<PlaygroundDemo />`、无 `<Content />` 出口，`playground.md` 正文（含提示块）本就不会出现在页面上，无需运行时条件渲染。提示块内两个链接触发的死链检查是静态 AST 扫描，已由 FR-2 的 `ignoreDeadLinks`（仅 pages 模式精确放行 `/mock-server-demo`、`/mock-api`）解决。
 
 ### FR-4 死链安全网
 
@@ -66,9 +66,9 @@ VitePress 默认死链构建失败。站内引用 mock 两页面的仅 `playgrou
 ## 交付物
 
 - `.github/workflows/docs-deploy.yml`（新增）
-- `packages/docs/.vitepress/config.ts`（构建开关）
+- `packages/docs/.vitepress/config.ts`（构建开关：srcExclude + nav 过滤 + base + define + ignoreDeadLinks）
 - `packages/docs/.vitepress/theme/index.ts`（条件动态 import）
-- `packages/docs/.vitepress/components/MockOnly.vue`（新增）
-- `packages/docs/playground.md`（提示块包裹）
+- ~~`packages/docs/.vitepress/components/MockOnly.vue`~~（FR-3 取消）
+- ~~`packages/docs/playground.md`（提示块包裹）~~（FR-3 取消）
 - `packages/docs/guide/development.md`（部署说明小节）
 - 仓库 Pages 配置：来源 GitHub Actions（API 一次性配置）
