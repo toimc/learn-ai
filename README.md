@@ -24,7 +24,8 @@
 | 语言 | TypeScript | ^6.0 |
 | 构建 | Vite | ^8.0 |
 | 包管理 | pnpm workspace | ^9.0 |
-| 测试 | Vitest + @vue/test-utils | ^4.1 / ^2.4 |
+| 单元测试 | Vitest + @vue/test-utils | ^4.1 / ^2.4 |
+| E2E测试 | Playwright | ^1.62 |
 | 文档站 | VitePress | ^1.6 |
 
 ## 项目结构
@@ -262,11 +263,35 @@ interface ChatAdapter {
 pnpm install        # 安装依赖
 pnpm dev            # 启动文档站
 pnpm build          # 构建所有包
-pnpm test           # 运行测试
+pnpm test           # 运行单元测试
+pnpm test:e2e       # 运行端到端测试
+pnpm test:e2e:ui    # E2E测试UI模式
 pnpm lint           # 代码检查
 pnpm type-check     # 类型检查
 pnpm clean          # 清理构建产物
 ```
+
+### 端到端测试
+
+项目使用 Playwright 进行端到端测试，覆盖 Playground 的核心功能：
+
+- **基础功能**: 消息发送、会话切换、流式渲染、UI交互
+- **高级功能**: Markdown渲染、代码高亮、主题切换、国际化支持
+- **多浏览器**: Chromium、Firefox、WebKit、移动端
+
+```bash
+# 首次使用安装浏览器
+pnpm exec playwright install --with-deps
+
+# 运行E2E测试
+pnpm test:e2e          # 后台运行所有测试
+pnpm test:e2e:ui       # UI模式运行（推荐）
+pnpm test:e2e:debug    # 调试模式
+pnpm test:e2e:headed   # 有头模式（显示浏览器）
+pnpm test:e2e:report   # 查看HTML报告
+```
+
+详细文档见 [E2E测试README](./e2e/README.md) 和 [快速开始指南](./E2E-QUICKSTART.md)。
 
 ## 开发工作流
 
