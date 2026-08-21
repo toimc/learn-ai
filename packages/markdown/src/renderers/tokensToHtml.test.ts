@@ -88,4 +88,58 @@ describe('tokensToHtml', () => {
     const html = tokensToHtml(tokens)
     expect(html).toContain('font-style:italic')
   })
+
+  it('边界：fontStyle 位掩码组合输出多个值', () => {
+    // FontStyle 为 const enum（无运行时导出），位掩码 1|2|4 = italic bold underline
+    const boldItalicUnderline = (1 | 2 | 4) as ThemedToken['fontStyle']
+    const tokens: ThemedToken[] = [
+      { content: 'x', offset: 0, fontStyle: boldItalicUnderline },
+    ]
+    const html = tokensToHtml(tokens)
+    expect(html).toContain('font-style:italic bold underline')
+  })
+
+  it('边界：fontStyle=0 视为无样式，不输出 font-style', () => {
+    const tokens: ThemedToken[] = [{ content: 'x', offset: 0, fontStyle: 0 }]
+    const html = tokensToHtml(tokens)
+    expect(html).not.toContain('font-style')
+  })
+
+  it('边界：htmlStyle 中的 null/空值字段被跳过（防御外部数据）', () => {
+    // 类型层 htmlStyle 不含 null；此用例覆盖运行时对脏数据的防御分支
+    const tokens: ThemedToken[] = [
+      {
+        content: 'x',
+        offset: 0,
+        htmlStyle: {
+          color: '#111',
+          'background-color': null,
+          '--shiki-dark': '',
+        } as unknown as ThemedToken['htmlStyle'],
+      },
+    ]
+    const html = tokensToHtml(tokens)
+    expect(html).toContain('color:#111')
+    expect(html).not.toContain('background-color')
+    expect(html).not.toContain('--shiki-dark')
+  })
+
+  it('正常：htmlAttrs.style（transformer 注入）优先于字段派生', () => {
+    const tokens: ThemedToken[] = [
+      {
+        content: 'x',
+        offset: 0,
+        color: '#111',
+        htmlAttrs: { style: 'color:#from-transformer' },
+      },
+    ]
+    const html = tokensToHtml(tokens)
+    expect(html).toContain('color:#from-transformer')
+    expect(html).not.toContain('#111')
+  })
+
+  it('边界：无任何样式信息的 token 渲染为裸 span（无 style 属性）', () => {
+    const tokens: ThemedToken[] = [{ content: 'plain', offset: 0 }]
+    expect(tokensToHtml(tokens)).toBe('<span>plain</span>')
+  })
 })

@@ -3,6 +3,14 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import CodeBlock from './CodeBlock.vue'
 import { aiChatI18n } from '@ai-chat/vue'
+import { renderCodeFinal } from './composables/useShikiTokenizer'
+
+// 默认透传真实实现，仅在「高亮异常降级」用例里对单次调用注入 rejection
+vi.mock('./composables/useShikiTokenizer', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('./composables/useShikiTokenizer')>()
+  return { ...actual, renderCodeFinal: vi.fn(actual.renderCodeFinal) }
+})
 
 // 与 MarkdownRenderer.test 一致的 rAF 桩，避免 jsdom 缺失
 const stubRequestAnimationFrame = (cb: FrameRequestCallback): number =>
@@ -115,5 +123,45 @@ describe('CodeBlock', () => {
     expect(btn.attributes('title')).toBe(aiChatI18n.global.t('shared.copied'))
     // 已复制态渲染对勾图标
     expect(wrapper.html()).toContain('polyline')
+  })
+})
+
+describe('CodeBlock 异常与边界', () => {
+  it('异常：剪贴板写入失败时静默放弃，不进入已复制态', async () => {
+    const writeText = vi.fn(() => Promise.reject(new Error('denied')))
+    Object.assign(navigator, { clipboard: { writeText } })
+    const wrapper = mount(CodeBlock, {
+      props: { code: 'secret', language: 'javascript' },
+    })
+    const btn = wrapper.find('.ai-chat-code-block__copy')
+    await btn.trigger('click')
+    await flushAsync()
+    expect(writeText).toHaveBeenCalledWith('secret')
+    expect(btn.classes()).not.toContain('is-copied')
+  })
+
+  it('边界：code 置为空串时清空高亮内容', async () => {
+    const wrapper = mount(CodeBlock, {
+      props: { code: 'const a = 1', language: 'javascript' },
+    })
+    await flushAsync()
+    expect(wrapper.get('.ai-chat-code-block__code').element.innerHTML).not.toBe(
+      '',
+    )
+
+    await wrapper.setProps({ code: '' })
+    await flushAsync()
+    expect(wrapper.get('.ai-chat-code-block__code').element.innerHTML).toBe('')
+  })
+
+  it('异常：高亮渲染抛错时降级为空串，保留 pre/code 结构', async () => {
+    vi.mocked(renderCodeFinal).mockRejectedValueOnce(new Error('shiki boom'))
+    const wrapper = mount(CodeBlock, {
+      props: { code: 'const a = 1', language: 'javascript', streaming: false },
+    })
+    await flushAsync()
+    // 降级：无 token span，但结构仍在
+    expect(wrapper.find('.ai-chat-code-block__pre').exists()).toBe(true)
+    expect(wrapper.get('.ai-chat-code-block__code').element.innerHTML).toBe('')
   })
 })

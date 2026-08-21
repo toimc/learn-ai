@@ -63,4 +63,28 @@ describe('useStreamingMarkdown', () => {
     rafCbs = []
     expect(() => cbs.forEach((cb) => cb(0))).not.toThrow()
   })
+
+  it('flush 同步渲染：不等 rAF 直接产出 html', async () => {
+    const { html, setContent, flush } = useStreamingMarkdown()
+    setContent('# 立即')
+    expect(html.value).toBe('') // rAF 尚未执行
+    flush()
+    expect(html.value).toContain('<h1>立即</h1>')
+  })
+
+  it('边界：SSR（无 window）时 setContent 不调度渲染', async () => {
+    vi.stubGlobal('window', undefined)
+    const { html, setContent } = useStreamingMarkdown()
+    setContent('# 服务端')
+    await flushRaf()
+    expect(html.value).toBe('')
+  })
+
+  it('边界：SSR（无 window）时 flush 跳过渲染不抛错', () => {
+    vi.stubGlobal('window', undefined)
+    const { html, setContent, flush } = useStreamingMarkdown()
+    setContent('# 服务端')
+    expect(() => flush()).not.toThrow()
+    expect(html.value).toBe('')
+  })
 })
