@@ -22,7 +22,8 @@ const fakes = vi.hoisted(() => {
 })
 
 vi.mock('@toimc/agents/mastra', () => ({
-  createMastraModel: vi.fn(() => ({
+  // 实现为 async 工厂（内部动态加载 @mastra/core），mock 保持同形态
+  createMastraModel: vi.fn(async () => ({
     adapter: fakes.fakeAdapter,
     info: { name: 'n', description: 'd', provider: 'mastra' },
     agent: fakes.fakeAgent,
@@ -108,12 +109,12 @@ describe('readMastraEnv', () => {
 })
 
 describe('registerMastraAgent', () => {
-  it('以 mastra-agent 注册 adapter 与 info，返回 createMastraModel 产物', () => {
+  it('以 mastra-agent 注册 adapter 与 info，返回 createMastraModel 产物', async () => {
     const registry = new ModelRegistry()
     const spy = vi.spyOn(registry, 'registerAdapter')
 
     const customMemory = { __marker: 'custom-memory' }
-    const created = registerMastraAgent(
+    const created = await registerMastraAgent(
       registry,
       { model: 'deepseek/deepseek-chat' },
       { memory: customMemory },
@@ -129,11 +130,11 @@ describe('registerMastraAgent', () => {
     expect(created.agent).toBe(fakes.fakeAgent)
   })
 
-  it('overrides.memory 传入时不再构造 LibSQLStore / Memory', () => {
+  it('overrides.memory 传入时不再构造 LibSQLStore / Memory', async () => {
     const registry = new ModelRegistry()
     const customMemory = { __marker: 'custom-memory' }
 
-    registerMastraAgent(
+    await registerMastraAgent(
       registry,
       { model: 'deepseek/deepseek-chat' },
       { memory: customMemory },
@@ -146,10 +147,10 @@ describe('registerMastraAgent', () => {
     )
   })
 
-  it('未传 overrides 时构造默认 Memory（file:.temp/mastra.db）并注入', () => {
+  it('未传 overrides 时构造默认 Memory（file:.temp/mastra.db）并注入', async () => {
     const registry = new ModelRegistry()
 
-    registerMastraAgent(registry, { model: 'deepseek/deepseek-chat' })
+    await registerMastraAgent(registry, { model: 'deepseek/deepseek-chat' })
 
     expect(vi.mocked(LibSQLStore)).toHaveBeenCalledTimes(1)
     expect(vi.mocked(LibSQLStore)).toHaveBeenCalledWith({
@@ -162,10 +163,10 @@ describe('registerMastraAgent', () => {
     )
   })
 
-  it('modelUrl / modelName 透传：model 组装为 { id, url }，name 用展示名', () => {
+  it('modelUrl / modelName 透传：model 组装为 { id, url }，name 用展示名', async () => {
     const registry = new ModelRegistry()
 
-    registerMastraAgent(registry, {
+    await registerMastraAgent(registry, {
       model: 'deepseek/deepseek-chat',
       modelUrl: 'https://api.example.com/v1',
       modelName: 'DeepSeek Chat',
@@ -186,7 +187,7 @@ describe('registerMastraAgent', () => {
 describe('app 集成：MASTRA_MODEL 门控', () => {
   it('MASTRA_MODEL 存在时 /api/models 含 4 个模型且注册 mastra-agent', async () => {
     process.env.MASTRA_MODEL = 'deepseek/deepseek-chat'
-    const app = createMockApp()
+    const app = await createMockApp()
 
     const { models } = (await (await app.request('/api/models')).json()) as {
       models: { id: string }[]
@@ -201,7 +202,7 @@ describe('app 集成：MASTRA_MODEL 门控', () => {
   })
 
   it('无 MASTRA_MODEL 时仍为 3 个 mock 模型（回归钉死）', async () => {
-    const app = createMockApp()
+    const app = await createMockApp()
 
     const { models } = (await (await app.request('/api/models')).json()) as {
       models: { id: string }[]
@@ -214,11 +215,11 @@ describe('app 集成：MASTRA_MODEL 门控', () => {
     ])
   })
 
-  it('MASTRA_TELEMETRY=true 时装配 Mastra 实例并挂载 agent', () => {
+  it('MASTRA_TELEMETRY=true 时装配 Mastra 实例并挂载 agent', async () => {
     process.env.MASTRA_MODEL = 'deepseek/deepseek-chat'
     process.env.MASTRA_TELEMETRY = 'true'
 
-    createMockApp()
+    await createMockApp()
 
     expect(vi.mocked(attachMastraInstance)).toHaveBeenCalledTimes(1)
     expect(vi.mocked(attachMastraInstance)).toHaveBeenCalledWith({
@@ -226,10 +227,10 @@ describe('app 集成：MASTRA_MODEL 门控', () => {
     })
   })
 
-  it('MASTRA_TELEMETRY 未开启时不装配 Mastra 实例', () => {
+  it('MASTRA_TELEMETRY 未开启时不装配 Mastra 实例', async () => {
     process.env.MASTRA_MODEL = 'deepseek/deepseek-chat'
 
-    createMockApp()
+    await createMockApp()
 
     expect(vi.mocked(attachMastraInstance)).not.toHaveBeenCalled()
   })

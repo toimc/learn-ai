@@ -1,5 +1,4 @@
-import { Agent } from '@mastra/core/agent'
-import type { AgentConfig } from '@mastra/core/agent'
+import type { Agent, AgentConfig } from '@mastra/core/agent'
 import { generateId } from '@toimc/core'
 import type { StreamChunk } from '@toimc/core'
 import type {
@@ -256,9 +255,21 @@ export class MastraAdapter implements IModelAdapter {
 /**
  * 声明式工厂：config → { adapter, info, agent }，直接喂 registry.registerAdapter(id, adapter, info)。
  * 内部构造 Mastra Agent 并包成 MastraAdapter，宿主不接触 Mastra 类型。
+ *
+ * @mastra/core 是 optional peer 依赖：Agent 构造器走函数内动态 import，
+ * 缺依赖时抛含安装指引的友好错误（spec FR1），而不是子路径加载即裸 ERR_MODULE_NOT_FOUND。
+ * 因此本函数是 async，调用方需 await。
  */
-export function createMastraModel(config: MastraModelConfig): MastraModel {
-  const agent = new Agent({
+export async function createMastraModel(
+  config: MastraModelConfig,
+): Promise<MastraModel> {
+  const agentModule = await import('@mastra/core/agent').catch(() => null)
+  if (!agentModule) {
+    throw new Error(
+      'Mastra 集成需要 @mastra/core：请先安装 pnpm add @mastra/core（peer 可选依赖，未装时 @toimc/agents/mastra 子路径的 Agent 构造不可用）',
+    )
+  }
+  const agent = new agentModule.Agent({
     id: config.id,
     name: config.name ?? config.id,
     instructions: config.instructions ?? '',

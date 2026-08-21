@@ -48,13 +48,13 @@ export function readMastraEnv(
 }
 
 /** 组装并注册 mastra-agent 模型；返回创建的 model（供 Mastra 实例挂载） */
-export function registerMastraAgent(
+export async function registerMastraAgent(
   registry: ModelRegistry,
   config: MastraEnvConfig,
   overrides: { memory?: unknown } = {},
-): ReturnType<typeof createMastraModel> {
+): Promise<Awaited<ReturnType<typeof createMastraModel>>> {
   const memory = overrides.memory ?? defaultMemory()
-  const created = createMastraModel({
+  const created = await createMastraModel({
     id: 'mastra-agent',
     name: config.modelName ?? 'Mastra Agent',
     description: `Mastra 驱动的 Agent（${config.model}），支持工具调用与会话记忆`,

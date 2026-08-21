@@ -429,17 +429,128 @@ describe('MastraAdapter.chat', () => {
   })
 })
 
+describe('MastraAdapter.chatStream 边界与交错', () => {
+  it('上游流消费中抛 AbortError：生成器向上抛同一错误，不吞、不发 error chunk', async () => {
+    const abortError = new DOMException(
+      'This operation was aborted',
+      'AbortError',
+    )
+    const stream = vi.fn<StreamFn>(async () => ({
+      fullStream: (async function* () {
+        yield textDelta('部分输出')
+        throw abortError
+      })(),
+    }))
+    const agent = {
+      stream,
+      generate: vi.fn(),
+      hasOwnMemory: () => true,
+    } as unknown as Agent
+    const chunks: StreamChunk[] = []
+    await expect(
+      (async () => {
+        for await (const chunk of new MastraAdapter(agent).chatStream(
+          request(),
+        ))
+          chunks.push(chunk)
+      })(),
+    ).rejects.toBe(abortError)
+    expect(chunks).toEqual([{ type: 'text', content: '部分输出' }])
+  })
+
+  it('零事件空流正常结束，产出零 chunk', async () => {
+    const { agent } = fakeAgent([])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(chunks).toEqual([])
+  })
+
+  it('工具与文本交错：chunk 产出顺序与输入事件顺序一致', async () => {
+    const { agent } = fakeAgent([
+      textDelta('先查一下'),
+      toolStart('call_1', 'get_weather'),
+      toolDelta('call_1', '{"city":"Beijing"}'),
+      toolEnd('call_1'),
+      textDelta('北京 25 度'),
+    ])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(chunks).toEqual([
+      { type: 'text', content: '先查一下' },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 'call_1', toolName: 'get_weather' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 'call_1',
+          toolName: 'get_weather',
+          toolArguments: { city: 'Beijing' },
+        },
+      },
+      { type: 'text', content: '北京 25 度' },
+    ])
+  })
+
+  it('双工具并发交错：参数按 toolCallId 互不污染，帧序正确', async () => {
+    const { agent } = fakeAgent([
+      toolStart('t1', 'get_time'),
+      toolStart('t2', 'get_weather'),
+      toolDelta('t1', '{"a"'),
+      toolDelta('t2', '{"b":1}'),
+      toolDelta('t1', ':1}'),
+      toolEnd('t1'),
+      toolEnd('t2'),
+    ])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(chunks).toEqual([
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 't1', toolName: 'get_time' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: { toolCallId: 't2', toolName: 'get_weather' },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 't1',
+          toolName: 'get_time',
+          toolArguments: { a: 1 },
+        },
+      },
+      {
+        type: 'tool_call',
+        content: '',
+        metadata: {
+          toolCallId: 't2',
+          toolName: 'get_weather',
+          toolArguments: { b: 1 },
+        },
+      },
+    ])
+  })
+})
+
 describe('createMastraModel', () => {
-  it('name/description 缺省回退 id 与空串，provider 固定 mastra，adapter 为 MastraAdapter 实例', () => {
-    const model = createMastraModel({ id: 'demo', model: 'mock/mock-model' })
+  it('name/description 缺省回退 id 与空串，provider 固定 mastra，adapter 为 MastraAdapter 实例', async () => {
+    const model = await createMastraModel({
+      id: 'demo',
+      model: 'mock/mock-model',
+    })
     expect(model.info.name).toBe('demo')
     expect(model.info.description).toBe('')
     expect(model.info.provider).toBe('mastra')
     expect(model.adapter instanceof MastraAdapter).toBe(true)
   })
 
-  it('显式 name/description 优先，agent 字段携带可 stream/generate 的 Mastra Agent', () => {
-    const model = createMastraModel({
+  it('显式 name/description 优先，agent 字段携带可 stream/generate 的 Mastra Agent', async () => {
+    const model = await createMastraModel({
       id: 'demo',
       name: '演示模型',
       description: 'Mastra 演示服务',
@@ -455,7 +566,7 @@ describe('createMastraModel', () => {
   })
 
   it('chat() 返回的 model 为配置 id（工厂把 id 作为 modelId 透传给适配器）', async () => {
-    const model = createMastraModel({
+    const model = await createMastraModel({
       id: 'deepseek-chat',
       model: 'mock/mock-model',
     })
@@ -470,5 +581,27 @@ describe('createMastraModel', () => {
     expect(response.model).toBe('deepseek-chat')
     expect(generate).toHaveBeenCalledTimes(1)
     generate.mockRestore()
+  })
+})
+
+describe('createMastraModel 依赖缺失友好错误', () => {
+  it('@mastra/core 加载失败时抛含安装指引的错误，而非裸模块加载错误', async () => {
+    // vi.mock 是文件级提升，会让本文件其他用例的动态 import 全部失败；
+    // 改用 vi.doMock（调用后生效）+ resetModules 动态取 './index' 的新副本，
+    // mock 工厂抛错模拟 optional peer 缺失时的 ERR_MODULE_NOT_FOUND
+    vi.doMock('@mastra/core/agent', () => {
+      throw new Error('mock load fail')
+    })
+    vi.resetModules()
+    try {
+      const { createMastraModel: freshCreateMastraModel } =
+        await import('./index')
+      await expect(
+        freshCreateMastraModel({ id: 'demo', model: 'mock/mock-model' }),
+      ).rejects.toThrow('pnpm add @mastra/core')
+    } finally {
+      vi.doUnmock('@mastra/core/agent')
+      vi.resetModules()
+    }
   })
 })

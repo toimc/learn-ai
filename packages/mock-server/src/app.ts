@@ -10,8 +10,9 @@ import { attachMastraInstance } from './mastra/index'
 /**
  * 组装 mock 演示服务：@toimc/server 网关 + mock 剧本适配器 + 会话演示路由。
  * 线协议与前端 sse-adapter 完全一致（导出供测试用 app.request() 直接调用，不监听端口）。
+ * async：MASTRA_MODEL 存在时要等 createMastraModel（内部动态加载 @mastra/core）完成注册。
  */
-export function createMockApp() {
+export async function createMockApp() {
   const conversations = createConversationsRoutes()
 
   const registry = new ModelRegistry()
@@ -30,9 +31,9 @@ export function createMockApp() {
 
   // MASTRA_MODEL 存在时注册 Mastra Agent；缺省则行为与纯 mock 完全一致
   const mastraEnv = readMastraEnv(process.env)
-  let mastraAgent: ReturnType<typeof registerMastraAgent> | undefined
+  let mastraAgent: Awaited<ReturnType<typeof registerMastraAgent>> | undefined
   if (mastraEnv) {
-    mastraAgent = registerMastraAgent(registry, mastraEnv)
+    mastraAgent = await registerMastraAgent(registry, mastraEnv)
   }
 
   const app = createChatGateway({
@@ -63,4 +64,4 @@ export function createMockApp() {
   return app
 }
 
-export type MockApp = ReturnType<typeof createMockApp>
+export type MockApp = Awaited<ReturnType<typeof createMockApp>>
