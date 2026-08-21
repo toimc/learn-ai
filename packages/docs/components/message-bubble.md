@@ -5,7 +5,7 @@
 ## 基础用法
 
 <script setup lang="ts">
-import type { Message } from '@ai-chat/core'
+import type { Message } from '@toimc/core'
 
 const userMsg: Message = {
   id: '1', role: 'user', content: '这是一条用户消息', createdAt: new Date(),

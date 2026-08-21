@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Message } from '@ai-chat/core'
+import type { Message } from '@toimc/core'
 
 defineProps<{
   messages: Message[]

@@ -84,7 +84,7 @@ const seedConversations: ConversationDetail[] = [
           '2. 任何后端（OpenAI / Claude / 自建网关）实现一个 adapter 即可接入\n',
           '3. `core` 包保持零依赖，`vue` 包只做渲染，职责单向依赖\n\n',
           '```text\n',
-          '用户代码 → @ai-chat/vue → @ai-chat/core → ChatAdapter → 任意后端\n',
+          '用户代码 → @toimc/vue → @toimc/core → ChatAdapter → 任意后端\n',
           '```\n',
         ].join(''),
         '2026-08-18T16:00:45.000Z',

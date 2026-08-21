@@ -122,18 +122,38 @@ check_git_status() {
     log_success "Git 工作区干净"
 }
 
-# 设置 npm 认证
+# 设置 npm 认证（写入项目级临时 .npmrc，不污染全局配置，退出时自动清理）
+NPMRC_FILE="$PWD/.npmrc.publish"
+NPMRC_BACKUP=""
+
 setup_npm_auth() {
-    log_info "配置 npm 认证..."
+    log_info "配置 npm 认证（项目级临时 .npmrc）..."
     if [ "$DRY_RUN" = false ]; then
-        npm config set registry "$NPM_REGISTRY"
-        npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
-        npm config set registry "$NPM_REGISTRY"
-        log_success "npm 认证配置完成"
+        # 备份已有 .npmrc
+        if [ -f ".npmrc" ]; then
+            NPMRC_BACKUP=".npmrc.backup.$$"
+            cp ".npmrc" "$NPMRC_BACKUP"
+        fi
+        cat > "$NPMRC_FILE" <<EOF
+@toimc:registry=$NPM_REGISTRY
+//registry.npmjs.org/:_authToken=$NPM_TOKEN
+EOF
+        cp "$NPMRC_FILE" ".npmrc"
+        cleanup_npm_auth
+        log_success "npm 认证配置完成（退出时自动还原）"
     else
         log_info "DRY_RUN: 跳过 npm 认证配置"
     fi
 }
+
+# 清理认证文件（trap 调用）
+cleanup_npm_auth() {
+    rm -f "$NPMRC_FILE" ".npmrc"
+    if [ -n "$NPMRC_BACKUP" ] && [ -f "$NPMRC_BACKUP" ]; then
+        mv "$NPMRC_BACKUP" ".npmrc"
+    fi
+}
+trap cleanup_npm_auth EXIT INT TERM
 
 # 使用 changeset 管理版本
 run_changeset() {
@@ -231,7 +251,9 @@ publish_package() {
 
     if [ "$DRY_RUN" = false ]; then
         cd "$pkg_dir"
-        npm publish --access public
+        # 必须用 pnpm publish：自动把 workspace:* 替换为真实版本号（npm publish 不认识该协议）
+        # --no-git-checks：跳过分支与远端同步检查（CI / 领先远端场景）
+        pnpm publish --access public --no-git-checks
         cd "$ROOT_DIR"
     else
         log_info "DRY_RUN: 跳过发布 $pkg_name"

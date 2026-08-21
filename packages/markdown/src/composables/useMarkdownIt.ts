@@ -3,7 +3,7 @@ import taskLists from 'markdown-it-task-lists'
 import texmath from 'markdown-it-texmath'
 import katex from 'katex'
 // FR-4（spec 04）：KaTeX 样式不再模块级隐式注入（避免全局 @font-face 污染宿主）。
-// 需要公式渲染样式的宿主按需引入：import '@ai-chat/markdown/katex.css'
+// 需要公式渲染样式的宿主按需引入：import '@toimc/markdown/katex.css'
 
 // markdown-it 15 默认导出为 callable 包装(值)，实例类型需用 InstanceType 推导
 let instance: InstanceType<typeof MarkdownIt> | null = null

@@ -34,7 +34,7 @@
 - `globals: true`：`describe` / `it` / `expect` 无需 import
 - `environment: 'jsdom'`：全局 DOM 环境
 - `include: ['packages/*/src/**/*.{test,spec}.{ts,tsx}']`：测试文件放在被测模块旁（`foo.ts` ↔ `foo.test.ts`），不集中建 `__tests__` 目录
-- `@ai-chat/core` 别名指向 `packages/core/src/index.ts`：包 exports 指向 dist 产物，测试内的值导入统一走源码解析
+- `@toimc/core` 别名指向 `packages/core/src/index.ts`：包 exports 指向 dist 产物，测试内的值导入统一走源码解析
 
 ### 根级 tests/setup.ts
 
@@ -62,7 +62,7 @@
 
 ## 写集成测试：宿主视角
 
-以 `packages/vue/src/integration/chat-flow.test.ts` 为例。思路：用与真实宿主（playground 的 MockServerDemo）一致的组装方式，把 `Conversation` / `Message` / `PromptInput` 与 `@ai-chat/core` 的 `useChat` 拼成一个内联 `ChatFlowDemo`，端到端验证「输入 → 发送 → 流式回复上屏」整条链路。
+以 `packages/vue/src/integration/chat-flow.test.ts` 为例。思路：用与真实宿主（playground 的 MockServerDemo）一致的组装方式，把 `Conversation` / `Message` / `PromptInput` 与 `@toimc/core` 的 `useChat` 拼成一个内联 `ChatFlowDemo`，端到端验证「输入 → 发送 → 流式回复上屏」整条链路。
 
 ### 第一步：mock adapter 模拟后端流
 

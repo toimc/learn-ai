@@ -5,7 +5,8 @@ import PromptInputAttachments from './PromptInputAttachments.vue'
 import ImageLightbox from '../preview/ImageLightbox.vue'
 import { PROMPT_INPUT_KEY, type PromptInputContext } from './context'
 import type { PendingFile } from '../composables/usePendingFiles'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
+import { setAiChatLocale } from '../locales'
 
 function makeFile(name: string, type: string, size = 1024): File {
   return new File([new ArrayBuffer(size)], name, { type })
@@ -56,6 +57,8 @@ function mountAttachments(
 
 afterEach(() => {
   vi.restoreAllMocks()
+  // 组件文案走 aiChatI18n 单例 t()，复位 locale 防止跨文件残留（默认 zh-CN 对齐下方断言）
+  setAiChatLocale('zh-CN', { persist: false })
 })
 
 describe('PromptInputAttachments 渲染', () => {

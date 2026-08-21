@@ -1,4 +1,4 @@
-import type { StreamChunk } from '@ai-chat/core'
+import type { StreamChunk } from '@toimc/core'
 
 /** 传输层消息 DTO：Date 序列化为 ISO 字符串 */
 export interface ToolCallDTO {
@@ -49,7 +49,7 @@ export interface ChatRequestBody {
   speed?: number
 }
 
-/** SSE 帧里的 data 载荷与 @ai-chat/core 的 StreamChunk 保持同构 */
+/** SSE 帧里的 data 载荷与 @toimc/core 的 StreamChunk 保持同构 */
 export type SseChunkPayload = StreamChunk
 
 export interface ChatResponseBody {

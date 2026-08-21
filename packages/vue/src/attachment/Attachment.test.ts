@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import AttachmentShell from './Attachment.vue'
 import AttachmentInfo from './AttachmentInfo.vue'
 

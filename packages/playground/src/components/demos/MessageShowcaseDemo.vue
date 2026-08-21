@@ -5,7 +5,7 @@ import {
   MessageActions,
   MessageAction,
   aiChatI18n,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global

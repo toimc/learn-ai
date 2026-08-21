@@ -116,7 +116,7 @@ pnpm add -D -w @changesets/cli
 ### Q: 如何回滚发布？
 ```bash
 # 从 npm 撤销包
-npm unpublish @ai-chat/core@version --force
+npm unpublish @toimc/core@version --force
 
 # 恢复 git 状态
 git reset --hard HEAD~1

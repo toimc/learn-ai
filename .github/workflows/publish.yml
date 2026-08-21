@@ -81,8 +81,8 @@ jobs:
 
             ## Published Packages
 
-            - @ai-chat/core@${{ github.ref_name }}
-            - @ai-chat/vue@${{ github.ref_name }}
-            - @ai-chat/markdown@${{ github.ref_name }}
+            - @toimc/core@${{ github.ref_name }}
+            - @toimc/vue@${{ github.ref_name }}
+            - @toimc/markdown@${{ github.ref_name }}
           draft: false
           prerelease: false

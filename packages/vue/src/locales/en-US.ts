@@ -13,6 +13,10 @@ export default {
       'AI Chat UI may produce inaccurate information. Please double-check.',
     send: 'Send',
     stop: 'Stop',
+    previewAttachment: 'Preview {name}',
+    removeAttachment: 'Remove {name}',
+    uploading: 'Uploading',
+    uploadFailed: 'Upload failed',
   },
   conversation: {
     emptyTitle: 'How can I help you?',
@@ -48,5 +52,10 @@ export default {
     title: 'Thinking Process',
     thoughtFor: 'Thought for {duration}s',
     thinking: 'Thinking…',
+  },
+  imageLightbox: {
+    previewTitle: 'Image preview',
+    prevImage: 'Previous image',
+    nextImage: 'Next image',
   },
 } satisfies MessageSchema

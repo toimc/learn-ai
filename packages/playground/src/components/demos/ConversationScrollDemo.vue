@@ -6,7 +6,7 @@ import {
   ConversationScrollBtn,
   Message,
   MessageContent,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 // 交互演示：长列表滚动 + isAtBottom 检测 + ConversationScrollBtn 回到底部
 const scrollRef = ref<HTMLElement>()

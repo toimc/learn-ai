@@ -1,7 +1,7 @@
 # Vue 生态大模型实时流 Markdown 渲染方案调研
 
 > 调研日期：2026-06-18
-> 调研对象：`@ai-chat/markdown` 包从「正则 MVP」升级到「面向大模型实时流会话」的成熟 Markdown 渲染方案
+> 调研对象：`@toimc/markdown` 包从「正则 MVP」升级到「面向大模型实时流会话」的成熟 Markdown 渲染方案
 > 目标特性：代码高亮、数学公式、图表、高性能、实时流式渲染、Vue 3 集成
 
 ---
@@ -49,7 +49,7 @@ function simpleMarkdown(text: string): string {
 | 图表 | 支持 Mermaid 流程图/时序图等 |
 | 性能 | 长对话、大段输出不卡顿 |
 | 实时流式 | **核心难点**——逐 token 到达时增量渲染、无闪烁 |
-| Vue 3 | 与 `@ai-chat/vue` 组件、ChatAdapter 流式架构无缝集成 |
+| Vue 3 | 与 `@toimc/vue` 组件、ChatAdapter 流式架构无缝集成 |
 
 ---
 
@@ -224,7 +224,7 @@ Mermaid 官方 README「Security and safe diagrams」指出：
 1. **完全可控**：解析→高亮→消毒→渲染全链路可定制
 2. **体积可控**：Shiki grammar / KaTeX CSS / Mermaid 全部按需动态加载
 3. **流式可定制**：节流、容错截断、增量渲染深度适配 ChatAdapter 的 `for await` 流
-4. **与现有架构无缝**：`@ai-chat/vue` 的 `StreamText` 流式光标、`useTheme` 暗色、CSS Variables 主题（`--ai-chat-*`）天然对接
+4. **与现有架构无缝**：`@toimc/vue` 的 `StreamText` 流式光标、`useTheme` 暗色、CSS Variables 主题（`--ai-chat-*`）天然对接
 
 来源：[md-editor-v3](https://github.com/imzbf/md-editor-v3)、[vue-markdown](https://github.com/shunnNet/vue-markdown)
 
@@ -386,7 +386,7 @@ const rendered = computed(() =>
 - Shiki grammar 按需 bundle，绝不全量
 - KaTeX CSS 按需引入
 - Mermaid 动态 `import()`，主包零成本
-- `@ai-chat/markdown` 保持 **optional**（`@ai-chat/vue` 不强依赖，用户按需引入）——现状已是如此
+- `@toimc/markdown` 保持 **optional**（`@toimc/vue` 不强依赖，用户按需引入）——现状已是如此
 
 ---
 
@@ -430,7 +430,7 @@ const rendered = computed(() =>
 
 - 现有骨架：`packages/markdown/src/{MarkdownRenderer,CodeBlock,LatexBlock}.vue`
 - 已知坑修复：commit `47e2db7`（代码块换行穿透 `<pre>`）
-- 架构约束：`@ai-chat/markdown` 为 optional 包，`@ai-chat/vue` 不强依赖
+- 架构约束：`@toimc/markdown` 为 optional 包，`@toimc/vue` 不强依赖
 
 ---
 

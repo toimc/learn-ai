@@ -49,8 +49,8 @@ interface ChatAdapter {
 
 <script setup>
 import { ref } from 'vue'
-import { useChat } from '@ai-chat/core'
-import { mockAdapter } from '@ai-chat/playground'
+import { useChat } from '@toimc/core'
+import { mockAdapter } from '@toimc/playground'
 
 const chat = useChat(mockAdapter)
 const errorInfo = ref('')

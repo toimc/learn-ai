@@ -4,10 +4,10 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@ai-chat/core": ["../core/src"],
-      "@ai-chat/vue": ["../vue/src"],
-      "@ai-chat/markdown": ["../markdown/src"],
-      "@ai-chat/playground": ["../playground/src"]
+      "@toimc/core": ["../core/src"],
+      "@toimc/vue": ["../vue/src"],
+      "@toimc/markdown": ["../markdown/src"],
+      "@toimc/playground": ["../playground/src"]
     },
     "types": ["vitepress"]
   },

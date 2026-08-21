@@ -56,7 +56,7 @@ function showPlacementToast(placement: ToastPlacement) {
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Toast } from '@ai-chat/vue'
+import { Toast } from '@toimc/vue'
 
 const visible = ref(false)
 </script>

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useMarkdownRenderer } from '../composables/useMarkdownRenderer'
 import ThinkingBlock from '../thinking/ThinkingBlock.vue'
-import type { ThinkingInfo } from '@ai-chat/core'
+import type { ThinkingInfo } from '@toimc/core'
 
 const props = defineProps<{
   content?: string

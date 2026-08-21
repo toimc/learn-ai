@@ -67,7 +67,7 @@
 import { ref } from 'vue'
 import {
   Conversation, ConversationContent, Message, MessageContent,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 const layout = ref<'stacked' | 'im'>('stacked')
 const messageAlign = ref<'left' | 'right'>('right')
@@ -105,10 +105,10 @@ const messageAlign = ref<'left' | 'right'>('right')
 
 ```vue
 <script setup lang="ts">
-import type { ThinkingInfo } from '@ai-chat/core'
+import type { ThinkingInfo } from '@toimc/core'
 import {
   Message, MessageContent, MessageActions, MessageAction,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 const thinking: ThinkingInfo = {
   content: '用户要一句话解释，压缩到核心痛点…',
@@ -153,7 +153,7 @@ const message = {
 import { ref, nextTick } from 'vue'
 import {
   Conversation, ConversationContent, ConversationScrollBtn,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 const scrollRef = ref<HTMLElement>()
 const isAtBottom = ref(true)
@@ -188,10 +188,10 @@ function scrollToBottom() {
 
 ```vue
 <script setup lang="ts">
-import { useChat } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
 import {
   Conversation, ConversationContent, ConversationEmpty
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 const chat = useChat(adapter)
 </script>

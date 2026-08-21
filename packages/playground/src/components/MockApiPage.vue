@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { aiChatI18n } from '@ai-chat/vue'
+import { aiChatI18n } from '@toimc/vue'
 import { checkHealth } from '../mock/sse-adapter'
 import '../locales' // 副作用：合并 pg 字典
 

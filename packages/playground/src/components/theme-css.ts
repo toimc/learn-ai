@@ -1,4 +1,4 @@
-import type { TokenMeta } from '@ai-chat/vue'
+import type { TokenMeta } from '@toimc/vue'
 
 export type Overrides = Record<string, { light?: string; dark?: string }>
 

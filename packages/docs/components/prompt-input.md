@@ -106,7 +106,7 @@
 配置 `beforeSend` 后，发送时附件会先经过该钩子上传（期间附件项显示呼吸遮罩），resolve 返回的 `Attachment[]` 随 `send` 事件抛出；上传失败自动回置 `error` 态并 Toast：
 
 ```ts
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 
 async function upload(files: File[]): Promise<Attachment[]> {
   const form = new FormData()

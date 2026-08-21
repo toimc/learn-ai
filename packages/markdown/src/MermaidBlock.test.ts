@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { aiChatI18n } from '@ai-chat/vue'
+import { aiChatI18n } from '@toimc/vue'
 
 const { renderMock } = vi.hoisted(() => ({ renderMock: vi.fn() }))
 vi.mock('mermaid', () => ({

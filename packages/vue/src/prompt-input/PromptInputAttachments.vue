@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, inject, ref } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import { ImageLightbox } from '../preview'
+import { aiChatI18n } from '../locales'
 import { PROMPT_INPUT_KEY } from './context'
 import { formatFileSize } from '../utils/format'
 import { getFileIcon } from '../utils/media'
 import type { PendingFile } from '../composables/usePendingFiles'
 
 const { pendingFiles, remove } = inject(PROMPT_INPUT_KEY)!
+const { t } = aiChatI18n.global
 
 const instance = getCurrentInstance()
 
@@ -71,7 +73,7 @@ function openPreview(p: PendingFile) {
         v-if="isImage(p)"
         type="button"
         class="ai-chat-prompt-attachments__thumb"
-        :aria-label="`预览 ${p.file.name}`"
+        :aria-label="t('promptInput.previewAttachment', { name: p.file.name })"
         @click="openPreview(p)"
       >
         <img :src="p.previewUrl" :alt="p.file.name" />
@@ -97,17 +99,17 @@ function openPreview(p: PendingFile) {
         <span class="ai-chat-prompt-attachments__size">{{
           formatFileSize(p.file.size)
         }}</span>
-        <span v-if="p.status === 'uploading'" class="ai-chat-sr-only"
-          >上传中</span
-        >
-        <span v-else-if="p.status === 'error'" class="ai-chat-sr-only"
-          >上传失败</span
-        >
+        <span v-if="p.status === 'uploading'" class="ai-chat-sr-only">{{
+          t('promptInput.uploading')
+        }}</span>
+        <span v-else-if="p.status === 'error'" class="ai-chat-sr-only">{{
+          t('promptInput.uploadFailed')
+        }}</span>
       </div>
       <button
         type="button"
         class="ai-chat-prompt-attachments__remove"
-        :aria-label="`移除 ${p.file.name}`"
+        :aria-label="t('promptInput.removeAttachment', { name: p.file.name })"
         @click="remove(p.id)"
       >
         <svg

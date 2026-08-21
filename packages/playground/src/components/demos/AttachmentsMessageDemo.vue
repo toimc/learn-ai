@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import {
   Message,
   MessageContent,
@@ -7,7 +7,7 @@ import {
   Attachment as AttachmentCard,
   AttachmentPreview,
   AttachmentInfo,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 // 图片附件：走 URL 缩略图；文件附件：走类型图标 + 名称/大小
 // 缩略图用内联 SVG data URI，离线可见

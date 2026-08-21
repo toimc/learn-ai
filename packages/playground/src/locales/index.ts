@@ -1,4 +1,4 @@
-import { aiChatI18n } from '@ai-chat/vue'
+import { aiChatI18n } from '@toimc/vue'
 
 const zhCN = {
   sidebar: {

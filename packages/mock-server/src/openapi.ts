@@ -13,7 +13,7 @@ export const openApiSpec = {
       '\n\n**执行说明**：页面上的 Test Request 会直接请求 `http://localhost:8787`（已开 CORS）。',
       '请先在项目根目录运行 `pnpm dev` 同时启动文档站与本服务。',
       '\n\n**SSE 线格式**：`POST /api/chat` 的每个事件为 `event: chunk` + `data: <StreamChunk JSON>`，',
-      '与 `@ai-chat/core` 的 `StreamChunk` 同构（text / thinking / tool_call / tool_result / error / done）。',
+      '与 `@toimc/core` 的 `StreamChunk` 同构（text / thinking / tool_call / tool_result / error / done）。',
     ].join(''),
   },
   servers: [{ url: 'http://localhost:8787', description: '本地 mock 服务' }],
@@ -351,7 +351,7 @@ export const openApiSpec = {
       },
       StreamChunk: {
         type: 'object',
-        description: '与 @ai-chat/core 的 StreamChunk 同构',
+        description: '与 @toimc/core 的 StreamChunk 同构',
         properties: {
           type: {
             type: 'string',

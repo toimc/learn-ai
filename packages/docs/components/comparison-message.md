@@ -16,7 +16,7 @@ A/B 偏好对比组件：左右双列并排展示两个候选回复，每列底�
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ComparisonMessage } from '@ai-chat/vue'
+import { ComparisonMessage } from '@toimc/vue'
 
 const last = ref<{ chosen: 'A' | 'B'; left: string; right: string } | null>(null)
 </script>

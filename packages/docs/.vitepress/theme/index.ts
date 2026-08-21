@@ -49,10 +49,10 @@ import {
   Toast,
   // Markdown renderer inject key
   markdownRendererKey,
-} from '@ai-chat/vue'
-import { MarkdownRenderer, CodeBlock, LatexBlock } from '@ai-chat/markdown'
+} from '@toimc/vue'
+import { MarkdownRenderer, CodeBlock, LatexBlock } from '@toimc/markdown'
 // FR-4（spec 04）：KaTeX 样式已改为可选子路径，docs 站显式引入保持公式渲染体验。
-// docs 走 workspace 源码别名，直接引源码 css；发布包对应 '@ai-chat/markdown/katex.css'
+// docs 走 workspace 源码别名，直接引源码 css；发布包对应 '@toimc/markdown/katex.css'
 import '../../../markdown/src/styles/katex.css'
 
 import DemoContainer from '../components/DemoContainer.vue'
@@ -68,7 +68,7 @@ import {
   ThinkingMessageDemo,
   ComparisonFlowDemo,
   AttachmentsMessageDemo,
-} from '@ai-chat/playground'
+} from '@toimc/playground'
 
 import './style.css'
 

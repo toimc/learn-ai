@@ -55,11 +55,11 @@
 
 ## 4. 第三方 CSS
 
-引入第三方样式必须走包的**可选子路径导出**(如 `@ai-chat/markdown/katex.css`)，由宿主显式 import。禁止在库代码中模块级 `import 'xxx.css'` 隐式注入——宿主无法 opt-out，也无法 tree-shake。
+引入第三方样式必须走包的**可选子路径导出**(如 `@toimc/markdown/katex.css`)，由宿主显式 import。禁止在库代码中模块级 `import 'xxx.css'` 隐式注入——宿主无法 opt-out，也无法 tree-shake。
 
 ```ts
 // 正例：宿主按需引入(文档写明用法)
-import '@ai-chat/markdown/katex.css'
+import '@toimc/markdown/katex.css'
 
 // 反例：包源码强制注入，所有使用方被动背上 ~25KB CSS + 字体下载
 import 'katex/dist/katex.min.css'

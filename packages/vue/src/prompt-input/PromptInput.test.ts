@@ -3,7 +3,7 @@ import { defineComponent, h, inject } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import PromptInput from './PromptInput.vue'
 import { PROMPT_INPUT_KEY, type PromptInputContext } from './context'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 
 function png(name = 'a.png', size = 1024) {
   return new File([new ArrayBuffer(size)], name, { type: 'image/png' })

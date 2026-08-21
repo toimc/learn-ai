@@ -53,7 +53,7 @@ const { resolvedTheme, toggleTheme } = useTheme({ target: 'component', persist: 
 
 ```vue
 <script setup lang="ts">
-import { useTheme } from '@ai-chat/vue'
+import { useTheme } from '@toimc/vue'
 
 const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
 // theme: 'light' | 'dark' | 'system'
@@ -115,7 +115,7 @@ const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
 | `warm` | 暖橙 | `#ea580c` |
 
 ```ts
-import { presets, type PresetKey } from '@ai-chat/vue'
+import { presets, type PresetKey } from '@toimc/vue'
 
 const purple = presets.purple // { name: '优雅紫', vars: {...} }
 ```

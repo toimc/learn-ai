@@ -1,4 +1,4 @@
-import type { StreamChunk } from '@ai-chat/core'
+import type { StreamChunk } from '@toimc/core'
 import { nextId } from './data/conversations'
 
 export interface ScriptedChunk {

@@ -1,5 +1,5 @@
 {
-  "name": "@ai-chat/markdown",
+  "name": "@toimc/markdown",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -21,8 +21,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ai-chat/core": "workspace:*",
-    "@ai-chat/vue": "workspace:*",
+    "@toimc/core": "workspace:*",
+    "@toimc/vue": "workspace:*",
     "@shikijs/stream": "^4.4.3",
     "dompurify": "^3.4.13",
     "katex": "^0.18.4",

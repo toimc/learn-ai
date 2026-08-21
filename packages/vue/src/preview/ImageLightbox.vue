@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
+import { aiChatI18n } from '../locales'
+
+const { t } = aiChatI18n.global
 
 const props = withDefaults(
   defineProps<{
@@ -73,14 +76,14 @@ onBeforeUnmount(() => {
       class="ai-chat-lightbox__overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="图片预览"
+      :aria-label="t('imageLightbox.previewTitle')"
       tabindex="-1"
       @click.self="emit('close')"
     >
       <button
         class="ai-chat-lightbox__nav ai-chat-lightbox__prev"
         type="button"
-        aria-label="上一张"
+        :aria-label="t('imageLightbox.prevImage')"
         @click="prev"
       >
         <svg
@@ -107,7 +110,7 @@ onBeforeUnmount(() => {
       <button
         class="ai-chat-lightbox__nav ai-chat-lightbox__next"
         type="button"
-        aria-label="下一张"
+        :aria-label="t('imageLightbox.nextImage')"
         @click="next"
       >
         <svg
@@ -128,7 +131,7 @@ onBeforeUnmount(() => {
       <button
         class="ai-chat-lightbox__close"
         type="button"
-        aria-label="关闭"
+        :aria-label="t('shared.close')"
         @click="emit('close')"
       >
         <svg

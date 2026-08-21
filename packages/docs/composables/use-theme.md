@@ -60,7 +60,7 @@ export interface UseThemeOptions {
 点击按钮在亮 / 暗之间切换（会切换整页主题）：
 
 <script setup>
-import { useTheme } from '@ai-chat/vue'
+import { useTheme } from '@toimc/vue'
 const { resolvedTheme, toggleTheme } = useTheme()
 </script>
 
@@ -70,7 +70,7 @@ const { resolvedTheme, toggleTheme } = useTheme()
 
 ```vue
 <script setup lang="ts">
-import { useTheme } from '@ai-chat/vue'
+import { useTheme } from '@toimc/vue'
 
 const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
 
@@ -95,7 +95,7 @@ toggleTheme()
 
 ```vue
 <script setup lang="ts">
-import { useTheme } from '@ai-chat/vue'
+import { useTheme } from '@toimc/vue'
 
 const { resolvedTheme, toggleTheme } = useTheme({ target: 'component', persist: false })
 </script>

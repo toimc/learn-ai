@@ -1,4 +1,4 @@
-import type { ChatAdapter, StreamChunk, Message } from '@ai-chat/core'
+import type { ChatAdapter, StreamChunk, Message } from '@toimc/core'
 
 async function* mockTextResponse(): AsyncGenerator<StreamChunk> {
   const lines = [

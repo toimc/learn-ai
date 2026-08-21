@@ -7,9 +7,9 @@
 核心调用链：
 
 ```text
-用户应用 -> @ai-chat/vue -> @ai-chat/core -> ChatAdapter -> 用户实现的 AI 后端
+用户应用 -> @toimc/vue -> @toimc/core -> ChatAdapter -> 用户实现的 AI 后端
                          \
-                          -> @ai-chat/markdown
+                          -> @toimc/markdown
 ```
 
 ## 技术栈
@@ -28,9 +28,9 @@
 
 ## 包与依赖关系
 
-- `packages/core`：`@ai-chat/core`，核心类型、`ChatAdapter`、`useChat` 和工具函数；不依赖其他工作区包。
-- `packages/vue`：`@ai-chat/vue`，Vue 组件、composables、Design Token；依赖 `core`，可选依赖 `markdown`，peer 依赖 Vue。
-- `packages/markdown`：`@ai-chat/markdown`，Markdown、代码高亮、公式和 Mermaid 渲染；依赖 `core`、`vue`。
+- `packages/core`：`@toimc/core`，核心类型、`ChatAdapter`、`useChat` 和工具函数；不依赖其他工作区包。
+- `packages/vue`：`@toimc/vue`，Vue 组件、composables、Design Token；依赖 `core`，可选依赖 `markdown`，peer 依赖 Vue。
+- `packages/markdown`：`@toimc/markdown`，Markdown、代码高亮、公式和 Mermaid 渲染；依赖 `core`、`vue`。
 - `packages/playground`：私有演示包，提供 Playground 页面、mock adapter 和 mock messages。
 - `packages/docs`：私有 VitePress 文档站，集成所有包与 Playground。
 

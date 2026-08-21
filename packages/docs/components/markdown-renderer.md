@@ -2,7 +2,7 @@
 
 轻量 Markdown 渲染器，支持标题、加粗、斜体、行内代码和代码块。
 
-> **公式为可选能力**：LaTeX 公式渲染所需的 KaTeX 样式不会自动注入，需手动 `import '@ai-chat/markdown/katex.css'`（详见[安装指南](/guide/installation)）。不引入时公式以纯文本呈现，其余功能不受影响。
+> **公式为可选能力**：LaTeX 公式渲染所需的 KaTeX 样式不会自动注入，需手动 `import '@toimc/markdown/katex.css'`（详见[安装指南](/guide/installation)）。不引入时公式以纯文本呈现，其余功能不受影响。
 
 ## 基础用法
 

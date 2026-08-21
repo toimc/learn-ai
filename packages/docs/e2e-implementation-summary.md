@@ -225,9 +225,9 @@ ai-chat-ui/
 ## 📚 相关文档
 
 - [E2E 测试指南](/guide/e2e-testing) - 用户使用指南
-- [E2E 测试 README](./e2e/README.md) - 详细使用说明
+- E2E 测试 README（仓库 `e2e/README.md`）- 详细使用说明
 - [Playwright 官方文档](https://playwright.dev) - 官方参考
-- [项目 CLAUDE.md](./CLAUDE.md) - 开发规范
+- 项目 CLAUDE.md（仓库根目录）- 开发规范
 
 ---
 

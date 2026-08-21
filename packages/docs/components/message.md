@@ -92,7 +92,7 @@
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Message, MessageContent } from '@ai-chat/vue'
+import { Message, MessageContent } from '@toimc/vue'
 
 const streaming = ref(true)
 const message = ref({
@@ -141,8 +141,8 @@ async *sendMessage({ messages, signal }) {
 
 ```vue
 <script setup lang="ts">
-import type { Message } from '@ai-chat/core'
-import { Message, MessageContent, ComparisonMessage } from '@ai-chat/vue'
+import type { Message } from '@toimc/core'
+import { Message, MessageContent, ComparisonMessage } from '@toimc/vue'
 
 function onPrefer(
   msg: Message,
@@ -184,11 +184,11 @@ function onPrefer(
 
 ```vue
 <script setup lang="ts">
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import {
   Message, MessageContent, MessageAttachments,
   Attachment, AttachmentPreview, AttachmentInfo,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 const files: Attachment[] = [
   { id: 'att-1', name: '架构图.png', mediaType: 'image/png',

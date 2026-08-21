@@ -33,12 +33,12 @@
 ```
 ai-chat-ui/
 ├── packages/
-│   ├── core/                  # @ai-chat/core — 核心类型与 composables（零外部依赖）
+│   ├── core/                  # @toimc/core — 核心类型与 composables（零外部依赖）
 │   │   ├── src/types/         # Message, StreamChunk, ChatAdapter, ToolCallInfo
 │   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
 │   │   └── src/utils/         # generateId, createUserMessage, createAssistantMessage
 │   │
-│   ├── vue/                   # @ai-chat/vue — 33 个 Vue 3 组件
+│   ├── vue/                   # @toimc/vue — 33 个 Vue 3 组件
 │   │   └── src/
 │   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
 │   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
@@ -50,13 +50,13 @@ ai-chat-ui/
 │   │       ├── composables/   # useScrollAnchor
 │   │       └── utils/         # media.ts + format.ts
 │   │
-│   ├── markdown/              # @ai-chat/markdown — Markdown 渲染
+│   ├── markdown/              # @toimc/markdown — Markdown 渲染
 │   │   └── src/               # MarkdownRenderer / CodeBlock / LatexBlock
 │   │
-│   ├── mock-server/           # @ai-chat/mock-server — 本地 mock 服务端（私有，Hono + streamSSE）
+│   ├── mock-server/           # @toimc/mock-server — 本地 mock 服务端（私有，Hono + streamSSE）
 │   │   └── src/               # 会话种子数据 / SSE 场景剧本 / REST 路由 + OpenAPI 规范，pnpm dev 随文档站一起启动
 │   │
-│   └── docs/                  # @ai-chat/docs — VitePress 文档站
+│   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
 │           ├── components/    # PlaygroundDemo（完整 Playground）
 │           ├── theme/         # 全局组件注册
@@ -68,21 +68,21 @@ ai-chat-ui/
 ### 安装
 
 ```bash
-pnpm add @ai-chat/core @ai-chat/vue @ai-chat/markdown
+pnpm add @toimc/core @toimc/vue @toimc/markdown
 ```
 
 ### 基本用法
 
 ```vue
 <script setup lang="ts">
-import { useChat } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
 import {
   Conversation, ConversationContent, ConversationEmpty,
   Message, MessageContent, MessageActions, MessageAction,
   PromptInput, PromptInputTextarea, PromptInputSubmit,
   PromptInputFooter, PromptInputTools,
-} from '@ai-chat/vue'
-import type { ChatAdapter } from '@ai-chat/core'
+} from '@toimc/vue'
+import type { ChatAdapter } from '@toimc/core'
 
 const adapter: ChatAdapter = {
   async *sendMessage({ messages, signal }) {
@@ -199,7 +199,7 @@ const chat = useChat(adapter)
 
 ## 核心 API
 
-### @ai-chat/core
+### @toimc/core
 
 | 导出 | 类型 | 说明 |
 |------|------|------|
@@ -312,10 +312,10 @@ pnpm test:e2e:report   # 查看HTML报告
 
 | 包 | 版本 | 状态 |
 |------|------|------|
-| @ai-chat/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
-| @ai-chat/vue | 0.0.1 | 33 个 Vue 3 组件 + Design Token |
-| @ai-chat/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@ai-chat/markdown/katex.css` 可选引入） |
-| @ai-chat/docs | 私有 | VitePress 文档站 + Playground |
+| @toimc/core | 0.0.1 | ChatAdapter + useChat + ToolCallInfo |
+| @toimc/vue | 0.0.1 | 33 个 Vue 3 组件 + Design Token |
+| @toimc/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@toimc/markdown/katex.css` 可选引入） |
+| @toimc/docs | 私有 | VitePress 文档站 + Playground |
 
 ## License
 

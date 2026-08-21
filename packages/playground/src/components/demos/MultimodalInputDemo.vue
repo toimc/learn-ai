@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import {
   aiChatI18n,
   PromptInput,
@@ -11,7 +11,7 @@ import {
   PromptInputFooter,
   PromptInputTools,
   PromptInputUploadButton,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 import '../../locales' // 副作用：合并 pg 字典
 

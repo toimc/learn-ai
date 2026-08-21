@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import CodeBlock from './CodeBlock.vue'
-import { aiChatI18n } from '@ai-chat/vue'
+import { aiChatI18n } from '@toimc/vue'
 import { renderCodeFinal } from './composables/useShikiTokenizer'
 
 // 默认透传真实实现，仅在「高亮异常降级」用例里对单次调用注入 rejection

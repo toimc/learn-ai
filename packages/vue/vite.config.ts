@@ -11,11 +11,11 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.mjs' : 'index.cjs'),
     },
     rollupOptions: {
-      external: ['vue', '@ai-chat/core'],
+      external: ['vue', '@toimc/core'],
       output: {
         globals: {
           vue: 'Vue',
-          '@ai-chat/core': 'AiChatCore',
+          '@toimc/core': 'AiChatCore',
         },
       },
     },

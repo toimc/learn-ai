@@ -2,7 +2,7 @@
 
 LaTeX 公式显示组件。当前版本以斜体衬线字体渲染公式文本。
 
-> KaTeX 样式为可选引入：渲染公式排版需手动 `import '@ai-chat/markdown/katex.css'`（详见[安装指南](/guide/installation)），组件本身不注入任何全局样式或字体。
+> KaTeX 样式为可选引入：渲染公式排版需手动 `import '@toimc/markdown/katex.css'`（详见[安装指南](/guide/installation)），组件本身不注入任何全局样式或字体。
 
 ## 基础用法
 

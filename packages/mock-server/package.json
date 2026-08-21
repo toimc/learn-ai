@@ -1,5 +1,5 @@
 {
-  "name": "@ai-chat/mock-server",
+  "name": "@toimc/mock-server",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-chat/core": "workspace:*",
+    "@toimc/core": "workspace:*",
     "@hono/node-server": "^1.19.5",
     "hono": "^4.10.0"
   },

@@ -12,6 +12,10 @@ const zhCN = {
     disclaimer: 'AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性',
     send: '发送',
     stop: '停止',
+    previewAttachment: '预览 {name}',
+    removeAttachment: '移除 {name}',
+    uploading: '上传中',
+    uploadFailed: '上传失败',
   },
   conversation: {
     emptyTitle: '有什么可以帮你的？',
@@ -47,6 +51,11 @@ const zhCN = {
     title: '思考过程',
     thoughtFor: '已思考 {duration} 秒',
     thinking: '正在思考…',
+  },
+  imageLightbox: {
+    previewTitle: '图片预览',
+    prevImage: '上一张',
+    nextImage: '下一张',
   },
 }
 

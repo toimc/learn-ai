@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AttachmentPreview from './AttachmentPreview.vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 
 function mountPreview(data: Partial<Attachment> = {}) {
   return mount(AttachmentPreview, {

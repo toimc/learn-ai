@@ -1,4 +1,4 @@
-import { generateId, type Message } from '@ai-chat/core'
+import { generateId, type Message } from '@toimc/core'
 import { comparisonMock } from './mock-comparison'
 
 const baseTime = Date.now()
@@ -14,16 +14,16 @@ const archContent = [
   '整体数据流非常清晰：',
   '',
   '```text',
-  '用户代码 → @ai-chat/vue → @ai-chat/core → ChatAdapter → 任意后端',
+  '用户代码 → @toimc/vue → @toimc/core → ChatAdapter → 任意后端',
   '```',
   '',
   '## 三个核心包',
   '',
-  '`@ai-chat/core` 定义全部类型与 `useChat` composable，零外部依赖，是纯逻辑层。',
+  '`@toimc/core` 定义全部类型与 `useChat` composable，零外部依赖，是纯逻辑层。',
   '',
-  '`@ai-chat/vue` 提供 `Conversation`、`Message`、`PromptInput` 等 UI 组件，通过 peerDependencies 引入 Vue。',
+  '`@toimc/vue` 提供 `Conversation`、`Message`、`PromptInput` 等 UI 组件，通过 peerDependencies 引入 Vue。',
   '',
-  '`@ai-chat/markdown` 负责流式 Markdown 渲染，支持代码高亮与公式。',
+  '`@toimc/markdown` 负责流式 Markdown 渲染，支持代码高亮与公式。',
   '',
   '## 流式适配器示例',
   '',

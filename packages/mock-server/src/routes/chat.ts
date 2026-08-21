@@ -8,7 +8,7 @@ import type { ConversationsService } from './conversations'
 /**
  * POST /api/chat：消费消息历史，以 SSE 逐块返回 StreamChunk。
  *
- * 线格式（与 @ai-chat/core 的 StreamChunk 同构）：
+ * 线格式（与 @toimc/core 的 StreamChunk 同构）：
  *   event: chunk
  *   data: {"type":"text","content":"..."}
  */

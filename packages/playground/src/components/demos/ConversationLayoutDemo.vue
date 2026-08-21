@@ -5,7 +5,7 @@ import {
   ConversationContent,
   Message,
   MessageContent,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 
 // 交互演示：stacked（统一靠左）vs im（用户与 AI 分列两侧）+ 用户消息停靠侧
 const layout = ref<'stacked' | 'im'>('stacked')

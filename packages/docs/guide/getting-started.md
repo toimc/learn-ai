@@ -14,27 +14,27 @@ AI Chat UI 是一个后端无关的 AI 聊天界面组件库。通过 `ChatAdapt
 
 ```bash
 # 安装核心包（必须）
-pnpm add @ai-chat/core
+pnpm add @toimc/core
 
 # 安装 Vue 组件（必须）
-pnpm add @ai-chat/vue
+pnpm add @toimc/vue
 
 # 安装 Markdown 渲染（可选）
-pnpm add @ai-chat/markdown
+pnpm add @toimc/markdown
 ```
 
 如需渲染 LaTeX 公式，额外手动引入 KaTeX 样式（可选，不影响其他功能）：
 
 ```ts
-import '@ai-chat/markdown/katex.css'
+import '@toimc/markdown/katex.css'
 ```
 
 ## 最小示例
 
 ```vue
 <script setup lang="ts">
-import { useChat } from '@ai-chat/core'
-import type { ChatAdapter } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
+import type { ChatAdapter } from '@toimc/core'
 import {
   ChatWindow,
   MessageList,
@@ -43,8 +43,8 @@ import {
   PromptInputBody,
   PromptInputTextarea,
   PromptInputSubmit,
-} from '@ai-chat/vue'
-import { MarkdownRenderer } from '@ai-chat/markdown'
+} from '@toimc/vue'
+import { MarkdownRenderer } from '@toimc/markdown'
 
 // 1. 实现 ChatAdapter 接口
 const adapter: ChatAdapter = {

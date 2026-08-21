@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Message as ChatMessage } from '@ai-chat/core'
-import { generateId } from '@ai-chat/core'
+import type { Message as ChatMessage } from '@toimc/core'
+import { generateId } from '@toimc/core'
 import {
   Message,
   MessageContent,
@@ -9,7 +9,7 @@ import {
   MessageAction,
   ComparisonMessage,
   aiChatI18n,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 import { comparisonMock } from '../../mock/mock-comparison'
 import '../../locales' // 副作用：合并 pg 字典
 

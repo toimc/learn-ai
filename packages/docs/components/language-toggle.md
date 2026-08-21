@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { LanguageToggle } from '@ai-chat/vue'
+import { LanguageToggle } from '@toimc/vue'
 
 const localeLog = ref('尚未切换')
 
@@ -28,7 +28,7 @@ function onLocaleChange(l: string) {
 
 ```vue
 <script setup lang="ts">
-import { LanguageToggle } from '@ai-chat/vue'
+import { LanguageToggle } from '@toimc/vue'
 </script>
 
 <template>
@@ -57,7 +57,7 @@ import { LanguageToggle } from '@ai-chat/vue'
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { LanguageToggle, setAiChatLocale } from '@ai-chat/vue'
+import { LanguageToggle, setAiChatLocale } from '@toimc/vue'
 
 const locale = ref('zh-CN')
 

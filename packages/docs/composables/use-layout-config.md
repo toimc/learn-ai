@@ -38,7 +38,7 @@ function useLayoutConfig(
 ```vue
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Conversation, ConversationContent, Message, useLayoutConfig } from '@ai-chat/vue'
+import { Conversation, ConversationContent, Message, useLayoutConfig } from '@toimc/vue'
 
 const layoutMode = ref<'stacked' | 'im'>('stacked')
 const layout = useLayoutConfig(

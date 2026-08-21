@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
-import type { ToolCallInfo } from '@ai-chat/core'
+import type { ToolCallInfo } from '@toimc/core'
 import { aiChatI18n } from '../locales'
 
 const data = inject<ToolCallInfo>('toolCallData')!

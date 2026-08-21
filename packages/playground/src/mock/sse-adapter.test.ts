@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import type { StreamChunk } from '@ai-chat/core'
+import type { StreamChunk } from '@toimc/core'
 import { createSseAdapter, parseSseStream } from './sse-adapter'
 
 function sseBody(frames: string[]): ReadableStream<Uint8Array> {

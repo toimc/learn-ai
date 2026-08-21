@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { provide, ref } from 'vue'
-import type { ToolCallInfo } from '@ai-chat/core'
+import type { ToolCallInfo } from '@toimc/core'
 import ToolCallHeader from './ToolCallHeader.vue'
 import ToolCallContent from './ToolCallContent.vue'
 

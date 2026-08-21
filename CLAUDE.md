@@ -9,7 +9,7 @@ AI 聊天界面组件库 Monorepo，基于 Vue 3.5+ / TypeScript 5.x / Vite 6.x 
 Provider 抽象层模式：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端。
 
 ```
-用户代码 → @ai-chat/vue (UI) → @ai-chat/core (composables) → ChatAdapter 接口 → 用户实现
+用户代码 → @toimc/vue (UI) → @toimc/core (composables) → ChatAdapter 接口 → 用户实现
 ```
 
 ## 包依赖关系
@@ -32,7 +32,7 @@ pnpm type-check   # vue-tsc 类型检查
 pnpm clean        # 清理所有 dist
 ```
 
-## 核心类型（@ai-chat/core）
+## 核心类型（@toimc/core）
 
 - `Message`：消息模型（id/role/content/attachments/metadata/createdAt）
 - `StreamChunk`：流式块（type: text/tool_call/thinking/error/done）
@@ -213,4 +213,4 @@ mcp__playwright__browser_take_screenshot filename=”screenshot.png”
 - `docs/superpowers/spec/01-Markdown渲染组件需求-20260618.md`
 - `docs/superpowers/plans/01-Markdown渲染组件实施计划-20260618.md`
 
-**实施状态**：`@ai-chat/markdown` 流式渲染组件已实现并 `--no-ff` 合并至 `dev`（merge `d0dd151`）。5 阶段全部完成（解析内核 markdown-it+DOMPurify → Shiki 流式高亮 → KaTeX 公式 → Mermaid 沙箱图表 → 集成 + provide/inject 接入）。88/88 测试通过，markdown 包覆盖率 95/81/90/97，docs SSR 构建零警告。后续可优化项：流式增量着色（当前每块全量重挂载）、DOMPurify svg 白名单实为空操作可移除。
+**实施状态**：`@toimc/markdown` 流式渲染组件已实现并 `--no-ff` 合并至 `dev`（merge `d0dd151`）。5 阶段全部完成（解析内核 markdown-it+DOMPurify → Shiki 流式高亮 → KaTeX 公式 → Mermaid 沙箱图表 → 集成 + provide/inject 接入）。88/88 测试通过，markdown 包覆盖率 95/81/90/97，docs SSR 构建零警告。后续可优化项：流式增量着色（当前每块全量重挂载）、DOMPurify svg 白名单实为空操作可移除。

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
-import type { ToolCallInfo } from '@ai-chat/core'
+import type { ToolCallInfo } from '@toimc/core'
 import ToolCallInput from './ToolCallInput.vue'
 import ToolCallOutput from './ToolCallOutput.vue'
 

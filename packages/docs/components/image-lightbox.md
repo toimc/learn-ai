@@ -9,8 +9,8 @@
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ImageLightbox } from '@ai-chat/vue'
-import type { Attachment } from '@ai-chat/core'
+import { ImageLightbox } from '@toimc/vue'
+import type { Attachment } from '@toimc/core'
 
 const visible = ref(false)
 const previewIndex = ref(0)

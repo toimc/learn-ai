@@ -3,7 +3,7 @@ import type {
   Message,
   SendMessageOptions,
   StreamChunk,
-} from '@ai-chat/core'
+} from '@toimc/core'
 
 export interface SseAdapterOptions {
   baseUrl?: string
@@ -13,7 +13,7 @@ export interface SseAdapterOptions {
 
 const DEFAULT_BASE_URL = 'http://localhost:8787'
 
-/** 与 @ai-chat/mock-server 的线格式对应（Date 序列化为 ISO 字符串） */
+/** 与 @toimc/mock-server 的线格式对应（Date 序列化为 ISO 字符串） */
 export interface ConversationSummary {
   id: string
   title: string

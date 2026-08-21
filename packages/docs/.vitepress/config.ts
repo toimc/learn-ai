@@ -20,10 +20,10 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '@ai-chat/core': resolve(root, '../core/src/index.ts'),
-        '@ai-chat/vue': resolve(root, '../vue/src/index.ts'),
-        '@ai-chat/markdown': resolve(root, '../markdown/src/index.ts'),
-        '@ai-chat/playground': resolve(root, '../playground/src/index.ts'),
+        '@toimc/core': resolve(root, '../core/src/index.ts'),
+        '@toimc/vue': resolve(root, '../vue/src/index.ts'),
+        '@toimc/markdown': resolve(root, '../markdown/src/index.ts'),
+        '@toimc/playground': resolve(root, '../playground/src/index.ts'),
         // Scalar 免 React 的 standalone 构建（exports 未放行深路径，alias 绕过）
         '@scalar/api-reference-standalone': resolve(
           root,

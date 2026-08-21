@@ -45,7 +45,7 @@ export type PresetKey = 'default' | 'purple' | 'green' | 'warm'
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useThemePreset, type PresetKey } from '@ai-chat/vue'
+import { useThemePreset, type PresetKey } from '@toimc/vue'
 
 const root = ref<HTMLElement>()
 const preset = ref<PresetKey>('purple')

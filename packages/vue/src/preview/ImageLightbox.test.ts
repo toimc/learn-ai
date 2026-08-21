@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import ImageLightbox from './ImageLightbox.vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 
 const images: Attachment[] = [
   {

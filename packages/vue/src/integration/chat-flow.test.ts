@@ -1,7 +1,7 @@
 /**
  * 宿主视角集成测试范例（Testing Library 风格）：
  * 用与真实宿主一致的组装方式（参见 playground 的 MockServerDemo）把
- * Conversation / Message / MessageContent / PromptInput 与 @ai-chat/core
+ * Conversation / Message / MessageContent / PromptInput 与 @toimc/core
  * 的 useChat 拼成一个内联 ChatFlowDemo，端到端验证
  * 「输入 → 发送 → 流式回复上屏」整条链路。
  *
@@ -15,7 +15,7 @@ import '@testing-library/jest-dom/vitest'
 import { defineComponent, h } from 'vue'
 import { render, screen, cleanup } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
-import { useChat, type ChatAdapter, type StreamChunk } from '@ai-chat/core'
+import { useChat, type ChatAdapter, type StreamChunk } from '@toimc/core'
 import Conversation from '../conversation/Conversation.vue'
 import ConversationContent from '../conversation/ConversationContent.vue'
 import Message from '../message/Message.vue'

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import type { ToolCallInfo } from '@ai-chat/core'
+import type { ToolCallInfo } from '@toimc/core'
 import ToolCall from './ToolCall.vue'
 import ToolCallHeader from './ToolCallHeader.vue'
 import ToolCallContent from './ToolCallContent.vue'

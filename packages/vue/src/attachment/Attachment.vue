@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { provide } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 
 const props = defineProps<{
   data: Attachment

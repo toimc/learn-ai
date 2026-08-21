@@ -1,5 +1,5 @@
 import { onScopeDispose, ref } from 'vue'
-import { generateId } from '@ai-chat/core'
+import { generateId } from '@toimc/core'
 
 export interface PendingFile {
   id: string

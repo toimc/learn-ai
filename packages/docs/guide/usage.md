@@ -120,7 +120,7 @@ if (chunk.type === 'done') {
 ## 实现 OpenAI 兼容适配器
 
 ```typescript
-import type { ChatAdapter, StreamChunk } from '@ai-chat/core'
+import type { ChatAdapter, StreamChunk } from '@toimc/core'
 
 export const openaiAdapter: ChatAdapter = {
   async *sendMessage({ messages, signal }) {
@@ -168,7 +168,7 @@ export const openaiAdapter: ChatAdapter = {
 ## 实现简单 fetch 适配器
 
 ```typescript
-import type { ChatAdapter } from '@ai-chat/core'
+import type { ChatAdapter } from '@toimc/core'
 
 export const fetchAdapter: ChatAdapter = {
   async *sendMessage({ messages }) {
@@ -194,7 +194,7 @@ export const fetchAdapter: ChatAdapter = {
 ## useChat Composable
 
 ```typescript
-import { useChat } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
 
 const chat = useChat(adapter, {
   // 可选配置

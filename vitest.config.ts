@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // 包 exports 指向 dist/index.mjs 而构建产物是 index.js，测试内值导入走源码解析
-      '@ai-chat/core': fileURLToPath(
+      '@toimc/core': fileURLToPath(
         new URL('./packages/core/src/index.ts', import.meta.url),
       ),
     },

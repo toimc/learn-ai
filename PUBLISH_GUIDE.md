@@ -4,9 +4,9 @@
 
 本项目共有 **3个包** 需要发布到 npm：
 
-1. **`@ai-chat/core`** - 核心库（无依赖）
-2. **`@ai-chat/vue`** - Vue 组件库（依赖 core）
-3. **`@ai-chat/markdown`** - Markdown 渲染库（依赖 core + vue）
+1. **`@toimc/core`** - 核心库（无依赖）
+2. **`@toimc/vue`** - Vue 组件库（依赖 core）
+3. **`@toimc/markdown`** - Markdown 渲染库（依赖 core + vue）
 
 **发布顺序**：core → vue → markdown（按依赖关系）
 
@@ -164,7 +164,7 @@ A: 检查：
 
 ### Q: 如何回滚发布？
 A: 
-1. 立即从 npm 撤销包：`npm unpublish @ai-chat/core@version --force`
+1. 立即从 npm 撤销包：`npm unpublish @toimc/core@version --force`
 2. 修复问题
 3. 重新发布新版本
 

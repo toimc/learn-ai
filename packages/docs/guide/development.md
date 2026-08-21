@@ -7,16 +7,16 @@
 pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖方向单一，一条架构主线贯穿始终：
 
 ```
-宿主应用 → @ai-chat/vue (UI 组件) → @ai-chat/core (composables) → ChatAdapter 接口 → 用户实现
+宿主应用 → @toimc/vue (UI 组件) → @toimc/core (composables) → ChatAdapter 接口 → 用户实现
 ```
 
 组件与 AI 后端完全解耦：`core` 只定义接口与状态逻辑，后端对接由宿主通过实现 `ChatAdapter` 完成。
 
 | 包 | 职责 | 依赖 |
 |----|------|------|
-| `@ai-chat/core` | 核心类型（`Message` / `StreamChunk` / `ChatAdapter`）与 `useChat` 等 composables | **零外部依赖**，纯 TypeScript |
-| `@ai-chat/vue` | UI 组件与依赖 Vue 的 composables | 依赖 `core`，peer 依赖 `vue ^3.5.0` |
-| `@ai-chat/markdown` | Markdown 流式渲染（markdown-it + DOMPurify，Shiki / KaTeX / Mermaid 按需懒加载） | 依赖 `vue` |
+| `@toimc/core` | 核心类型（`Message` / `StreamChunk` / `ChatAdapter`）与 `useChat` 等 composables | **零外部依赖**，纯 TypeScript |
+| `@toimc/vue` | UI 组件与依赖 Vue 的 composables | 依赖 `core`，peer 依赖 `vue ^3.5.0` |
+| `@toimc/markdown` | Markdown 流式渲染（markdown-it + DOMPurify，Shiki / KaTeX / Mermaid 按需懒加载） | 依赖 `vue` |
 | `playground` | 私有演示包，承载 Playground 页面与 mock 数据，每个功能一个独立 Demo 组件 | 依赖上述三个包 |
 | `mock-server` | 私有 Mock 服务（Hono），为 Mock 演示页提供流式 SSE API | 依赖 `core` |
 | `docs` | VitePress 文档站（本站） | 依赖上述三个包与 `playground` |
@@ -45,7 +45,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 ### TypeScript
 
 - 全程保持 strict 模式；**禁止 `any`**，拿不准类型用 `unknown` + 收窄
-- **导出类型即公共 API**：跨包使用的类型（`Message` / `StreamChunk` / `ChatAdapter` 等）从 `@ai-chat/core` 统一导出，其他包 re-export，不各自复制定义
+- **导出类型即公共 API**：跨包使用的类型（`Message` / `StreamChunk` / `ChatAdapter` 等）从 `@toimc/core` 统一导出，其他包 re-export，不各自复制定义
 - **`core` 零依赖红线**：不向 core 引入任何运行时依赖
 - 流式输出统一 `AsyncGenerator<StreamChunk>`（`async *function` + `yield`），网络类操作必须支持 `AbortSignal`
 - 异步操作一律 `try-catch`，catch 中抛出面向用户可读的错误信息，不吞错
@@ -65,7 +65,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 - 所有库样式写进 `ai-chat-*` 级联层（`@layer`），层顺序只在 `tokens.css` 顶部声明一次；**严禁写未分层规则**
 - 禁止在组件内使用 `:root`、`*`、裸 `body`/`html`/裸元素选择器（仅 `tokens.css` 既定位置允许），禁止 `!important`
 - 颜色、圆角、动效一律引用 `--ai-chat-*` 变量，不硬编码色值
-- 第三方 CSS 走包的可选子路径导出（如 `@ai-chat/markdown/katex.css`），由宿主显式 import，禁止库代码隐式注入
+- 第三方 CSS 走包的可选子路径导出（如 `@toimc/markdown/katex.css`），由宿主显式 import，禁止库代码隐式注入
 
 ## Git 分支模型
 

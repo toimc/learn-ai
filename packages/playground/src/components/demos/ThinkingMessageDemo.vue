@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue'
-import type { ThinkingInfo } from '@ai-chat/core'
-import { Message, MessageContent, aiChatI18n } from '@ai-chat/vue'
+import type { ThinkingInfo } from '@toimc/core'
+import { Message, MessageContent, aiChatI18n } from '@toimc/vue'
 import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global

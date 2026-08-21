@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import { getAttachmentLabel } from '../utils/media'
 import { formatFileSize } from '../utils/format'
 

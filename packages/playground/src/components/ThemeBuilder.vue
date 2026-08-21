@@ -24,7 +24,7 @@ import {
   PromptInputTextarea,
   PromptInputSubmit,
   PromptInputFooter,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 import {
   buildThemeCss,
   buildOverridesFromCss,
@@ -786,7 +786,7 @@ function colorInputValue(t: TokenMeta, mode: 'light' | 'dark'): string {
           放进项目，在应用入口中<b>排在组件库样式之后</b>引入：
         </p>
         <pre class="tb-modal-code">
-import '@ai-chat/vue/style.css'
+import '@toimc/vue/style.css'
 import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
         <p class="tb-modal-hint">
           暗色覆盖写在 <code>[data-theme='dark']</code> 块里；用
@@ -813,7 +813,7 @@ import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
           在你的项目入口中，<b>排在组件库样式之后</b>引入它即可覆盖默认主题：
         </p>
         <pre class="tb-modal-code">
-import '@ai-chat/vue/style.css'
+import '@toimc/vue/style.css'
 import './ai-chat-theme.css'   // 你的自定义覆盖</pre>
         <details class="tb-modal-details">
           <summary>查看生成的 CSS</summary>

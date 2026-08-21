@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, provide, computed } from 'vue'
-import type { Attachment } from '@ai-chat/core'
+import type { Attachment } from '@toimc/core'
 import { usePendingFiles } from '../composables/usePendingFiles'
 import Toast from '../shared/Toast.vue'
 import { PROMPT_INPUT_KEY } from './context'

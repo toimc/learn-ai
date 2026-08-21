@@ -95,16 +95,16 @@ importers:
 
   packages/docs:
     dependencies:
-      '@ai-chat/core':
+      '@toimc/core':
         specifier: workspace:*
         version: link:../core
-      '@ai-chat/markdown':
+      '@toimc/markdown':
         specifier: workspace:*
         version: link:../markdown
-      '@ai-chat/playground':
+      '@toimc/playground':
         specifier: workspace:*
         version: link:../playground
-      '@ai-chat/vue':
+      '@toimc/vue':
         specifier: workspace:*
         version: link:../vue
       vue:
@@ -123,15 +123,15 @@ importers:
 
   packages/markdown:
     dependencies:
-      '@ai-chat/core':
-        specifier: workspace:*
-        version: link:../core
-      '@ai-chat/vue':
-        specifier: workspace:*
-        version: link:../vue
       '@shikijs/stream':
         specifier: ^4.4.3
         version: 4.4.3(vue@3.5.41(typescript@6.0.3))
+      '@toimc/core':
+        specifier: workspace:*
+        version: link:../core
+      '@toimc/vue':
+        specifier: workspace:*
+        version: link:../vue
       dompurify:
         specifier: ^3.4.13
         version: 3.4.13
@@ -185,12 +185,12 @@ importers:
 
   packages/mock-server:
     dependencies:
-      '@ai-chat/core':
-        specifier: workspace:*
-        version: link:../core
       '@hono/node-server':
         specifier: ^1.19.5
         version: 1.19.17(hono@4.13.3)
+      '@toimc/core':
+        specifier: workspace:*
+        version: link:../core
       hono:
         specifier: ^4.10.0
         version: 4.13.3
@@ -210,13 +210,13 @@ importers:
 
   packages/playground:
     dependencies:
-      '@ai-chat/core':
+      '@toimc/core':
         specifier: workspace:*
         version: link:../core
-      '@ai-chat/markdown':
+      '@toimc/markdown':
         specifier: workspace:*
         version: link:../markdown
-      '@ai-chat/vue':
+      '@toimc/vue':
         specifier: workspace:*
         version: link:../vue
       vue:
@@ -225,7 +225,7 @@ importers:
 
   packages/vue:
     dependencies:
-      '@ai-chat/core':
+      '@toimc/core':
         specifier: workspace:*
         version: link:../core
       vue-i18n:
@@ -263,7 +263,7 @@ importers:
         specifier: ^3.3.9
         version: 3.3.9(typescript@6.0.3)
     optionalDependencies:
-      '@ai-chat/markdown':
+      '@toimc/markdown':
         specifier: workspace:*
         version: link:../markdown
 

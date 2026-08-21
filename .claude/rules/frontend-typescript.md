@@ -11,7 +11,7 @@
 
 ## 2. 类型设计
 
-- **导出类型 = 公共 API**：跨包使用的类型（`Message`/`StreamChunk`/`ChatAdapter` 等）从 `@ai-chat/core` 统一导出，其他包 re-export，不各自复制定义
+- **导出类型 = 公共 API**：跨包使用的类型（`Message`/`StreamChunk`/`ChatAdapter` 等）从 `@toimc/core` 统一导出，其他包 re-export，不各自复制定义
 - 优先 `interface` 描述对象结构，`type` 描述联合/工具类型；可扩展的公共 Props 用 `interface` 并保留 `extends` 空间
 - 泛型用于真正的复用场景（工具函数、`ApiResponse<T>` 式包装），不为泛型而泛型
 - 可选字段表达渐进增强（如 `attachments?`/`toolCalls?`），不用联合类型堆叠形态

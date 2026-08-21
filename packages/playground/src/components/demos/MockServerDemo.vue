@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { useChat } from '@ai-chat/core'
-import type { Message as ChatMessage } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
+import type { Message as ChatMessage } from '@toimc/core'
 import {
   aiChatI18n,
   Button,
@@ -19,7 +19,7 @@ import {
   PromptInputSubmit,
   PromptInputTools,
   PromptInputButton,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 import {
   createSseAdapter,
   fetchConversations,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import type { Message } from '@ai-chat/core'
+import type { Message } from '@toimc/core'
 import MessageList from './MessageList.vue'
 
 function makeMessage(overrides: Partial<Message> = {}): Message {

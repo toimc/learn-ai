@@ -4,31 +4,31 @@
 
 | 包名 | 必须 | 说明 |
 |------|------|------|
-| `@ai-chat/core` | 是 | 核心类型定义和 composables |
-| `@ai-chat/vue` | 是 | Vue 3 UI 组件 |
-| `@ai-chat/markdown` | 否 | Markdown / 代码 / LaTeX 渲染 |
+| `@toimc/core` | 是 | 核心类型定义和 composables |
+| `@toimc/vue` | 是 | Vue 3 UI 组件 |
+| `@toimc/markdown` | 否 | Markdown / 代码 / LaTeX 渲染 |
 
 ## 包管理器
 
 ::: code-group
 
 ```bash [pnpm]
-pnpm add @ai-chat/core @ai-chat/vue @ai-chat/markdown
+pnpm add @toimc/core @toimc/vue @toimc/markdown
 ```
 
 ```bash [npm]
-npm install @ai-chat/core @ai-chat/vue @ai-chat/markdown
+npm install @toimc/core @toimc/vue @toimc/markdown
 ```
 
 ```bash [yarn]
-yarn add @ai-chat/core @ai-chat/vue @ai-chat/markdown
+yarn add @toimc/core @toimc/vue @toimc/markdown
 ```
 
 :::
 
 ## peerDependencies
 
-`@ai-chat/vue` 需要 Vue 3.5+ 作为 peer dependency，请确保项目中已安装：
+`@toimc/vue` 需要 Vue 3.5+ 作为 peer dependency，请确保项目中已安装：
 
 ```bash
 pnpm add vue@^3.5.0
@@ -36,10 +36,10 @@ pnpm add vue@^3.5.0
 
 ## 可选样式：KaTeX 公式
 
-`@ai-chat/markdown` 不再自动注入 KaTeX 样式。需要渲染 LaTeX 公式时，手动引入子路径样式（约 25KB CSS + 数学字体，不用公式的项目可省去）：
+`@toimc/markdown` 不再自动注入 KaTeX 样式。需要渲染 LaTeX 公式时，手动引入子路径样式（约 25KB CSS + 数学字体，不用公式的项目可省去）：
 
 ```ts
-import '@ai-chat/markdown/katex.css'
+import '@toimc/markdown/katex.css'
 ```
 
 不引入该 CSS 时，代码高亮、Mermaid 图表等功能不受影响，仅公式无 KaTeX 排版样式。

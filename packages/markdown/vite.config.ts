@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url)
 const pkgRoot = fileURLToPath(new URL('.', import.meta.url))
 
 // FR-4（spec 04）：KaTeX CSS 拆为可选子路径产物 dist/katex.css（+ dist/fonts 字体），
-// 宿主按需 `import '@ai-chat/markdown/katex.css'`，不再随入口隐式注入。
+// 宿主按需 `import '@toimc/markdown/katex.css'`，不再随入口隐式注入。
 // 原样复制 katex 官方分发文件，保持字体懒加载与缓存语义。
 function copyKatexCss(): Plugin {
   return {
@@ -36,12 +36,12 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.mjs' : 'index.cjs'),
     },
     rollupOptions: {
-      external: ['vue', '@ai-chat/core', '@ai-chat/vue'],
+      external: ['vue', '@toimc/core', '@toimc/vue'],
       output: {
         globals: {
           vue: 'Vue',
-          '@ai-chat/core': 'AiChatCore',
-          '@ai-chat/vue': 'AiChatVue',
+          '@toimc/core': 'AiChatCore',
+          '@toimc/vue': 'AiChatVue',
         },
       },
     },

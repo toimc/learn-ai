@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
-import { useChat } from '@ai-chat/core'
-import type { Attachment } from '@ai-chat/core'
+import { useChat } from '@toimc/core'
+import type { Attachment } from '@toimc/core'
 import {
   mockMessages,
   thinkingDemoMessages,
@@ -32,13 +32,13 @@ import {
   ComparisonMessage,
   useLayoutConfig,
   useTheme,
-} from '@ai-chat/vue'
+} from '@toimc/vue'
 import { mockAdapter } from '../mock/mock-adapter'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 // FR-4（spec 04）：KaTeX 样式已改为可选子路径，playground 显式引入保持公式渲染体验。
-// 走 workspace 源码路径；发布包对应 '@ai-chat/markdown/katex.css'
+// 走 workspace 源码路径；发布包对应 '@toimc/markdown/katex.css'
 import '../../../markdown/src/styles/katex.css'
 
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
@@ -61,14 +61,14 @@ const layout = useLayoutConfig(
 // ComparisonMessage 偏好回调：选中后原地固化为普通 assistant 消息（content = 选中内容），
 // 状态存于消息本身，切换会话再回来依然保留
 function onPrefer(
-  msg: typeof import('@ai-chat/core').Message,
+  msg: typeof import('@toimc/core').Message,
   p: { chosen: 'A' | 'B'; left: string; right: string },
 ) {
   msg.content = p.chosen === 'A' ? p.left : p.right
   msg.comparison = undefined
 }
 
-// 主题统一走 @ai-chat/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
+// 主题统一走 @toimc/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
 const { resolvedTheme, toggleTheme } = useTheme()
 const chatAreaRef = ref<HTMLElement>()
 const isAtBottom = ref(true)
@@ -78,7 +78,7 @@ interface PlaygroundConv {
   title: string
   group: 'today' | 'week'
   active: boolean
-  messages: (typeof import('@ai-chat/core').Message)[]
+  messages: (typeof import('@toimc/core').Message)[]
 }
 
 const conversations = ref<PlaygroundConv[]>([

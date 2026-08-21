@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { StreamChunk } from '@ai-chat/core'
+import type { StreamChunk } from '@toimc/core'
 import { createMockApp } from './app'
 
 /** 从 SSE 文本里解出全部 chunk 载荷（与前端 sse-adapter 同构的简化解析） */
