@@ -15,6 +15,7 @@
 - **零 CSS 框架依赖**：不绑定 Tailwind / UnoCSS 等框架
 - **Monorepo 按需安装**：每个包独立发布，只装需要的
 - **服务端网关**：`@toimc/server` 基于 Hono 的接收与转发层（Bearer 认证 / 限流 / CORS 可选启用），`@toimc/agents` 多模型协议适配（OpenAI 兼容 / Anthropic / 自定义），API Key 只留服务端
+- **Mastra Agent 接入**：`@toimc/agents/mastra` 可选子路径把 Mastra Agent 包装成标准适配器（工具调用 / 会话记忆 / 配合 Mastra Studio 监控），`@mastra/core` 为可选依赖
 - **provide/inject 状态管理**：支持同一页面多个独立对话实例
 
 ## 技术栈
@@ -55,13 +56,13 @@ ai-chat-ui/
 │   │   └── src/               # MarkdownRenderer / CodeBlock / LatexBlock
 │   │
 │   ├── agents/                # @toimc/agents — 服务端模型适配层（零外部依赖）
-│   │   └── src/               # IModelAdapter / ModelRegistry / OpenAI 兼容与 Anthropic 适配器 / SSE 解析
+│   │   └── src/               # IModelAdapter / ModelRegistry / OpenAI 兼容与 Anthropic 适配器 / SSE 解析 / mastra 可选子路径（Mastra Agent 包装）
 │   │
 │   ├── server/                # @toimc/server — Hono 聊天网关（接收与转发）
 │   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件
 │   │
 │   ├── mock-server/           # @toimc/mock-server — 本地 mock 服务端（私有，基于 @toimc/server 组装）
-│   │   └── src/               # 会话种子数据 / mock 剧本适配器 / 演示路由 + OpenAPI 规范，pnpm dev 随文档站一起启动
+│   │   └── src/               # 会话种子数据 / mock 剧本适配器 / Mastra Agent（env 门控，经 @toimc/agents/mastra 注册）/ 演示路由 + OpenAPI 规范，pnpm dev 随文档站一起启动
 │   │
 │   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
