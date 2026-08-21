@@ -98,17 +98,17 @@ registry.registerAdapter('my-model', myAdapter, {
 
 ### 安装
 
-`@mastra/core` 是 `@toimc/agents` 的**可选 peer 依赖**：不用 mastra 子路径就不需要安装，主入口（`@toimc/agents`）完全不受影响；用到子路径时才装（未安装时 `@toimc/agents/mastra` 不可用）。
+`@mastra/core` 是 `@toimc/agents` 的**可选 peer 依赖**：不用 mastra 子路径就不需要安装，主入口（`@toimc/agents`）完全不受影响；用到子路径时才装。未安装时 `@toimc/agents/mastra` 模块本身仍可正常加载，只有调用 `createMastraModel` 构造 Agent 时才会抛出含安装指引（`pnpm add @mastra/core`）的友好错误。
 
 ```bash
 pnpm add @toimc/agents @mastra/core @mastra/memory @mastra/libsql zod
 ```
 
-`@mastra/memory` + `@mastra/libsql` 用于会话记忆落盘（不需要记忆可省去），`zod` 用于工具入参 schema。仓库按 `@mastra/core ^1.60.0` 验证（peer 范围 `>=0.10.0`）。
+`@mastra/memory` + `@mastra/libsql` 用于会话记忆落盘（不需要记忆可省去），`zod` 用于工具入参 schema。仓库按 `@mastra/core ^1.60.0` 验证（peer 范围 `^1.60.0`）。
 
 ### 注册 Agent 模型
 
-`createMastraModel(config)` 声明式构造，返回 `{ adapter, info, agent }`，直接喂 `registry.registerAdapter`：
+`createMastraModel(config)` 声明式构造，返回 `{ adapter, info, agent }`（`Promise`，需 `await`——内部动态加载 `@mastra/core` 以支持可选 peer），直接喂 `registry.registerAdapter`。注册发生在应用启动阶段：`await createMastraModel(...)` 完成后再建网关，模型注册先于第一个请求即可：
 
 ```ts
 import { createChatGateway } from '@toimc/server'
@@ -138,7 +138,7 @@ const getTimeTool = createTool({
 })
 
 // 'provider/model' 字符串走 Mastra 模型路由，API Key 读约定环境变量（此处 DEEPSEEK_API_KEY）
-const { adapter, info } = createMastraModel({
+const { adapter, info } = await createMastraModel({
   id: 'mastra-agent',
   name: 'Mastra Agent',
   description: '支持工具调用与会话记忆',

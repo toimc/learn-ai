@@ -13,6 +13,7 @@
 **Worktree:** `.claude/worktrees/feat-mastra-agent`（分支 `feat/mastra-agent-integration`，基于 dev）。所有命令在此 worktree 根目录执行。
 
 **重要约束（所有任务通用）:**
+- 勘误：@mastra/core 1.60 实测无 format:'aisdk'，映射实现以 spec §3 修订表为准（本计划中出现的 aisdk 事件名与 `format: 'aisdk'` 选项均为计划编写时的预期形态，实际 fullStream 直接产 Mastra 原生 chunk；计划为历史文档，正文不再逐处改写）
 - 用 `corepack pnpm <cmd>`（裸 pnpm 被 asdf 拦截）
 - type-check 前必须先 `corepack pnpm --filter @toimc/core --filter @toimc/agents build`（type-check 读 dist）
 - 提交信息：中文 Conventional Commits，scope 用 agents/mock-server/docs

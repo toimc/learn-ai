@@ -29,8 +29,7 @@
     "@toimc/core": "workspace:*"
   },
   "peerDependencies": {
-    "@mastra/core": ">=0.10.0",
-    "@toimc/core": "workspace:*"
+    "@mastra/core": "^1.60.0"
   },
   "peerDependenciesMeta": {
     "@mastra/core": {

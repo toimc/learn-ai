@@ -15,7 +15,7 @@
 - **零 CSS 框架依赖**：不绑定 Tailwind / UnoCSS 等框架
 - **Monorepo 按需安装**：每个包独立发布，只装需要的
 - **服务端网关**：`@toimc/server` 基于 Hono 的接收与转发层（Bearer 认证 / 限流 / CORS 可选启用），`@toimc/agents` 多模型协议适配（OpenAI 兼容 / Anthropic / 自定义），API Key 只留服务端
-- **Mastra Agent 接入**：`@toimc/agents/mastra` 可选子路径把 Mastra Agent 包装成标准适配器（工具调用 / 会话记忆 / 配合 Mastra Studio 监控），`@mastra/core` 为可选依赖
+- **Mastra Agent 接入**：`@toimc/agents/mastra` 可选子路径把 Mastra Agent 包装成标准适配器（工具调用 / 会话记忆 / 配合 Mastra Studio 监控），`@mastra/core` 为可选 peer 依赖（`^1.60.0`，未安装时 `createMastraModel` 抛含安装指引的友好错误）
 - **provide/inject 状态管理**：支持同一页面多个独立对话实例
 
 ## 技术栈

@@ -12,7 +12,7 @@
 ### 已确认的关键事实（来自 Mastra 官方文档，2026-08）
 
 - Mastra 模型层构建在 Vercel AI SDK 之上；`model` 字段支持 `"provider/model"` 字符串、`{ id, url }` 对象（自定义 OpenAI 兼容端点）、AI SDK provider 实例三种形态，密钥自动读环境变量
-- `agent.stream(messages, options)` 的 messages 为 `[{ role, content }]`，与 `ChatMessage` 同构；支持 `abortSignal`、`memory: { thread, resource }`、`temperature`、`format: 'aisdk'`（AI SDK v5 事件流）
+- `agent.stream(messages, options)` 的 messages 为 `[{ role, content }]`，与 `ChatMessage` 同构；支持 `abortSignal`、`memory: { thread, resource }`、`modelSettings: { temperature }`；**fullStream 直接产 Mastra 1.60 原生 chunk（`{ type, payload }` 形态）**，事件名为 `text-delta` / `reasoning-delta` / `tool-call-input-streaming-start` / `tool-call-delta` / `tool-call-input-streaming-end` / `tool-call` / `tool-result` / `tool-error`，无 `format: 'aisdk'` 选项
 - `agent.generate()` 默认返回 Mastra 原生格式（含 `.text` / `.usage`）
 - 工具用 `createTool({ id, inputSchema: z.object(...), execute })`，zod 依赖只进组装层
 - `streamVNext` 是实验 API，**本期一律用稳定版 `stream()`**
@@ -33,17 +33,20 @@ packages/server / core / vue  ← 零改动
 ### FR1 `@toimc/agents/mastra` 子路径导出
 
 - `MastraAdapter implements IModelAdapter`：构造时接收一个现成的 Mastra `Agent` 实例与可选 `MastraAdapterOptions`（`resource` 默认 `'ai-chat'`、`enableMemory` 等）
-- 事件映射表（`chatStream` 消费 `format: 'aisdk'` 的 `fullStream`）：
+- 事件映射表（`chatStream` 消费 Mastra 1.60 原生 `fullStream` chunk，`{ type, payload }` 形态）：
 
-| Mastra / AI SDK v5 事件 | StreamChunk |
+| Mastra 1.60 原生事件 | StreamChunk |
 |---|---|
 | `text-delta` | `{ type: 'text', content }` |
 | `reasoning-delta` | `{ type: 'thinking', content }` |
-| `tool-input-start` / `tool-input-delta` / `tool-input-end` | `tool-input-start` 发 `{ type: 'tool_call', metadata: { toolCallId, toolName } }`（status: calling 的起点帧）；`tool-input-delta` 累积增量不发包；`tool-input-end` 发一帧 `tool_call`，`toolArguments` 为合并后的完整参数 |
-| `tool-output-available` | `{ type: 'tool_result', metadata: { toolCallId, toolName, toolResult, duration } }` |
-| `tool-output-error` | `{ type: 'tool_result', metadata: { toolCallId, toolName, toolError, duration } }` |
-| `error` | `{ type: 'error', content }` |
-| `finish` / 流自然结束 | 依赖网关既有兜底补 `done` 帧（适配器自身不强制补） |
+| `tool-call-input-streaming-start` | 发 `{ type: 'tool_call', metadata: { toolCallId, toolName } }`（起点帧，无参数）；`tool-call-delta` 累积参数 JSON 片段不发包；`tool-call-input-streaming-end` 发一帧 `tool_call`，`toolArguments` 为合并解析后的完整参数（拼不出合法对象退 `{ raw }`） |
+| `tool-call`（未走流式分解的完整调用） | `tool_call` 带 `toolArguments`；与流式路径按 `toolCallId` 去重，避免双发 |
+| `tool-result` | `{ type: 'tool_result', metadata: { toolCallId, toolName, toolResult 或 toolError } }`（`isError` 时映射错误态） |
+| `tool-error` | `{ type: 'tool_result', metadata: { toolCallId, toolName, toolError } }` |
+| `error` | `{ type: 'error', content }`，随后终止 |
+| 流自然结束 | 依赖网关既有兜底补 `done` 帧（适配器自身不强制补） |
+
+  > 实施偏差：@mastra/core 1.60 的 stream() 不支持 format:'aisdk'，fullStream 直接产 Mastra 原生 chunk；tool_result 无 duration 数据，字段不产出
 
 - `chat(request)`：`agent.generate()` 取 `.text` / `.usage`（映射 promptTokens/completionTokens），组装 `ChatResponse`
 - 记忆映射：`request.passthrough.conversationId`（网关已透传）→ `memory: { thread, resource }`；无 conversationId 时生成一次性 thread id（`generateId`）兜底——有 memory 的 Agent 缺 thread 会报错，无 memory 的 Agent 不传 memory 配置
@@ -56,6 +59,7 @@ packages/server / core / vue  ← 零改动
 - 入参 `MastraModelConfig`：`{ id, name?, description?, model, instructions?, tools?, memory?, defaultResource? }`；`model` 类型 = Mastra 的 model 字段（字符串 / `{ id, url }` 对象 / AI SDK 实例）
 - 返回 `{ adapter, info }`，直接喂 `registry.registerAdapter(id, adapter, info)`
 - 工厂内部构造 `Agent` 并包成 `MastraAdapter`，宿主不接触 Mastra 类型也能用
+  > 实施偏差（F1）：`createMastraModel` 为 **async**（返回 `Promise<MastraModel>`，调用方需 `await`）——Agent 构造器改为函数内动态 import 以在 `@mastra/core` 缺失时给出含安装指引的友好错误（FR1 依赖缺失条款）
 
 ### FR3 mock-server 组装层集成
 
@@ -64,7 +68,7 @@ packages/server / core / vue  ← 零改动
   - `get_weather`：wttr.in 免费接口，`AbortSignal.timeout(5000)` 保护
   - `get_time`：本地时间，零网络依赖
 - Memory：`Memory` + LibSQL `file:.temp/mastra.db`（`.temp/` 已 gitignore），`conversationId → thread`，进程重启对话保留
-- 监控：`MASTRA_TELEMETRY=true` 时构造 `Mastra` 实例挂 agents + telemetry；文档写明 `npx mastra dev` 起 DevTools（默认 41111）查看；默认关闭
+- 监控：`MASTRA_TELEMETRY=true` 时构造 `Mastra` 实例挂 agents + telemetry；文档写明 `npx mastra dev` 起 DevTools（默认 4111）查看；默认关闭
 
 ### FR4 文档同步
 
