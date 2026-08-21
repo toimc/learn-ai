@@ -1,5 +1,5 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type { ChatAdapter, ChatOptions, ChatState, Message } from '../types'
+import type { ChatAdapter, ChatOptions, ChatState } from '../types'
 import { createUserMessage, createAssistantMessage } from '../utils'
 
 export function useChat(
@@ -17,6 +17,18 @@ export function useChat(
 
   let currentController: AbortController | null = null
 
+  // 显式裁剪而非覆盖 push：Vue reactive 对数组方法做 instrumentation，
+  // 覆盖 push 会被 toRaw(this).push 回读，造成无限递归栈溢出
+  function trimHistory(): void {
+    const max = options?.maxHistory
+    if (!max) return
+    while (state.messages.length > max) {
+      state.messages.shift()
+    }
+  }
+
+  trimHistory()
+
   async function send(
     content: string,
     attachments?: import('../types').Attachment[],
@@ -28,6 +40,7 @@ export function useChat(
     // 流式追加将完全失去响应性（UI 冻结到流结束才一次性渲染）
     const assistantMessage = reactive(createAssistantMessage())
     state.messages.push(assistantMessage)
+    trimHistory()
 
     state.isStreaming = true
     state.error = null
@@ -119,18 +132,6 @@ export function useChat(
     state.messages = []
     state.error = null
     state.isStreaming = false
-  }
-
-  if (options?.maxHistory) {
-    const max = options.maxHistory
-    const originalPush = state.messages.push.bind(state.messages)
-    state.messages.push = function (...items: Message[]) {
-      const result = originalPush(...items)
-      while (state.messages.length > max) {
-        state.messages.shift()
-      }
-      return result
-    }
   }
 
   return state
