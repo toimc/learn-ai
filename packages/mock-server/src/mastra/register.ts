@@ -1,8 +1,29 @@
+import { mkdirSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { Memory } from '@mastra/memory'
 import { LibSQLStore } from '@mastra/libsql'
 import { createMastraModel } from '@toimc/agents/mastra'
 import type { ModelRegistry } from '@toimc/agents'
 import { getTimeTool, getWeatherTool } from './tools'
+
+/** 会话记忆落盘位置（相对 mock-server 包目录；.temp/ 已在 .gitignore） */
+const MEMORY_DB_URL = 'file:.temp/mastra.db'
+
+/** libsql 本地文件模式不自动建父目录，目录缺失时 SQLITE_CANTOPEN 直接崩启动 */
+function ensureDbDir(url: string): void {
+  if (!url.startsWith('file:')) return
+  const path = url.slice('file:'.length)
+  if (!path || path === ':memory:') return
+  mkdirSync(dirname(path), { recursive: true })
+}
+
+/** 默认记忆存储：本地 LibSQL 文件库，进程重启对话保留 */
+function defaultMemory(): Memory {
+  ensureDbDir(MEMORY_DB_URL)
+  return new Memory({
+    storage: new LibSQLStore({ id: 'mastra-memory', url: MEMORY_DB_URL }),
+  })
+}
 
 export interface MastraEnvConfig {
   /** Mastra model 字段，如 'deepseek/deepseek-chat' */
@@ -32,14 +53,7 @@ export function registerMastraAgent(
   config: MastraEnvConfig,
   overrides: { memory?: unknown } = {},
 ): ReturnType<typeof createMastraModel> {
-  const memory =
-    overrides.memory ??
-    new Memory({
-      storage: new LibSQLStore({
-        id: 'mastra-memory',
-        url: 'file:.temp/mastra.db',
-      }),
-    })
+  const memory = overrides.memory ?? defaultMemory()
   const created = createMastraModel({
     id: 'mastra-agent',
     name: config.modelName ?? 'Mastra Agent',
