@@ -1,5 +1,34 @@
 node_modules
 dist
+coverage
 .DS_Store
 *.local
 .env
+packages/docs/.vitepress/cache/
+packages/docs/.vitepress/dist/
+
+# Claude Code 本地配置和缓存
+.claude/settings.local.json
+
+# Playwright MCP 测试日志和截图
+.playwright-mcp/
+playwright-report/
+test-results/
+
+# Git Flow worktree 与部署锁
+.claude/worktrees/
+.claude/run/
+
+# Codex 项目工作区与部署锁
+.codex/worktrees/
+.codex/run/
+
+# Python hook 缓存
+__pycache__/
+*.pyc
+
+# 临时测试文件和截图
+.temp/
+*.png
+*.jpg
+*.jpeg

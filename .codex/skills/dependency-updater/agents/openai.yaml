@@ -1,0 +1,4 @@
+interface:
+  display_name: '依赖更新'
+  short_description: '检查并安全更新项目依赖，区分补丁、次要与主要版本更新'
+  default_prompt: '使用 $dependency-updater 检查并安全更新当前项目依赖。'

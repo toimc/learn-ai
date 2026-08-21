@@ -1,0 +1,171 @@
+import { defineConfig } from 'vitepress'
+import { resolve } from 'path'
+
+const root = resolve(__dirname, '..')
+
+export default defineConfig({
+  lang: 'zh-CN',
+  title: 'AI Chat UI',
+  description: '后端无关的 AI 聊天界面组件库',
+
+  head: [
+    // 首屏防闪：在 Vue 挂载前同步读取 localStorage 设 data-theme，避免亮暗闪屏
+    [
+      'script',
+      {},
+      `(function(){try{var t=localStorage.getItem('ai-chat-theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`,
+    ],
+  ],
+
+  vite: {
+    resolve: {
+      alias: {
+        '@toimc/core': resolve(root, '../core/src/index.ts'),
+        '@toimc/vue': resolve(root, '../vue/src/index.ts'),
+        '@toimc/markdown': resolve(root, '../markdown/src/index.ts'),
+        '@toimc/playground': resolve(root, '../playground/src/index.ts'),
+        // Scalar 免 React 的 standalone 构建（exports 未放行深路径，alias 绕过）
+        '@scalar/api-reference-standalone': resolve(
+          root,
+          'node_modules/@scalar/api-reference/dist/browser/standalone.esm.js',
+        ),
+      },
+    },
+  },
+
+  themeConfig: {
+    siteTitle: 'AI Chat UI',
+
+    nav: [
+      {
+        text: '指南',
+        items: [
+          {
+            text: '使用',
+            items: [
+              { text: '快速开始', link: '/guide/getting-started' },
+              { text: '安装', link: '/guide/installation' },
+              { text: '使用指南', link: '/guide/usage' },
+              { text: '主题定制', link: '/guide/theming' },
+              { text: '国际化', link: '/guide/i18n' },
+            ],
+          },
+          {
+            text: '开发与测试',
+            items: [
+              { text: '开发指南', link: '/guide/development' },
+              { text: '测试指南', link: '/guide/testing' },
+              { text: '单元测试实战', link: '/guide/unit-testing' },
+              { text: 'E2E 测试', link: '/guide/e2e-testing' },
+            ],
+          },
+        ],
+      },
+      { text: '组件', link: '/components/conversation' },
+      {
+        text: 'Composables',
+        items: [
+          { text: 'useChat', link: '/composables/use-chat' },
+          { text: 'useTheme', link: '/composables/use-theme' },
+          { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+          { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
+        ],
+      },
+      { text: 'Playground', link: '/playground' },
+      { text: 'Mock 演示', link: '/mock-server-demo' },
+      { text: '接口文档', link: '/mock-api' },
+      { text: '主题配置器', link: '/theme-builder' },
+    ],
+
+    sidebar: {
+      '/guide/': [
+        {
+          text: '开发指南',
+          items: [
+            { text: '快速开始', link: '/guide/getting-started' },
+            { text: '安装', link: '/guide/installation' },
+            { text: '使用指南', link: '/guide/usage' },
+            { text: '主题定制', link: '/guide/theming' },
+            { text: '国际化', link: '/guide/i18n' },
+            { text: '主题配置器', link: '/theme-builder' },
+          ],
+        },
+        {
+          text: '开发与测试',
+          items: [
+            { text: '开发指南', link: '/guide/development' },
+            { text: '测试指南', link: '/guide/testing' },
+            { text: '单元测试实战', link: '/guide/unit-testing' },
+            { text: 'E2E 测试', link: '/guide/e2e-testing' },
+          ],
+        },
+      ],
+      '/components/': [
+        {
+          text: '对话容器',
+          items: [{ text: 'Conversation', link: '/components/conversation' }],
+        },
+        {
+          text: '消息组件',
+          items: [
+            { text: 'Message', link: '/components/message' },
+            {
+              text: 'ComparisonMessage',
+              link: '/components/comparison-message',
+            },
+          ],
+        },
+        {
+          text: '输入组件',
+          items: [{ text: 'PromptInput', link: '/components/prompt-input' }],
+        },
+        {
+          text: '工具调用',
+          items: [{ text: 'ToolCall', link: '/components/tool-call' }],
+        },
+        {
+          text: '附件组件',
+          items: [
+            { text: 'Attachments', link: '/components/attachments' },
+            { text: 'ImageLightbox', link: '/components/image-lightbox' },
+          ],
+        },
+        {
+          text: '通用组件',
+          items: [
+            { text: 'LanguageToggle', link: '/components/language-toggle' },
+            { text: 'Shimmer', link: '/components/shimmer' },
+            { text: 'Toast', link: '/components/toast' },
+          ],
+        },
+        {
+          text: 'Markdown 渲染',
+          items: [
+            { text: 'MarkdownRenderer', link: '/components/markdown-renderer' },
+            { text: 'CodeBlock', link: '/components/code-block' },
+            { text: 'LatexBlock', link: '/components/latex-block' },
+          ],
+        },
+      ],
+      '/composables/': [
+        {
+          text: 'Composables',
+          items: [
+            { text: 'useChat', link: '/composables/use-chat' },
+            { text: 'useTheme', link: '/composables/use-theme' },
+            { text: 'useThemePreset', link: '/composables/use-theme-preset' },
+            { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
+          ],
+        },
+      ],
+    },
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/ai-chat-ui/ai-chat-ui' },
+    ],
+
+    search: {
+      provider: 'local',
+    },
+  },
+})

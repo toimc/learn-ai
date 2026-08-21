@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@toimc/core": ["../core/src"],
+      "@toimc/vue": ["../vue/src"],
+      "@toimc/markdown": ["../markdown/src"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}

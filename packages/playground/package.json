@@ -1,0 +1,12 @@
+{
+  "name": "@toimc/playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@toimc/core": "workspace:*",
+    "@toimc/markdown": "workspace:*",
+    "@toimc/vue": "workspace:*",
+    "vue": "^3.5.41"
+  }
+}

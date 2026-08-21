@@ -1,2 +1,8 @@
 packages:
   - 'packages/*'
+
+# pnpm 11 构建脚本白名单（postinstall/install 等）
+allowBuilds:
+  esbuild: true
+  simple-git-hooks: true
+  vue-demi: true

@@ -3,3 +3,6 @@ declare module '*.vue' {
   const component: DefineComponent<object, object, unknown>
   export default component
 }
+
+// 侧效样式导入（如 styles/katex.css），运行时由 Vite 处理
+declare module '*.css'

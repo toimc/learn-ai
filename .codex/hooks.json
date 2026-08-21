@@ -1,0 +1,78 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "exec_command|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" pre-commit",
+            "timeout": 15,
+            "statusMessage": "提交前验证代码与文档同步"
+          }
+        ]
+      },
+      {
+        "matcher": "exec_command|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/i18n_guard.py\" pre-commit",
+            "timeout": 15,
+            "statusMessage": "提交前检查硬编码 UI 文案"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" session-start",
+            "timeout": 10,
+            "statusMessage": "初始化代码与文档同步检查"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" post-edit",
+            "timeout": 10,
+            "statusMessage": "检查关联文档是否需要同步"
+          }
+        ]
+      },
+      {
+        "matcher": "apply_patch|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/i18n_guard.py\" component-reminder",
+            "timeout": 10,
+            "statusMessage": "注入 i18n 规范提醒"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/documentation_sync.py\" session-end",
+            "timeout": 15,
+            "statusMessage": "验证代码与文档同步状态"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -25,6 +25,7 @@ export function createAssistantMessage(
     id: generateId(),
     role: 'assistant',
     content,
+    toolCalls: [],
     metadata,
     createdAt: new Date(),
   }

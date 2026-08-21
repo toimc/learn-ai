@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Message } from '@ai-chat/core'
+import type { Message } from '@toimc/core'
 
 defineProps<{
   messages: Message[]
@@ -19,9 +19,11 @@ defineProps<{
 </template>
 
 <style>
-.ai-chat-message-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ai-chat-message-gap, 12px);
+@layer ai-chat-components {
+  .ai-chat-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ai-chat-message-gap, 12px);
+  }
 }
 </style>

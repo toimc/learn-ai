@@ -1,9 +1,33 @@
 export interface Attachment {
-  type: 'image' | 'file' | 'audio'
-  url: string
+  id: string
+  url?: string
   name: string
-  mimeType: string
+  mediaType: string
   size?: number
+}
+
+export interface ToolCallInfo {
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+  result?: unknown
+  error?: string
+  status: 'calling' | 'completed' | 'error'
+  duration?: number
+}
+
+export interface ThinkingInfo {
+  content: string
+  duration?: number // 思考耗时（毫秒）
+  startTime?: Date // 思考开始时间
+}
+
+// A/B 回复对比：由服务端响应指定，宿主据此渲染 ComparisonMessage 而非普通消息
+export interface ComparisonPayload {
+  left: string
+  right: string
+  leftLabel?: string
+  rightLabel?: string
 }
 
 export interface Message {
@@ -11,14 +35,25 @@ export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   attachments?: Attachment[]
+  toolCalls?: ToolCallInfo[]
+  thinking?: ThinkingInfo // 思考过程内容
+  comparison?: ComparisonPayload // A/B 回复对比载荷
   metadata?: Record<string, unknown>
   createdAt: Date
 }
 
 export interface StreamChunk {
-  type: 'text' | 'tool_call' | 'thinking' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'done'
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+    toolCallId?: string
+    toolName?: string
+    toolArguments?: Record<string, unknown>
+    toolResult?: unknown
+    toolError?: string
+    duration?: number
+    [key: string]: unknown
+  }
 }
 
 export interface SendMessageOptions {
