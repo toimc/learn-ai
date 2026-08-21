@@ -104,7 +104,7 @@ fi
 
 # 配置
 NPM_REGISTRY="${NPM_REGISTRY:-https://registry.npmjs.org}"
-PACKAGES=("core" "vue" "markdown")
+PACKAGES=("core" "vue" "markdown" "agents" "server")
 
 # 进入项目根目录
 cd "$(dirname "$0")/.."
