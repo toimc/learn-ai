@@ -69,6 +69,13 @@ function toArguments(value: unknown): Record<string, unknown> | undefined {
  *   （HITL 审批/挂起）、tool-output（输出处理器流）、raw（原始帧）——
  *   后续接入 citation / HITL 能力时从这里扩展
  */
+/** 公共类型随子路径导出（宿主标注 config/返回值用） */
+export type {
+  MastraAdapterOptions,
+  MastraModel,
+  MastraModelConfig,
+} from './types'
+
 export class MastraAdapter implements IModelAdapter {
   constructor(
     private readonly agent: Agent,
