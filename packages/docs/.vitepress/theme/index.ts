@@ -60,8 +60,6 @@ import {
   PlaygroundPage,
   ThemeBuilderPage,
   MultimodalDemoPage,
-  MockServerDemoPage,
-  MockApiPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
@@ -72,9 +70,13 @@ import {
 
 import './style.css'
 
+// Pages 构建剔除 mock 页面组件：config.ts 的 vite.define 把该值替换为字面量，
+// 分支被常量折叠后动态 import 不进产物，Scalar standalone（~1MB+）不进 Pages bundle
+const isPagesBuild = import.meta.env.DOCS_TARGET === 'pages'
+
 export default {
   extends: DefaultTheme,
-  enhanceApp({ app }) {
+  async enhanceApp({ app }) {
     // Old components (backward compat)
     app.component('ChatWindow', ChatWindow)
     app.component('MessageList', MessageList)
@@ -140,8 +142,12 @@ export default {
     app.component('PlaygroundPage', PlaygroundPage)
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
-    app.component('MockServerDemoPage', MockServerDemoPage)
-    app.component('MockApiPage', MockApiPage)
+    if (!isPagesBuild) {
+      const { MockServerDemoPage, MockApiPage } =
+        await import('@toimc/playground')
+      app.component('MockServerDemoPage', MockServerDemoPage)
+      app.component('MockApiPage', MockApiPage)
+    }
     // 组件文档内嵌交互演示
     app.component('ConversationLayoutDemo', ConversationLayoutDemo)
     app.component('MessageShowcaseDemo', MessageShowcaseDemo)
