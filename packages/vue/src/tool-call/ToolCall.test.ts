@@ -131,9 +131,10 @@ describe('ToolCallInput 参数展示', () => {
   it('正常：label 与 JSON 格式化参数', () => {
     const w = mountInsideShell(ToolCallInput, makeToolCall())
     expect(w.get('.ai-chat-tool-call-input__label').text()).toBe('参数')
-    expect(w.get('.ai-chat-tool-call-input__code').text()).toBe(
-      JSON.stringify({ city: 'Beijing' }, null, 2),
-    )
+    // 预期值写死字面量，禁止用与实现相同的 JSON.stringify 表达式计算预期（同义反复断言）
+    expect(w.get('.ai-chat-tool-call-input__code').text()).toBe(`{
+  "city": "Beijing"
+}`)
   })
 
   it('边界：空参数对象显示 "{}"', () => {
@@ -146,9 +147,10 @@ describe('ToolCallOutput 结果/错误展示', () => {
   it('正常：label"结果"与 JSON 结果', () => {
     const w = mountInsideShell(ToolCallOutput, makeToolCall())
     expect(w.get('.ai-chat-tool-call-output__label').text()).toBe('结果')
-    expect(w.get('.ai-chat-tool-call-output__code').text()).toBe(
-      JSON.stringify({ temp: 22 }, null, 2),
-    )
+    // 同上：预期值独立于实现写死，格式化参数变化（如缩进改成 4）时本断言应失败
+    expect(w.get('.ai-chat-tool-call-output__code').text()).toBe(`{
+  "temp": 22
+}`)
   })
 
   it('异常：error 优先于 result 展示，label 为"错误"', () => {
