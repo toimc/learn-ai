@@ -64,6 +64,9 @@ ai-chat-ui/
 │   ├── mock-server/           # @toimc/mock-server — 本地 mock 服务端（私有，基于 @toimc/server 组装）
 │   │   └── src/               # 会话种子数据 / mock 剧本适配器 / Mastra Agent（env 门控，经 @toimc/agents/mastra 注册）/ 演示路由 + OpenAPI 规范，pnpm dev 随文档站一起启动
 │   │
+│   ├── mastra-app/            # @toimc/mastra-app — Mastra 标准工程（私有，不依赖任何 @toimc/* 包）
+│   │   └── src/               # @mastra/hono 原生端点（4111）/ chat-agent（真实模型 + get_time·get_weather 工具 + LibSQL 记忆）/ Studio；Playground 经前端 MastraAdapter 直连
+│   │
 │   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
 │           ├── components/    # PlaygroundDemo（完整 Playground）

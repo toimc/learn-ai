@@ -38,6 +38,11 @@ import {
 import type { ProviderFormPayload } from '@toimc/vue'
 import { createDispatchAdapter } from '../mock/dispatch-adapter'
 import { useProviderModels } from '../composables/useProviderModels'
+import {
+  BACKEND_BASE_URLS,
+  useBackendSelector,
+} from '../composables/useBackendSelector'
+import type { PlaygroundBackendId } from '../composables/useBackendSelector'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
@@ -57,6 +62,17 @@ const {
   removeProvider,
   selectModel,
 } = useProviderModels()
+
+// 后端选择器（spec 12）：本地 Mock / mock-server 8787 / Mastra 4111；
+// 选中 id 持久化 localStorage，切换远端前探活，不可达不切换并标离线禁用
+const {
+  backend: backendId,
+  mockServerOnline,
+  mastraOnline,
+  probeAll: probeBackends,
+  selectBackend,
+  isOffline: isBackendOffline,
+} = useBackendSelector()
 
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
 // adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）
@@ -104,6 +120,8 @@ interface PlaygroundConv {
   messages: (typeof import('@toimc/core').Message)[]
   /** 绑定的服务端模型 id（spec 11）：带值会话经 SSE 走真实模型，缺省走本地 mock */
   model?: string
+  /** 创建时快照的后端（spec 12）：'mastra' 会话走 4111 原生端点，agent 由服务端决定 */
+  backend?: 'mock-server' | 'mastra'
 }
 
 const conversations = ref<PlaygroundConv[]>([
@@ -172,8 +190,11 @@ const activeConversationId = ref('1')
 const activeConv = computed(() =>
   conversations.value.find((c) => c.id === activeConversationId.value),
 )
-// 真实模型会话（会话绑定 model）：工具过程进思考面板的渲染路径
-const isRealModelConv = computed(() => Boolean(activeConv.value?.model))
+// 真实模型/Agent 会话（绑定 model 或 mastra 后端）：工具过程进思考面板的渲染路径
+const isAgentConv = computed(
+  () =>
+    Boolean(activeConv.value?.model) || activeConv.value?.backend === 'mastra',
+)
 
 // 初始化时加载第一个会话的消息
 chat.messages.push(...conversations.value[0].messages)
@@ -248,7 +269,8 @@ function newChat() {
     currentConv.messages = [...chat.messages]
   }
 
-  // 创建新会话；选中了模型时写入该 model（此后本会话经真实模型收发）
+  // 创建新会话；快照当前后端选择（mastra 会话不带 model，agent 由服务端决定），
+  // 其余后端在选中模型时写入该 model（此后本会话经真实模型收发）
   const newId = `${Date.now()}`
   const newConv: PlaygroundConv = {
     id: newId,
@@ -256,7 +278,14 @@ function newChat() {
     group: 'today',
     active: true,
     messages: [],
-    ...(selectedModelId.value ? { model: selectedModelId.value } : {}),
+    ...(backendId.value === 'mastra'
+      ? { backend: 'mastra' as const }
+      : {
+          ...(backendId.value === 'mock-server'
+            ? { backend: 'mock-server' as const }
+            : {}),
+          ...(selectedModelId.value ? { model: selectedModelId.value } : {}),
+        }),
   }
 
   // 取消其他会话的激活状态
@@ -304,12 +333,48 @@ function openSettings() {
 
 function toggleModelMenu() {
   if (!hasModelOptions.value) return
+  backendMenuOpen.value = false
   modelMenuOpen.value = !modelMenuOpen.value
 }
 
 function pickModel(id: string | undefined) {
   selectModel(id)
   modelMenuOpen.value = false
+}
+
+// ===== 后端选择器（spec 12：本地 Mock / mock-server 8787 / Mastra 4111） =====
+const backendMenuOpen = ref(false)
+
+const backendOptions = computed(() => [
+  { id: 'local' as const, label: t('pg.backend.local') },
+  { id: 'mock-server' as const, label: t('pg.backend.mockServer') },
+  { id: 'mastra' as const, label: t('pg.backend.mastra') },
+])
+
+const currentBackendLabel = computed(
+  () =>
+    backendOptions.value.find((o) => o.id === backendId.value)?.label ??
+    backendOptions.value[0].label,
+)
+
+function toggleBackendMenu() {
+  backendMenuOpen.value = !backendMenuOpen.value
+  if (backendMenuOpen.value) modelMenuOpen.value = false
+}
+
+function showBackendOfflineNotice(id: PlaygroundBackendId) {
+  const url =
+    id === 'mastra'
+      ? BACKEND_BASE_URLS.mastra
+      : BACKEND_BASE_URLS['mock-server']
+  notice.value = t('pg.backend.offlineHint', { url })
+}
+
+async function pickBackend(id: PlaygroundBackendId) {
+  backendMenuOpen.value = false
+  // 重选当前远端项 = 重试探活；探活失败不切换并提示（重选 local 恒成功）
+  const ok = await selectBackend(id)
+  if (!ok) showBackendOfflineNotice(id)
 }
 
 async function onCreateProvider(payload: ProviderFormPayload) {
@@ -334,11 +399,11 @@ async function onRemoveProvider(id: string) {
   }
 }
 
-// 点击模型菜单外部时关闭
+// 点击菜单外部时关闭（模型 / 后端两个下拉）
 function onDocClick(e: MouseEvent) {
-  if (!(e.target as HTMLElement).closest?.('.pg-model-wrap')) {
-    modelMenuOpen.value = false
-  }
+  const target = e.target as HTMLElement
+  if (!target.closest?.('.pg-model-wrap')) modelMenuOpen.value = false
+  if (!target.closest?.('.pg-backend-wrap')) backendMenuOpen.value = false
 }
 
 // 服务端恢复在线后自动撤掉离线提示
@@ -349,8 +414,14 @@ watch(
   },
 )
 
+// 任一远端后端探活恢复在线后同样撤掉离线提示
+watch([mockServerOnline, mastraOnline], ([mock, mastra]) => {
+  if (mock === true || mastra === true) notice.value = null
+})
+
 onMounted(() => {
   void refreshProviderModels()
+  void probeBackends()
   window.addEventListener('keydown', onShortcutKeydown, true)
   window.addEventListener('click', onDocClick)
 })
@@ -660,7 +731,49 @@ watch(() => chat.messages.length, scrollToBottom)
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <div class="pg-model-wrap">
+          <!-- 后端选择器（spec 12）：本地 Mock / mock-server 8787 / Mastra 4111，只对新会话生效 -->
+          <div class="pg-backend-wrap">
+            <button
+              class="pg-backend-selector"
+              :class="{ open: backendMenuOpen }"
+              :title="t('pg.backend.label')"
+              @click="toggleBackendMenu"
+            >
+              {{ currentBackendLabel }}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div v-if="backendMenuOpen" class="pg-backend-menu">
+              <button
+                v-for="opt in backendOptions"
+                :key="opt.id"
+                class="pg-backend-option"
+                :class="{ selected: opt.id === backendId }"
+                :disabled="isBackendOffline(opt.id) && opt.id !== backendId"
+                @click="pickBackend(opt.id)"
+              >
+                {{ opt.label }}
+                <span
+                  v-if="isBackendOffline(opt.id)"
+                  class="pg-backend-offline"
+                  >{{ t('pg.backend.offline') }}</span
+                >
+              </button>
+            </div>
+          </div>
+          <!-- Mastra 后端：agent 由服务端配置决定，隐藏模型下拉显示固定 agent 标签 -->
+          <div v-if="backendId === 'mastra'" class="pg-agent-tag">
+            {{ t('pg.backend.agentTag') }}
+          </div>
+          <div v-else class="pg-model-wrap">
             <button
               class="pg-model-selector"
               :class="{ open: modelMenuOpen }"
@@ -856,8 +969,8 @@ watch(() => chat.messages.length, scrollToBottom)
             />
 
             <template v-else>
-              <!-- 真实模型会话（会话绑定 model）：工具过程进思考面板，随折叠/展开 -->
-              <template v-if="isRealModelConv && msg.role === 'assistant'">
+              <!-- 真实模型/Agent 会话（绑定 model 或 mastra 后端）：工具过程进思考面板，随折叠/展开 -->
+              <template v-if="isAgentConv && msg.role === 'assistant'">
                 <ThinkingBlock
                   v-if="msg.thinking || msg.toolCalls?.length"
                   :content="msg.thinking?.content"
@@ -1350,7 +1463,8 @@ watch(() => chat.messages.length, scrollToBottom)
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
+  height: 32px;
+  padding: 0 12px;
   border: 1px solid var(--ai-chat-color-border);
   border-radius: 6px;
   background: transparent;
@@ -1413,6 +1527,99 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-model-option.selected {
   color: var(--ai-chat-color-accent);
   font-weight: 500;
+}
+
+/* ===== 后端选择器（本地 Mock / mock-server 8787 / Mastra 4111） ===== */
+.pg-backend-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pg-backend-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-chat-color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pg-backend-selector.open {
+  border-color: var(--ai-chat-color-accent);
+}
+
+.pg-backend-selector svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pg-backend-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 200px;
+  padding: 4px;
+  background: var(--ai-chat-color-bg-primary);
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+}
+
+.pg-backend-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  width: 100%;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-chat-color-text-secondary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-backend-option:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.pg-backend-option.selected {
+  color: var(--ai-chat-color-accent);
+  font-weight: 500;
+}
+
+/* 探活失败的远端不可选（当前选中项保留可点 = 重试探活） */
+.pg-backend-option:disabled {
+  cursor: not-allowed;
+  color: var(--ai-chat-color-text-muted);
+}
+
+.pg-backend-offline {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ai-chat-color-text-muted);
+}
+
+/* Mastra 后端的固定 agent 标签（替代模型下拉，agent 由服务端配置决定） */
+.pg-agent-tag {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px dashed var(--ai-chat-color-border);
+  border-radius: 6px;
+  color: var(--ai-chat-color-text-secondary);
+  font-size: 13px;
 }
 
 /* 离线/操作失败通知条 */
