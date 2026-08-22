@@ -82,6 +82,7 @@ import { Button } from '@toimc/vue'
 - **active 反馈**：按下时 `translateY(1px)` 轻微下沉
 - **暗色自动适配**：所有颜色引用语义令牌（accent / danger / bg / text），`[data-theme='dark']` 翻转语义层即生效
 - **transition**：背景/边框/阴影/位移统一走 `--ai-chat-duration-fast`（0.12s），`prefers-reduced-motion` 时关闭过渡与下沉
+- **样式为 scoped（抗宿主 reset）**：宿主若带未分层的 button 元素 reset（Tailwind preflight / modern-normalize 的 `border: 0` + `background: transparent`），会无条件压过 `@layer` 内的一切库样式——scoped 属性选择器凭特异性免疫这类击穿；宿主定制外观走下方 `--ai-chat-btn-*` 变量钩子，无需 `!important`
 
 ## API
 
@@ -119,6 +120,7 @@ import { Button } from '@toimc/vue'
 | --ai-chat-btn-secondary-bg | `var(--ai-chat-color-bg-primary)`（亮 #ffffff / 暗 neutral-900） | 次要按钮背景 |
 | --ai-chat-btn-secondary-color | `var(--ai-chat-color-text-primary)` | 次要按钮文字 |
 | --ai-chat-btn-secondary-hover-bg | `var(--ai-chat-color-bg-secondary)` | 次要按钮悬停背景 |
+| --ai-chat-btn-secondary-border | `var(--ai-chat-color-border)` | 次要按钮边框色（弹层选中态等宿主场景经此钩子着色） |
 | --ai-chat-btn-danger-bg | `var(--ai-chat-color-danger-500)`（#ef4444） | 危险按钮背景 |
 | --ai-chat-btn-danger-color | `var(--ai-chat-color-text-on-accent)`（#ffffff） | 危险按钮文字 |
 | --ai-chat-btn-danger-hover-bg | `color-mix(danger-500 85%, neutral-950)` | 危险按钮悬停背景 |
