@@ -140,14 +140,16 @@ describe('createSseAdapter', () => {
     const adapter = createSseAdapter({
       getModel: () => 'custom-1',
     })
-    await Array.fromAsync(
-      adapter.sendMessage({
-        messages: [
-          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
-        ],
-        model: 'mock-pro',
-      }),
-    )
+    const consumed: StreamChunk[] = []
+    for await (const chunk of adapter.sendMessage({
+      messages: [
+        { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+      ],
+      model: 'mock-pro',
+    })) {
+      consumed.push(chunk)
+    }
+    expect(consumed.map((c) => c.type)).toContain('done')
 
     const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(payload.model).toBe('custom-1')
@@ -164,14 +166,16 @@ describe('createSseAdapter', () => {
     const adapter = createSseAdapter({
       getModel: () => undefined,
     })
-    await Array.fromAsync(
-      adapter.sendMessage({
-        messages: [
-          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
-        ],
-        model: 'mock-pro',
-      }),
-    )
+    const consumed: StreamChunk[] = []
+    for await (const chunk of adapter.sendMessage({
+      messages: [
+        { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+      ],
+      model: 'mock-pro',
+    })) {
+      consumed.push(chunk)
+    }
+    expect(consumed.map((c) => c.type)).toContain('done')
 
     const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(payload.model).toBe('mock-pro')
@@ -186,13 +190,15 @@ describe('createSseAdapter', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const adapter = createSseAdapter()
-    await Array.fromAsync(
-      adapter.sendMessage({
-        messages: [
-          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
-        ],
-      }),
-    )
+    const consumed: StreamChunk[] = []
+    for await (const chunk of adapter.sendMessage({
+      messages: [
+        { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+      ],
+    })) {
+      consumed.push(chunk)
+    }
+    expect(consumed.map((c) => c.type)).toContain('done')
 
     const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(payload.model).toBeUndefined()
