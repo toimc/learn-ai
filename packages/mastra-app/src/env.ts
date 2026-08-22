@@ -4,6 +4,8 @@ export interface AppEnvConfig {
   model: string
   /** 自定义 OpenAI 兼容端点（可选；设置后 model 走 { id, url } 对象形态） */
   modelUrl?: string
+  /** 自定义端点的 API key（可选；Mastra url 场景不自动读 provider env，须显式传入） */
+  modelApiKey?: string
   /** API 访问令牌（可选；设置后 /api/* 需 Bearer，/health 保持公开） */
   token?: string
   /** HTTP 端口（默认 4111，Mastra 生态默认口） */
@@ -33,6 +35,9 @@ export function readAppEnv(
   return {
     model,
     ...(env.MASTRA_APP_MODEL_URL ? { modelUrl: env.MASTRA_APP_MODEL_URL } : {}),
+    ...(env.MASTRA_APP_MODEL_API_KEY
+      ? { modelApiKey: env.MASTRA_APP_MODEL_API_KEY }
+      : {}),
     ...(env.MASTRA_APP_TOKEN ? { token: env.MASTRA_APP_TOKEN } : {}),
     port,
     telemetry: env.MASTRA_APP_TELEMETRY === 'true',

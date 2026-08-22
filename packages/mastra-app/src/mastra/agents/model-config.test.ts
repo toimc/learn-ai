@@ -20,6 +20,20 @@ describe('resolveModelConfig', () => {
     })
   })
 
+  it('有 modelUrl + modelApiKey：对象显式带 apiKey（实测 Mastra url 场景不自动读 provider env）', () => {
+    expect(
+      resolveModelConfig({
+        model: 'openai/gpt-5.6-terra',
+        modelUrl: 'https://2api.store/v1',
+        modelApiKey: 'sk-e2e',
+      }),
+    ).toEqual({
+      id: 'openai/gpt-5.6-terra',
+      url: 'https://2api.store/v1',
+      apiKey: 'sk-e2e',
+    })
+  })
+
   it('modelUrl 为空串时视为未设置，走路由串', () => {
     expect(resolveModelConfig({ model: 'openai/gpt-4o', modelUrl: '' })).toBe(
       'openai/gpt-4o',
