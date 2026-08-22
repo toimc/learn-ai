@@ -129,6 +129,75 @@ describe('createSseAdapter', () => {
     expect(chunks.map((c) => c.type)).toEqual(['text', 'done'])
   })
 
+  it('getModel 闭包返回值优先写入 body.model（覆盖 opts.model）', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse(['data: {"type":"done","content":""}\n\n']),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adapter = createSseAdapter({
+      getModel: () => 'custom-1',
+    })
+    await Array.fromAsync(
+      adapter.sendMessage({
+        messages: [
+          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+        ],
+        model: 'mock-pro',
+      }),
+    )
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.model).toBe('custom-1')
+  })
+
+  it('getModel 返回 undefined 时回退到 opts.model', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse(['data: {"type":"done","content":""}\n\n']),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adapter = createSseAdapter({
+      getModel: () => undefined,
+    })
+    await Array.fromAsync(
+      adapter.sendMessage({
+        messages: [
+          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+        ],
+        model: 'mock-pro',
+      }),
+    )
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.model).toBe('mock-pro')
+  })
+
+  it('未传 getModel 时 body.model 保持 opts.model 透传（现状不变）', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse(['data: {"type":"done","content":""}\n\n']),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adapter = createSseAdapter()
+    await Array.fromAsync(
+      adapter.sendMessage({
+        messages: [
+          { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+        ],
+      }),
+    )
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.model).toBeUndefined()
+  })
+
   it('服务端不可达时抛出可读错误', async () => {
     vi.stubGlobal(
       'fetch',

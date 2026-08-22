@@ -9,6 +9,8 @@ export interface SseAdapterOptions {
   baseUrl?: string
   /** 每次发送时取当前会话 id（闭包注入，随切换更新） */
   getConversationId?: () => string | undefined
+  /** 每次发送时取会话绑定的模型 id（优先于 opts.model，闭包注入） */
+  getModel?: () => string | undefined
 }
 
 const DEFAULT_BASE_URL = 'http://localhost:8787'
@@ -98,7 +100,7 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
               role: m.role,
               content: m.content,
             })),
-            model: opts.model,
+            model: options.getModel?.() ?? opts.model,
           }),
           signal,
         })
