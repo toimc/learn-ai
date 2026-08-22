@@ -108,8 +108,14 @@ export default defineConfig({
             { text: '使用指南', link: '/guide/usage' },
             { text: '主题定制', link: '/guide/theming' },
             { text: '国际化', link: '/guide/i18n' },
-            { text: '服务端网关', link: '/guide/server' },
             { text: '主题配置器', link: '/theme-builder' },
+          ],
+        },
+        {
+          text: '智能体&服务',
+          items: [
+            { text: '服务端网关', link: '/guide/server' },
+            { text: 'Mastra 智能体', link: '/guide/mastra' },
           ],
         },
         {

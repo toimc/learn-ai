@@ -36,7 +36,7 @@ yarn add @toimc/core @toimc/vue @toimc/markdown
 pnpm add vue@^3.5.0
 ```
 
-`@toimc/agents` 的 mastra 子路径另有可选 peer 依赖 `@mastra/core`（配套 `@mastra/memory` / `@mastra/libsql` / `zod` 做会话记忆与工具 schema），仅在使用 [Mastra Agent 接入](/guide/server) 时安装，不影响主入口：
+`@toimc/agents` 的 mastra 子路径另有可选 peer 依赖 `@mastra/core`（配套 `@mastra/memory` / `@mastra/libsql` / `zod` 做会话记忆与工具 schema），仅在使用 [Mastra 智能体](/guide/mastra) 时安装，不影响主入口：
 
 ```bash
 pnpm add @mastra/core @mastra/memory @mastra/libsql zod
