@@ -96,6 +96,7 @@ const model = ref('gpt-4o-mini')
 - **focus ring**：聚焦（`:focus-visible`）时 accent 边框 + `--ai-chat-control-ring`（3px 低透明度 accent 阴影）；hover 时边框加深
 - **invalid 态**：`--ai-chat-color-status-error` 边框，聚焦时 ring 同步变 error 色
 - **暗色自动适配**：背景/边框/文字全部引用语义令牌，`[data-theme='dark']` 翻转语义层即生效
+- **样式为 scoped（抗宿主 reset）**：宿主未分层表单元素 reset（Tailwind preflight / modern-normalize 的 `border: 0` + `padding: 0`）会压过 `@layer` 内的库样式，scoped 属性选择器凭特异性免疫
 - **transition**：边框/阴影/透明度统一走 `--ai-chat-duration-fast`（0.12s），`prefers-reduced-motion` 时关闭
 
 ## API
