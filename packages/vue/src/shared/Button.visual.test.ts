@@ -26,4 +26,11 @@ describe('Button 视觉令牌守护', () => {
   it('无 !important（宿主靠层顺序覆盖）', () => {
     expect(source).not.toContain('!important')
   })
+
+  it('样式为 scoped（宿主未分层 button reset 不击穿边框与背景）', () => {
+    // 层级战事实：未分层 reset（Tailwind preflight / modern-normalize 的
+    // `button { border: 0; background: transparent }`）压过一切 @layer，
+    // 只有 scoped 的属性选择器特异性能赢（style-isolation.md §2 例外条款）
+    expect(source).toContain('<style scoped>')
+  })
 })

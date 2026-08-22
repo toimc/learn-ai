@@ -228,13 +228,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     color: var(--ai-chat-color-text-muted);
   }
 
-  /* 控件外观交给 Button 原语，这里只保留选中态（aria-pressed）；
-     选择器加权确保压过 .ai-chat-btn--secondary 的 hover 态 */
-  .ai-chat-provider-dialog__preset[aria-pressed='true'],
-  .ai-chat-provider-dialog__preset[aria-pressed='true']:hover:not(:disabled) {
-    border-color: var(--ai-chat-color-accent);
-    background: var(--ai-chat-color-accent-dim);
-    color: var(--ai-chat-color-accent);
+  /* 控件外观交给 Button 原语，这里只保留选中态（aria-pressed）。
+     Button 样式为 scoped（未分层），本规则在 @layer 内无法在层战里赢它，
+     改走 CSS 变量钩子通道：变量随级联进入按钮子树，由 Button 自己消费 */
+  .ai-chat-provider-dialog__preset[aria-pressed='true'] {
+    --ai-chat-btn-secondary-border: var(--ai-chat-color-accent);
+    --ai-chat-btn-secondary-bg: var(--ai-chat-color-accent-dim);
+    --ai-chat-btn-secondary-hover-bg: var(--ai-chat-color-accent-dim);
+    --ai-chat-btn-secondary-color: var(--ai-chat-color-accent);
   }
 
   .ai-chat-provider-dialog__error {
