@@ -158,6 +158,10 @@ export default defineConfig({
             { text: 'LanguageToggle', link: '/components/language-toggle' },
             { text: 'Shimmer', link: '/components/shimmer' },
             { text: 'Toast', link: '/components/toast' },
+            {
+              text: 'ProviderSettingsDialog',
+              link: '/components/provider-settings-dialog',
+            },
           ],
         },
         {
