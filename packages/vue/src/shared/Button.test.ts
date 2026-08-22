@@ -18,6 +18,16 @@ describe('Button 渲染', () => {
     },
   )
 
+  it('边界：默认原生 type=button（表单内点击不触发浏览器原生 submit 双发）', () => {
+    const w = mount(Button)
+    expect(w.get('button').attributes('type')).toBe('button')
+  })
+
+  it('nativeType=submit 时透传原生 type=submit（显式表单提交按钮语义）', () => {
+    const w = mount(Button, { props: { nativeType: 'submit' } })
+    expect(w.get('button').attributes('type')).toBe('submit')
+  })
+
   it.each(['small', 'medium', 'large'] as const)(
     'size=%s 渲染对应修饰类',
     (size) => {

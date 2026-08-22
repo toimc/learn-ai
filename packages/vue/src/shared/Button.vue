@@ -2,6 +2,8 @@
 <script setup lang="ts">
 defineProps<{
   type?: 'primary' | 'secondary' | 'danger'
+  /** 原生 button type，默认 'button'（表单内防浏览器原生 submit 双发，对齐 native-type 惯例） */
+  nativeType?: 'button' | 'submit' | 'reset'
   size?: 'small' | 'medium' | 'large'
   disabled?: boolean
 }>()
@@ -18,6 +20,7 @@ defineEmits<{
       type ? `ai-chat-btn--${type}` : 'ai-chat-btn--primary',
       size ? `ai-chat-btn--${size}` : 'ai-chat-btn--medium',
     ]"
+    :type="nativeType ?? 'button'"
     :disabled="disabled"
     @click="$emit('click', $event)"
   >

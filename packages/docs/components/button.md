@@ -90,6 +90,7 @@ import { Button } from '@toimc/vue'
 | 属性名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | type | `'primary' \| 'secondary' \| 'danger'` | `'primary'` | 按钮类型 |
+| native-type | `'button' \| 'submit' \| 'reset'` | `'button'` | 原生 button type；默认 `button` 以防表单内点击触发浏览器原生 submit 导致双提交，需要原生提交语义时显式传 `submit` |
 | size | `'small' \| 'medium' \| 'large'` | `'medium'` | 按钮尺寸 |
 | disabled | `boolean` | `false` | 是否禁用 |
 
