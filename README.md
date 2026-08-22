@@ -280,7 +280,9 @@ interface ChatAdapter {
 
 ```bash
 pnpm install        # 安装依赖
-pnpm dev            # 启动文档站
+pnpm dev            # 启动文档站 + mock-server（5173 + 8787）
+pnpm dev:mastra     # 单独启动 mastra-app（4111，需 packages/mastra-app/.env）
+pnpm dev:all        # 三服务全家桶：docs + mock-server + mastra-app
 pnpm build          # 构建所有包
 pnpm test           # 运行单元测试
 pnpm test:e2e       # 运行端到端测试
