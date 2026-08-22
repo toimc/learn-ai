@@ -101,6 +101,9 @@ const zhCN = {
       'mock-server 未启动（http://localhost:8787），请先运行 pnpm dev',
     goDemo: '去流式演示 →',
   },
+  chat: {
+    sendFailed: '发送失败：{msg}',
+  },
   providerSettings: {
     open: '设置 Provider',
     offlineHint:
@@ -227,6 +230,9 @@ const enUS: typeof zhCN = {
     bannerOffline:
       'mock-server is not running (http://localhost:8787). Run pnpm dev first',
     goDemo: 'Streaming demo →',
+  },
+  chat: {
+    sendFailed: 'Send failed: {msg}',
   },
   providerSettings: {
     open: 'Configure providers',
