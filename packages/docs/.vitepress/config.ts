@@ -159,6 +159,15 @@ export default defineConfig({
           ],
         },
         {
+          text: '基础组件',
+          items: [
+            { text: 'Button', link: '/components/button' },
+            { text: 'Input', link: '/components/input' },
+            { text: 'Select', link: '/components/select' },
+            { text: 'Radio', link: '/components/radio' },
+          ],
+        },
+        {
           text: '通用组件',
           items: [
             { text: 'LanguageToggle', link: '/components/language-toggle' },

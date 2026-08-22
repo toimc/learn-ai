@@ -111,6 +111,8 @@ onMounted(refresh)
 | model | trim 后非空 |
 | baseURL | `openai-compat` 时 trim 后非空；`anthropic` 时可选 |
 
+弹层表单控件基于 [Input](/components/input)、[Radio](/components/radio)、[Button](/components/button) 三个基础件实现（apiKey 即 Input 的 `type="password"` + `autocomplete="new-password"`，失焦 touched 依赖 Input 的 `blur` 透传）。
+
 提交按钮禁用之外，程序化触发的提交（绕过 disabled 的事件派发）也会被组件内二次拦截：先把所有字段标记为 touched，校验不通过直接返回。
 
 ## 行为注记
