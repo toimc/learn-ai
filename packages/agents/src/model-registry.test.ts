@@ -166,6 +166,42 @@ describe('ModelRegistry.list（公开视图脱敏）', () => {
   })
 })
 
+describe('ModelRegistry.removeAdapter（注销）', () => {
+  it('移除已注册 id 返回 true，get 抛错且 list/has 不再包含', () => {
+    const registry = new ModelRegistry()
+      .register(openaiConfig)
+      .registerAdapter('mock', fakeAdapter(), { name: 'Mock' })
+    expect(registry.removeAdapter('mock')).toBe(true)
+    expect(registry.has('mock')).toBe(false)
+    expect(() => registry.get('mock')).toThrow('mock')
+    expect(registry.list()).toEqual([
+      {
+        id: 'gpt',
+        name: 'gpt',
+        description: '',
+        provider: 'openai-compat',
+      },
+    ])
+  })
+
+  it('移除不存在的 id 返回 false，其余注册项不受影响', () => {
+    const registry = new ModelRegistry().register(openaiConfig)
+    expect(registry.removeAdapter('nope')).toBe(false)
+    expect(registry.has('gpt')).toBe(true)
+  })
+
+  it('移除后可重新注册同 id，持有新的适配器实例', () => {
+    const replacement = fakeAdapter()
+    const registry = new ModelRegistry().registerAdapter('mock', fakeAdapter())
+    expect(registry.removeAdapter('mock')).toBe(true)
+    registry.registerAdapter('mock', replacement)
+    expect(registry.get('mock').adapter).toBe(replacement)
+    expect(registry.list()).toEqual([
+      { id: 'mock', name: 'mock', description: '' },
+    ])
+  })
+})
+
 describe('ModelRegistry 覆盖与链式', () => {
   it('同 id 重复 register 覆盖为新的适配器', () => {
     const replacement = { ...anthropicConfig, id: 'gpt' }
