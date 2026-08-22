@@ -172,7 +172,6 @@ corepack pnpm studio    # mastra studio，默认连本进程 4111
 - 请求携带全量 `messages` + `memory: { thread: 会话id, resource: 'ai-chat-playground' }`，Mastra 按线程补全历史
 - `abort` 中断静默无错误残留；4111 停机时发送按既有错误路径提示
 
-### 端口并存与 Studio 调试
 ### 运行时配置模型（免重启）
 
 `.env` 静态模型适合长期默认配置；切换模型（换中转站、换 key、对比模型效果）时改 `.env` 重启的反馈回路太长。`/api/app/model` 提供**单条运行时配置**：表单提交即刻组装带工具与会话记忆的 `custom-agent`，**免重启生效**：
@@ -205,6 +204,17 @@ curl -X DELETE http://localhost:4111/api/app/model
 - **安全**：apiKey 只进服务端进程内存（openai-compat 显式进 model 对象、anthropic 注入 `ANTHROPIC_API_KEY`），不落盘、不进日志、不进任何 GET 响应；配置与流式端点同受可选的 `MASTRA_APP_TOKEN` Bearer 保护
 - **Playground 集成**：后端选 **Mastra · 4111** 时打开 Provider 设置弹层即此配置（同一表单组件，提交目标自动分流到 4111）；保存/删除后新发送即刻切端点，**已开始的流不受影响**（发送时快照，语义同会话切换）
 - 运行时配置存于进程内存，重启后归零（回到 `.env`）；长期使用的模型请固化到 `.env`
+
+### 端口并存与 Studio 调试
+
+**日常三服务并存零冲突**：`corepack pnpm dev:all` 同时起 docs（5173）+ mock-server（8787）+ mastra-app（4111）——三者端口互不重叠，Playground 后端选择器可在「mock-server · 8787」与「Mastra · 4111」间自由切换。
+
+**唯一的端口冲突场景**是手动起 mock-server 的 Studio 调试器：`npx mastra dev`（需 `MASTRA_TELEMETRY=true`）与 mastra-app 同占 4111，且当前 CLI 无 `--port` 参数、`PORT` 环境变量不生效。此时二选一：
+
+- 只想调试 mock-server 侧 agent：停掉 mastra-app（`corepack pnpm dev:mastra` 那个终端 Ctrl-C）再起 Studio
+- 想保住 mastra-app：`MASTRA_APP_PORT=4112 corepack pnpm dev:mastra` 临时挪走它——注意 Playground 后端选择器当前固定指向 4111，挪端口后该选择器探活会显示离线（已知限制，后续可做后端地址自定义）
+
+Studio 只是**按需调试工具**（查看 agent 定义 / trace / playground 试验），不参与任何 dev 编排，日常开发不需要它。
 
 ## 流事件映射（两条链路同构）
 
