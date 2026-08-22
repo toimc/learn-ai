@@ -3,6 +3,7 @@ import { readAppEnv } from '../../env'
 import { createMemory } from '../memory'
 import { getTimeTool } from '../tools/get-time'
 import { getWeatherTool } from '../tools/get-weather'
+import { CHAT_AGENT_INSTRUCTIONS } from './instructions'
 import { resolveModelConfig } from './model-config'
 
 /** 模块加载即校验 env：缺 MASTRA_APP_MODEL 启动报可读错误（spec 12 §3.2） */
@@ -16,8 +17,7 @@ export const chatAgent = new Agent({
   model: resolveModelConfig(env) as ConstructorParameters<
     typeof Agent
   >[0]['model'],
-  instructions:
-    '你是 ai-chat-ui 的演示 Agent。需要时间或天气信息时调用对应工具，回答保持简洁。',
+  instructions: CHAT_AGENT_INSTRUCTIONS,
   tools: { getTimeTool, getWeatherTool },
   memory: createMemory(),
 })
