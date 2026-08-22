@@ -1,0 +1,30 @@
+{
+  "name": "@toimc/mastra-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "studio": "mastra studio",
+    "build": "mastra build",
+    "start": "mastra start",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "@mastra/core": "^1.60.0",
+    "@mastra/hono": "^1.7.1",
+    "@mastra/libsql": "^1.21.0",
+    "@mastra/memory": "^1.27.0",
+    "hono": "^4.10.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "mastra": "^1.26.0",
+    "tsx": "^4.20.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}
