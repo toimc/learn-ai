@@ -32,6 +32,7 @@ export {
   MessageActions,
   MessageAction,
   MessageAttachments,
+  ThinkingBlock,
 } from './message'
 
 // PromptInput series
