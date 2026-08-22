@@ -30,10 +30,14 @@ import {
   PromptInputButton,
   ToolCall,
   ComparisonMessage,
+  ThinkingBlock,
+  ProviderSettingsDialog,
   useLayoutConfig,
   useTheme,
 } from '@toimc/vue'
-import { mockAdapter } from '../mock/mock-adapter'
+import type { ProviderFormPayload } from '@toimc/vue'
+import { createDispatchAdapter } from '../mock/dispatch-adapter'
+import { useProviderModels } from '../composables/useProviderModels'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
@@ -41,8 +45,27 @@ const { t } = aiChatI18n.global
 // 走 workspace 源码路径；发布包对应 '@toimc/markdown/katex.css'
 import '../../../markdown/src/styles/katex.css'
 
+// 运行时模型与 Provider 状态（spec 11）：拉取 /api/models、/api/providers，
+// 选中模型 id 持久化 localStorage（仅 id，绝存 apiKey）
+const {
+  models: modelList,
+  providers: providerList,
+  status: providerStatus,
+  selectedModelId,
+  refresh: refreshProviderModels,
+  createProvider,
+  removeProvider,
+  selectModel,
+} = useProviderModels()
+
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
-const chat = useChat(mockAdapter)
+// adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）
+const chat = useChat(
+  createDispatchAdapter({
+    getConversation: () =>
+      conversations.value.find((c) => c.id === activeConversationId.value),
+  }),
+)
 
 const sidebarOpen = ref(false)
 // 桌面端折叠状态（挤压式收起，与移动端抽屉 sidebarOpen 解耦）
@@ -79,6 +102,8 @@ interface PlaygroundConv {
   group: 'today' | 'week'
   active: boolean
   messages: (typeof import('@toimc/core').Message)[]
+  /** 绑定的服务端模型 id（spec 11）：带值会话经 SSE 走真实模型，缺省走本地 mock */
+  model?: string
 }
 
 const conversations = ref<PlaygroundConv[]>([
@@ -142,6 +167,13 @@ const conversations = ref<PlaygroundConv[]>([
 
 // 当前激活的会话ID
 const activeConversationId = ref('1')
+
+// 当前激活会话：adapter 分发与真实模型渲染路径的依据
+const activeConv = computed(() =>
+  conversations.value.find((c) => c.id === activeConversationId.value),
+)
+// 真实模型会话（会话绑定 model）：工具过程进思考面板的渲染路径
+const isRealModelConv = computed(() => Boolean(activeConv.value?.model))
 
 // 初始化时加载第一个会话的消息
 chat.messages.push(...conversations.value[0].messages)
@@ -216,7 +248,7 @@ function newChat() {
     currentConv.messages = [...chat.messages]
   }
 
-  // 创建新会话
+  // 创建新会话；选中了模型时写入该 model（此后本会话经真实模型收发）
   const newId = `${Date.now()}`
   const newConv: PlaygroundConv = {
     id: newId,
@@ -224,6 +256,7 @@ function newChat() {
     group: 'today',
     active: true,
     messages: [],
+    ...(selectedModelId.value ? { model: selectedModelId.value } : {}),
   }
 
   // 取消其他会话的激活状态
@@ -244,10 +277,87 @@ function onShortcutKeydown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => window.addEventListener('keydown', onShortcutKeydown, true))
-onUnmounted(() =>
-  window.removeEventListener('keydown', onShortcutKeydown, true),
+// ===== Provider 设置与模型选择（spec 11：运行时注册真实模型会话） =====
+const settingsOpen = ref(false)
+const modelMenuOpen = ref(false)
+// 顶栏通知条：离线点击提示 / Provider 操作失败（离线提示样式模式）
+const notice = ref<string | null>(null)
+
+// 无可选项（服务端未启动）时下拉保持装饰外观，与现状一致
+const hasModelOptions = computed(() => modelList.value.length > 0)
+const selectedModelName = computed(() => {
+  const id = selectedModelId.value
+  if (!id) return t('pg.providerChat.modelDefault')
+  return (
+    modelList.value.find((m) => m.id === id)?.name ??
+    t('pg.providerChat.modelDefault')
+  )
+})
+
+function openSettings() {
+  if (providerStatus.value === 'offline') {
+    notice.value = t('pg.providerSettings.offlineHint')
+    return
+  }
+  settingsOpen.value = true
+}
+
+function toggleModelMenu() {
+  if (!hasModelOptions.value) return
+  modelMenuOpen.value = !modelMenuOpen.value
+}
+
+function pickModel(id: string | undefined) {
+  selectModel(id)
+  modelMenuOpen.value = false
+}
+
+async function onCreateProvider(payload: ProviderFormPayload) {
+  try {
+    await createProvider(payload)
+  } catch (err) {
+    notice.value = t('pg.providerSettings.actionFailed', {
+      message: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
+async function onRemoveProvider(id: string) {
+  try {
+    await removeProvider(id)
+    // 删除的是当前选中模型 → 回退默认，新会话回到本地 mock 行为
+    if (selectedModelId.value === id) selectModel(undefined)
+  } catch (err) {
+    notice.value = t('pg.providerSettings.actionFailed', {
+      message: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
+// 点击模型菜单外部时关闭
+function onDocClick(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest?.('.pg-model-wrap')) {
+    modelMenuOpen.value = false
+  }
+}
+
+// 服务端恢复在线后自动撤掉离线提示
+watch(
+  () => providerStatus.value,
+  (s) => {
+    if (s === 'online') notice.value = null
+  },
 )
+
+onMounted(() => {
+  void refreshProviderModels()
+  window.addEventListener('keydown', onShortcutKeydown, true)
+  window.addEventListener('click', onDocClick)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onShortcutKeydown, true)
+  window.removeEventListener('click', onDocClick)
+})
 
 function startEdit(conv: PlaygroundConv) {
   editingId.value = conv.id
@@ -550,19 +660,47 @@ watch(() => chat.messages.length, scrollToBottom)
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <button class="pg-model-selector">
-            AI Chat UI
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+          <div class="pg-model-wrap">
+            <button
+              class="pg-model-selector"
+              :class="{ open: modelMenuOpen }"
+              :title="
+                hasModelOptions ? t('pg.providerChat.selectModel') : undefined
+              "
+              @click="toggleModelMenu"
             >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
+              {{ selectedModelName }}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <!-- 模型下拉：数据源 GET /api/models（mock 三模型 + custom-*） -->
+            <div v-if="modelMenuOpen" class="pg-model-menu">
+              <button
+                class="pg-model-option"
+                :class="{ selected: !selectedModelId }"
+                @click="pickModel(undefined)"
+              >
+                {{ t('pg.providerChat.modelDefaultOption') }}
+              </button>
+              <button
+                v-for="m in modelList"
+                :key="m.id"
+                class="pg-model-option"
+                :class="{ selected: m.id === selectedModelId }"
+                @click="pickModel(m.id)"
+              >
+                {{ m.name }}
+              </button>
+            </div>
+          </div>
         </div>
         <div class="pg-header-actions">
           <button
@@ -628,9 +766,42 @@ watch(() => chat.messages.length, scrollToBottom)
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
+          <button
+            class="pg-btn-icon"
+            :title="t('pg.providerSettings.open')"
+            @click="openSettings"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+          </button>
           <LanguageToggle />
         </div>
       </header>
+
+      <!-- 离线/操作失败通知条（复用 mock 演示的离线提示样式模式） -->
+      <div v-if="notice" class="pg-notice">
+        <span>{{ notice }}</span>
+        <button
+          class="pg-notice-close"
+          :title="t('pg.providerSettings.dismiss')"
+          @click="notice = null"
+        >
+          &times;
+        </button>
+      </div>
 
       <Conversation
         :layout="layout.layoutProps.value.layout"
@@ -685,18 +856,41 @@ watch(() => chat.messages.length, scrollToBottom)
             />
 
             <template v-else>
-              <MessageContent
-                v-if="msg.role === 'assistant'"
-                :content="msg.content"
-                :thinking="msg.thinking"
-                :streaming="chat.isStreaming"
-              />
-              <MessageContent v-else>
-                {{ msg.content }}
-              </MessageContent>
+              <!-- 真实模型会话（会话绑定 model）：工具过程进思考面板，随折叠/展开 -->
+              <template v-if="isRealModelConv && msg.role === 'assistant'">
+                <ThinkingBlock
+                  v-if="msg.thinking || msg.toolCalls?.length"
+                  :content="msg.thinking?.content"
+                  :duration="msg.thinking?.duration"
+                  :streaming="chat.isStreaming"
+                >
+                  <ToolCall
+                    v-for="tc in msg.toolCalls"
+                    :key="tc.id"
+                    :data="tc"
+                  />
+                </ThinkingBlock>
+                <MessageContent
+                  :content="msg.content"
+                  :streaming="chat.isStreaming"
+                />
+              </template>
 
-              <!-- ToolCalls -->
-              <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
+              <!-- 纯 mock 会话：现有渲染路径（保持不动） -->
+              <template v-else>
+                <MessageContent
+                  v-if="msg.role === 'assistant'"
+                  :content="msg.content"
+                  :thinking="msg.thinking"
+                  :streaming="chat.isStreaming"
+                />
+                <MessageContent v-else>
+                  {{ msg.content }}
+                </MessageContent>
+
+                <!-- ToolCalls -->
+                <ToolCall v-for="tc in msg.toolCalls" :key="tc.id" :data="tc" />
+              </template>
 
               <MessageActions v-if="msg.role === 'assistant'">
                 <MessageAction :title="t('pg.actions.copy')">
@@ -841,6 +1035,14 @@ watch(() => chat.messages.length, scrollToBottom)
         </div>
       </Conversation>
     </main>
+
+    <!-- Provider 设置弹层（纯 UI 组件，事件交宿主处理） -->
+    <ProviderSettingsDialog
+      v-model:open="settingsOpen"
+      :providers="providerList"
+      @create="onCreateProvider"
+      @remove="onRemoveProvider"
+    />
   </div>
 </template>
 
@@ -1157,9 +1359,96 @@ watch(() => chat.messages.length, scrollToBottom)
   cursor: pointer;
 }
 
+.pg-model-selector.open {
+  border-color: var(--ai-chat-color-accent);
+}
+
 .pg-model-selector svg {
   width: 14px;
   height: 14px;
+}
+
+/* 模型下拉菜单：仅当 GET /api/models 有可选项时打开 */
+.pg-model-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pg-model-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--ai-chat-color-bg-primary);
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+}
+
+.pg-model-option {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  width: 100%;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-chat-color-text-secondary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-model-option:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.pg-model-option.selected {
+  color: var(--ai-chat-color-accent);
+  font-weight: 500;
+}
+
+/* 离线/操作失败通知条 */
+.pg-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 16px 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--ai-chat-color-text-secondary);
+}
+
+.pg-notice-close {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ai-chat-color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pg-notice-close:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--ai-chat-color-text-primary);
 }
 
 .pg-header-actions {
