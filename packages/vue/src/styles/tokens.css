@@ -63,6 +63,8 @@
     --ai-chat-avatar-size: 30px;
     --ai-chat-btn-icon-size: 36px;
     --ai-chat-btn-tool-size: 32px;
+    --ai-chat-control-height-sm: 32px;
+    --ai-chat-control-height-md: 36px;
     --ai-chat-msg-gap: 16px;
     --ai-chat-msg-padding-y: 20px;
     --ai-chat-content-max-width-wide: 1024px;
@@ -109,6 +111,9 @@
     --ai-chat-color-input-bg: var(--ai-chat-neutral-100);
     --ai-chat-color-input-border: var(--ai-chat-neutral-300);
     --ai-chat-color-input-focus-border: var(--ai-chat-color-accent-500);
+
+    /* 控件状态 */
+    --ai-chat-control-ring: 0 0 0 3px var(--ai-chat-color-accent-dim);
 
     /* 消息 */
     --ai-chat-color-msg-user-bg: var(--ai-chat-neutral-100);
@@ -162,6 +167,9 @@
     --ai-chat-color-input-bg: #2f2f2f;
     --ai-chat-color-input-border: var(--ai-chat-neutral-700);
     --ai-chat-color-input-focus-border: var(--ai-chat-color-accent-500);
+
+    /* 控件状态 */
+    --ai-chat-control-ring: 0 0 0 3px var(--ai-chat-color-accent-dim);
 
     /* 消息 */
     --ai-chat-color-msg-user-bg: #2f2f2f;
