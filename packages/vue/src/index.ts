@@ -73,6 +73,10 @@ export {
 // Preview series
 export { ImageLightbox } from './preview'
 
+// Provider settings
+export { ProviderSettingsDialog } from './provider'
+export type { ProviderOption, ProviderFormPayload } from './provider'
+
 // Old components (deprecated, will be removed in v1.0.0)
 /** @deprecated Use Conversation + ConversationContent instead */
 export { default as ChatWindow } from './ChatWindow.vue'
