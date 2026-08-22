@@ -27,6 +27,10 @@ export const openApiSpec = {
     { name: '会话', description: '多会话数据源：列表 / 历史 / 新建' },
     { name: '对话', description: '流式对话：SSE 逐块输出 StreamChunk' },
     { name: '元信息', description: '模型列表与探活' },
+    {
+      name: 'Provider',
+      description: '运行时注册真实模型：注册为带工具与会话记忆的 Mastra Agent',
+    },
   ],
   paths: {
     '/api/conversations': {
@@ -242,6 +246,132 @@ export const openApiSpec = {
         },
       },
     },
+    '/api/providers': {
+      get: {
+        tags: ['Provider'],
+        summary: '运行时注册的模型列表',
+        description:
+          '仅返回运行时经 POST /api/providers 注册的自定义模型（公开视图）。**响应绝不含 apiKey**（密钥只存服务端内存）。',
+        operationId: 'listProviders',
+        responses: {
+          200: {
+            description: '运行时注册项列表',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    providers: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/ProviderOption' },
+                    },
+                  },
+                  required: ['providers'],
+                },
+                example: {
+                  providers: [
+                    {
+                      id: 'custom-1',
+                      name: 'DeepSeek',
+                      provider: 'openai-compat',
+                      model: 'deepseek-chat',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ['Provider'],
+        summary: '注册真实模型 Provider',
+        description: [
+          '把表单配置注册为带工具（时间 / 天气）与会话记忆的 Mastra Agent 模型，',
+          '成功后出现在 `GET /api/models`，`POST /api/chat` 传 `model` 即可使用。',
+          '\n\n- 注册不做上游连通性校验（惰性），首次对话才真连，失败走既有 error chunk',
+          '\n- 服务端生成递增 id `custom-{n}`（进程内存，重启归零）',
+          '\n- **apiKey 只进服务端内存：不落盘、不进日志、不进任何 GET 响应**',
+        ].join(''),
+        operationId: 'registerProvider',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ProviderFormPayload',
+              },
+              example: {
+                name: 'DeepSeek',
+                provider: 'openai-compat',
+                baseURL: 'https://api.deepseek.com/v1',
+                apiKey: 'sk-your-api-key',
+                model: 'deepseek-chat',
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: '注册成功，返回脱敏的 ProviderOption',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ProviderOption' },
+              },
+            },
+          },
+          400: {
+            description:
+              '校验失败：name / apiKey / model 非空，openai-compat 时 baseURL 必填',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { error: { type: 'string' } },
+                  required: ['error'],
+                },
+                example: { error: 'apiKey is required' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/providers/{id}': {
+      delete: {
+        tags: ['Provider'],
+        summary: '删除运行时注册的模型',
+        description:
+          '从 registry 与运行时列表中移除指定 `custom-{n}` 模型。删除后历史会话再发送走既有 error chunk。',
+        operationId: 'removeProvider',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'custom-1',
+            description: '注册时服务端生成的 id',
+          },
+        ],
+        responses: {
+          200: {
+            description: '删除成功',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { ok: { type: 'boolean' } },
+                  required: ['ok'],
+                },
+                example: { ok: true },
+              },
+            },
+          },
+          404: { description: 'id 不存在' },
+        },
+      },
+    },
     '/api/health': {
       get: {
         tags: ['元信息'],
@@ -326,6 +456,39 @@ export const openApiSpec = {
           duration: { type: 'integer' },
         },
         required: ['id', 'name', 'arguments', 'status'],
+      },
+      ProviderOption: {
+        type: 'object',
+        description: '运行时注册项的公开视图（脱敏：无 apiKey / baseURL）',
+        properties: {
+          id: { type: 'string', example: 'custom-1' },
+          name: { type: 'string', example: 'DeepSeek' },
+          provider: { type: 'string', enum: ['openai-compat', 'anthropic'] },
+          model: { type: 'string', example: 'deepseek-chat' },
+        },
+        required: ['id', 'name', 'provider'],
+      },
+      ProviderFormPayload: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: '展示名（必填）' },
+          provider: {
+            type: 'string',
+            enum: ['openai-compat', 'anthropic'],
+            description: '协议类型（必填）',
+          },
+          baseURL: {
+            type: 'string',
+            description: 'openai-compat 必填；anthropic 缺省走官方端点',
+            example: 'https://api.deepseek.com/v1',
+          },
+          apiKey: {
+            type: 'string',
+            description: '密钥（必填）：仅服务端内存持有，任何响应不回显',
+          },
+          model: { type: 'string', description: '模型名（必填）' },
+        },
+        required: ['name', 'provider', 'apiKey', 'model'],
       },
       ChatRequestBody: {
         type: 'object',

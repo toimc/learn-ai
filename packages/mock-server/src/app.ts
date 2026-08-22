@@ -3,6 +3,7 @@ import { ModelRegistry } from '@toimc/agents'
 import type { Agent } from '@mastra/core/agent'
 import { createMockAdapter } from './mock-adapter'
 import { createConversationsRoutes } from './routes/conversations'
+import { createProvidersRoutes } from './routes/providers'
 import { openApiSpec } from './openapi'
 import { readMastraEnv, registerMastraAgent } from './mastra/register'
 import { attachMastraInstance } from './mastra/index'
@@ -36,6 +37,9 @@ export async function createMockApp() {
     mastraAgent = await registerMastraAgent(registry, mastraEnv)
   }
 
+  // 运行时 Provider 注册路由：POST 注册的真实模型进入同一 registry（GET /api/models 可见）
+  const providers = createProvidersRoutes(registry)
+
   const app = createChatGateway({
     models: registry,
     chat: {
@@ -53,6 +57,7 @@ export async function createMockApp() {
   })
 
   app.route('/conversations', conversations.app)
+  app.route('/providers', providers.app)
   app.get('/openapi.json', (c) => c.json(openApiSpec))
 
   // telemetry=true 时装配 Mastra 实例（npx mastra dev 起 Studio 的入口）
