@@ -113,6 +113,15 @@ const zhCN = {
     modelDefault: 'AI Chat UI',
     modelDefaultOption: '默认（本地演示）',
   },
+  backend: {
+    label: '后端（对新会话生效）',
+    local: '本地 Mock',
+    mockServer: 'mock-server · 8787',
+    mastra: 'Mastra · 4111',
+    offline: '（离线）',
+    agentTag: 'Mastra chat-agent',
+    offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -230,6 +239,15 @@ const enUS: typeof zhCN = {
     selectModel: 'Select model (applies to new chats)',
     modelDefault: 'AI Chat UI',
     modelDefaultOption: 'Default (local demo)',
+  },
+  backend: {
+    label: 'Backend (applies to new chats)',
+    local: 'Local mock',
+    mockServer: 'mock-server · 8787',
+    mastra: 'Mastra · 4111',
+    offline: ' (offline)',
+    agentTag: 'Mastra chat-agent',
+    offlineHint: 'Cannot reach {url} — start the service first, then switch.',
   },
 }
 
