@@ -159,10 +159,43 @@ corepack pnpm studio    # mastra studio，默认连本进程 4111
 
 - 切到 **Mastra · 4111** 后新建会话即走链路二；选择持久化在 `localStorage`（`pg.backend`）
 - 切换时自动探活（`GET /api/agents`，2s 超时），不可达的选项标「离线」禁用；服务恢复后重选即可
-- Mastra 会话**隐藏模型下拉**，显示固定 agent 标签——模型由服务端 `.env` 决定，前端不选
+- Mastra 会话**隐藏模型下拉**，显示固定 agent 标签——模型由服务端决定（`.env` 静态配置，或[运行时表单配置](#运行时配置模型-免重启)），前端不选
 - 会话创建时快照后端（与[模型选择](/guide/server#运行时注册-vs-环境变量注册)同语义）：切换只影响新会话，已有会话保持原链路
 - 请求携带全量 `messages` + `memory: { thread: 会话id, resource: 'ai-chat-playground' }`，Mastra 按线程补全历史
 - `abort` 中断静默无错误残留；4111 停机时发送按既有错误路径提示
+
+### 运行时配置模型（免重启）
+
+`.env` 静态模型适合长期默认配置；切换模型（换中转站、换 key、对比模型效果）时改 `.env` 重启的反馈回路太长。`/api/app/model` 提供**单条运行时配置**：表单提交即刻组装带工具与会话记忆的 `custom-agent`，**免重启生效**：
+
+```bash
+# 配置（openai-compat 中转示例；anthropic 传 provider/model/apiKey 即可）
+curl -X POST http://localhost:4111/api/app/model \
+  -H 'content-type: application/json' \
+  -d '{
+    "name": "2api 中转",
+    "provider": "openai-compat",
+    "baseURL": "https://your-gateway.example.com/v1",
+    "apiKey": "sk-xxx",
+    "model": "gpt-5.6-terra"
+  }'
+# → {"ok":true}
+
+# 查看当前配置（脱敏视图，绝不回 apiKey）
+curl http://localhost:4111/api/app/model
+# → {"config":{"name":"2api 中转","provider":"openai-compat","model":"gpt-5.6-terra","baseURL":"..."}}
+
+# 清空（回到 .env 静态模型）
+curl -X DELETE http://localhost:4111/api/app/model
+```
+
+行为要点：
+
+- **未配置时回退**：Mastra 会话默认走 `.env` 配置的 `chat-agent`；存在运行时配置时自动切到 `POST /api/app/agents/custom-agent/stream`（Mastra 原生 SSE，前端适配器同款线格式）。清空配置后新会话自动回到 `chat-agent`
+- **换模型不丢记忆**：`custom-agent` 与换模型前后共用同一 LibSQL 记忆实例，thread 历史连续
+- **安全**：apiKey 只进服务端进程内存（openai-compat 显式进 model 对象、anthropic 注入 `ANTHROPIC_API_KEY`），不落盘、不进日志、不进任何 GET 响应；配置与流式端点同受可选的 `MASTRA_APP_TOKEN` Bearer 保护
+- **Playground 集成**：后端选 **Mastra · 4111** 时打开 Provider 设置弹层即此配置（同一表单组件，提交目标自动分流到 4111）；保存/删除后新发送即刻切端点，**已开始的流不受影响**（发送时快照，语义同会话切换）
+- 运行时配置存于进程内存，重启后归零（回到 `.env`）；长期使用的模型请固化到 `.env`
 
 ### 端口互斥
 
