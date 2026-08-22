@@ -1,4 +1,5 @@
 import type { ChatAdapter, SendMessageOptions, StreamChunk } from '@toimc/core'
+import { createMastraAdapter } from '../adapters/mastra-adapter'
 import { mockAdapter } from './mock-adapter'
 import { createSseAdapter } from './sse-adapter'
 
@@ -6,6 +7,8 @@ import { createSseAdapter } from './sse-adapter'
 export interface DispatchConversation {
   id?: string
   model?: string
+  /** 会话创建时快照的后端（spec 12）：'mastra' 走 4111 原生端点，其余仍按 model 分发 */
+  backend?: 'mock-server' | 'mastra'
 }
 
 export interface DispatchAdapterOptions {
@@ -14,10 +17,10 @@ export interface DispatchAdapterOptions {
 }
 
 /**
- * 按当前会话是否绑定 model 分发：
+ * 三路分发（spec 12 §4.2，每次 sendMessage 时读取闭包，同一实例随会话切换换路）：
+ * backend=mastra → mastraAdapter（POST 4111 /api/agents/chat-agent/stream，前端转协议）；
  * 带 model → SSE adapter（POST /api/chat 走真实/服务端模型）；
- * 不带 model 或无会话 → 本地 mockAdapter（行为与未接入前完全一致）。
- * 分发决策在每次 sendMessage 时读取闭包，同一实例随会话切换换路。
+ * 其余 → 本地 mockAdapter（行为与未接入前完全一致）。
  */
 export function createDispatchAdapter(
   options: DispatchAdapterOptions,
@@ -25,6 +28,13 @@ export function createDispatchAdapter(
   return {
     async *sendMessage(opts: SendMessageOptions): AsyncGenerator<StreamChunk> {
       const conv = options.getConversation()
+      if (conv?.backend === 'mastra') {
+        const mastra = createMastraAdapter({
+          getConversationId: () => conv.id,
+        })
+        yield* mastra.sendMessage(opts)
+        return
+      }
       if (conv?.model) {
         const sse = createSseAdapter({
           getConversationId: () => conv.id,

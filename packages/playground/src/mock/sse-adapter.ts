@@ -123,13 +123,12 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
 }
 
 /**
- * 解析 SSE 字节流为 StreamChunk 序列。
+ * 解析 SSE 字节流为帧载荷序列（T 默认 StreamChunk；mastra-adapter 以 Mastra 原生 chunk 复用）。
  * 帧 separator 为空行（\n\n），容忍 \r\n；只认 data: 行，其余（event:/id:/注释）忽略。
  */
-export async function* parseSseStream(
-  body: ReadableStream<Uint8Array>,
-  signal?: AbortSignal,
-): AsyncGenerator<StreamChunk> {
+export async function* parseSseStream<
+  T extends { type?: string } = StreamChunk,
+>(body: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<T> {
   const reader = body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
@@ -145,7 +144,7 @@ export async function* parseSseStream(
       while ((sep = buffer.indexOf('\n\n')) !== -1) {
         const frame = buffer.slice(0, sep)
         buffer = buffer.slice(sep + 2)
-        const chunk = parseFrame(frame)
+        const chunk = parseFrame<T>(frame)
         if (chunk) yield chunk
         if (chunk?.type === 'done') return
       }
@@ -158,7 +157,7 @@ export async function* parseSseStream(
   }
 }
 
-function parseFrame(frame: string): StreamChunk | null {
+function parseFrame<T>(frame: string): T | null {
   const dataLines: string[] = []
   for (const line of frame.split('\n')) {
     if (line.startsWith('data:')) {
