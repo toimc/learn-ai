@@ -92,9 +92,9 @@ registry.registerAdapter('my-model', myAdapter, {
 })
 ```
 
-## Mastra 智能体
+## 智能体接入
 
-上文各 provider 都是纯模型转发。需要**工具调用、会话记忆**这类 Agent 能力时，接入 [Mastra 智能体](/guide/mastra)——`@toimc/agents/mastra` 子路径把 Mastra `Agent` 包装成标准 `IModelAdapter`，注册方式与自定义适配器一致。
+上文各 provider 都是纯模型转发。需要**工具调用、会话记忆**这类 Agent 能力时，见[智能体接入](/guide/mastra)——`@toimc/agents/mastra` 子路径把 Mastra `Agent` 包装成标准 `IModelAdapter`，注册方式与自定义适配器一致。
 
 ## 中间件选项
 

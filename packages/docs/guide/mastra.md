@@ -1,4 +1,4 @@
-# Mastra 智能体
+# 智能体接入
 
 [服务端网关](/guide/server)的各 provider 都是纯模型转发——收消息、调模型、回流。当应用需要**工具调用、会话记忆**这类 Agent 能力时，接入 [Mastra](https://mastra.ai)：`@toimc/agents/mastra` 子路径把 Mastra `Agent` 包装成标准 `IModelAdapter`，注册进网关后前端组件照常消费 StreamChunk，不感知后端是裸模型还是 Agent。
 

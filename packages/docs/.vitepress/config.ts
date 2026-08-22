@@ -115,7 +115,7 @@ export default defineConfig({
           text: '智能体&服务',
           items: [
             { text: '服务端网关', link: '/guide/server' },
-            { text: 'Mastra 智能体', link: '/guide/mastra' },
+            { text: '智能体接入', link: '/guide/mastra' },
           ],
         },
         {
