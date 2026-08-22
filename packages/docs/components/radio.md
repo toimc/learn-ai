@@ -86,6 +86,7 @@ const providerType = ref('openai-compat')
 - **选中态**：圆环边框变 accent，内部 8px 实心 accent 圆点以 `scale` 过渡弹出
 - **focus ring**：落在自绘圆环上（accent 边框 + `--ai-chat-control-ring`），与 [Input](/components/input)、[Button](/components/button) 的聚焦语言一致
 - **暗色自动适配**：圆环/圆点/文字全部引用语义令牌，`[data-theme='dark']` 翻转语义层即生效
+- **样式为 scoped（抗宿主 reset）**：宿主未分层表单元素 reset（Tailwind preflight / modern-normalize 的 `border: 0` + `padding: 0`）会压过 `@layer` 内的库样式，scoped 属性选择器凭特异性免疫
 - **transition**：边框/阴影/圆点缩放统一走 `--ai-chat-duration-fast`（0.12s），`prefers-reduced-motion` 时关闭
 
 ## API
