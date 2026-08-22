@@ -312,6 +312,15 @@ const modelMenuOpen = ref(false)
 // 顶栏通知条：离线点击提示 / Provider 操作失败（离线提示样式模式）
 const notice = ref<string | null>(null)
 
+// 发送失败可见化：useChat 把 error chunk 写进 state.error（不进气泡），
+// 不接出来用户只会看到空气泡；经顶栏通知条展示，下次发送自动清除
+watch(
+  () => chat.error,
+  (err) => {
+    if (err) notice.value = t('pg.chat.sendFailed', { msg: err.message })
+  },
+)
+
 // 无可选项（服务端未启动）时下拉保持装饰外观，与现状一致
 const hasModelOptions = computed(() => modelList.value.length > 0)
 const selectedModelName = computed(() => {
@@ -484,6 +493,8 @@ async function mockUpload(files: File[]): Promise<Attachment[]> {
 }
 
 function onSend(payload: { text: string; attachments?: Attachment[] }) {
+  // 清上一轮错误提示：错误经 notice 展示（useChat 的 error chunk 不进消息气泡）
+  if (chat.error) notice.value = null
   chat.send(payload.text, payload.attachments)
 
   // 保存消息到当前会话
