@@ -1,6 +1,8 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Ref } from 'vue'
 import { checkHealth } from '../mock/sse-adapter'
+import { fetchMastraRuntimeModel } from './mastra-runtime-model'
+import type { MastraRuntimeConfig } from './mastra-runtime-model'
 
 /** 后端选择器三选项：local=本地剧本，其余为远端服务 */
 export type PlaygroundBackendId = 'local' | 'mock-server' | 'mastra'
@@ -69,6 +71,18 @@ async function pingMastra(): Promise<boolean> {
   }
 }
 
+/** 探测 4111 的运行时模型配置；不可达/未配置返回 null（探活与配置互不拖累） */
+async function pingRuntimeModel(): Promise<MastraRuntimeConfig | null> {
+  try {
+    return await fetchMastraRuntimeModel(
+      BACKEND_BASE_URLS.mastra,
+      AbortSignal.timeout(MASTRA_PING_TIMEOUT_MS),
+    )
+  } catch {
+    return null
+  }
+}
+
 /**
  * Playground 后端选择器状态（spec 12 §4.3）：本地 Mock / mock-server 8787 / Mastra 4111。
  * 选中 id 持久化 localStorage（pg.backend）；切换远端前探活，不可达不切换并标记离线。
@@ -81,15 +95,31 @@ export function useBackendSelector(options: UseBackendSelectorOptions = {}) {
   /** null = 未探测 */
   const mockServerOnline: Ref<boolean | null> = ref(null)
   const mastraOnline: Ref<boolean | null> = ref(null)
+  /** 4111 的运行时模型配置（探活时并行拉取）；null = 未配置或离线 */
+  const mastraRuntimeConfig: Ref<MastraRuntimeConfig | null> = ref(null)
+  /** 4111 在线且运行时模型已配置：mastra 会话切 custom-agent 端点的依据 */
+  const customModelActive = computed(
+    () => mastraOnline.value === true && mastraRuntimeConfig.value !== null,
+  )
 
   async function probeRemote(id: 'mock-server' | 'mastra'): Promise<boolean> {
-    const online =
-      id === 'mock-server'
-        ? await checkHealth(BACKEND_BASE_URLS['mock-server'])
-        : await pingMastra()
-    if (id === 'mock-server') mockServerOnline.value = online
-    else mastraOnline.value = online
+    if (id === 'mock-server') {
+      const online = await checkHealth(BACKEND_BASE_URLS['mock-server'])
+      mockServerOnline.value = online
+      return online
+    }
+    const [online, config] = await Promise.all([
+      pingMastra(),
+      pingRuntimeModel(),
+    ])
+    mastraOnline.value = online
+    mastraRuntimeConfig.value = online ? config : null
     return online
+  }
+
+  /** 单独刷新运行时模型状态（表单 create/delete 后回调，不重试探活） */
+  async function refreshCustomModel(): Promise<void> {
+    mastraRuntimeConfig.value = await pingRuntimeModel()
   }
 
   /** 并行探测两个远端（挂载时初始化离线标记，不改变当前选中） */
@@ -118,8 +148,11 @@ export function useBackendSelector(options: UseBackendSelectorOptions = {}) {
     backend,
     mockServerOnline,
     mastraOnline,
+    mastraRuntimeConfig,
+    customModelActive,
     probeAll,
     selectBackend,
+    refreshCustomModel,
     isOffline,
   }
 }

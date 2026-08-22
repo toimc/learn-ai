@@ -35,9 +35,13 @@ import {
   useLayoutConfig,
   useTheme,
 } from '@toimc/vue'
-import type { ProviderFormPayload } from '@toimc/vue'
+import type { ProviderFormPayload, ProviderOption } from '@toimc/vue'
 import { createDispatchAdapter } from '../mock/dispatch-adapter'
 import { useProviderModels } from '../composables/useProviderModels'
+import {
+  removeMastraRuntimeModel,
+  saveMastraRuntimeModel,
+} from '../composables/mastra-runtime-model'
 import {
   BACKEND_BASE_URLS,
   useBackendSelector,
@@ -64,22 +68,28 @@ const {
 } = useProviderModels()
 
 // 后端选择器（spec 12）：本地 Mock / mock-server 8787 / Mastra 4111；
-// 选中 id 持久化 localStorage，切换远端前探活，不可达不切换并标离线禁用
+// 选中 id 持久化 localStorage，切换远端前探活，不可达不切换并标离线禁用；
+// mastra 后端探活时并行拉取运行时模型配置（customModelActive → custom-agent 端点）
 const {
   backend: backendId,
   mockServerOnline,
   mastraOnline,
+  mastraRuntimeConfig,
+  customModelActive,
   probeAll: probeBackends,
   selectBackend,
+  refreshCustomModel,
   isOffline: isBackendOffline,
 } = useBackendSelector()
 
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
-// adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）
+// adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）；
+// mastra 会话在运行时模型已配置时走 custom-agent 端点（每次发送快照，流中不切换）
 const chat = useChat(
   createDispatchAdapter({
     getConversation: () =>
       conversations.value.find((c) => c.id === activeConversationId.value),
+    getMastraCustomModelActive: () => customModelActive.value,
   }),
 )
 
@@ -323,7 +333,35 @@ const selectedModelName = computed(() => {
   )
 })
 
+/** 设置弹层的 providers 数据源：mastra 后端来自 4111 的单条运行时配置，其余为 8787 列表 */
+const dialogProviders = computed<ProviderOption[]>(() => {
+  if (backendId.value !== 'mastra') return providerList.value
+  const config = mastraRuntimeConfig.value
+  return config
+    ? [
+        {
+          id: 'custom-agent',
+          name: config.name,
+          provider: config.provider,
+          model: config.model,
+        },
+      ]
+    : []
+})
+
 function openSettings() {
+  // mastra 后端弹层管理 4111 运行时模型，离线判断与提示都按 4111 走
+  if (backendId.value === 'mastra') {
+    if (mastraOnline.value === false) {
+      notice.value = t('pg.backend.offlineHint', {
+        url: BACKEND_BASE_URLS.mastra,
+      })
+      return
+    }
+    void refreshCustomModel()
+    settingsOpen.value = true
+    return
+  }
   if (providerStatus.value === 'offline') {
     notice.value = t('pg.providerSettings.offlineHint')
     return
@@ -379,6 +417,12 @@ async function pickBackend(id: PlaygroundBackendId) {
 
 async function onCreateProvider(payload: ProviderFormPayload) {
   try {
+    // mastra 后端：表单提交 4111 即换模型（免重启），成功后刷新 custom 端点状态
+    if (backendId.value === 'mastra') {
+      await saveMastraRuntimeModel(BACKEND_BASE_URLS.mastra, payload)
+      await refreshCustomModel()
+      return
+    }
     await createProvider(payload)
   } catch (err) {
     notice.value = t('pg.providerSettings.actionFailed', {
@@ -389,6 +433,12 @@ async function onCreateProvider(payload: ProviderFormPayload) {
 
 async function onRemoveProvider(id: string) {
   try {
+    // mastra 后端：单条配置无 id 维度，DELETE 后回到 .env 静态模型
+    if (backendId.value === 'mastra') {
+      await removeMastraRuntimeModel(BACKEND_BASE_URLS.mastra)
+      await refreshCustomModel()
+      return
+    }
     await removeProvider(id)
     // 删除的是当前选中模型 → 回退默认，新会话回到本地 mock 行为
     if (selectedModelId.value === id) selectModel(undefined)
@@ -1149,10 +1199,10 @@ watch(() => chat.messages.length, scrollToBottom)
       </Conversation>
     </main>
 
-    <!-- Provider 设置弹层（纯 UI 组件，事件交宿主处理） -->
+    <!-- Provider 设置弹层（纯 UI 组件，事件交宿主处理；数据源随后端分流） -->
     <ProviderSettingsDialog
       v-model:open="settingsOpen"
-      :providers="providerList"
+      :providers="dialogProviders"
       @create="onCreateProvider"
       @remove="onRemoveProvider"
     />

@@ -9,6 +9,8 @@ import { parseSseStream } from '../mock/sse-adapter'
 export interface MastraAdapterOptions {
   /** mastra-app 基地址，默认 http://localhost:4111 */
   baseUrl?: string
+  /** 每次发送时取流端点路径（默认 chat-agent；运行时配置模型后切 custom-agent） */
+  getEndpoint?: () => string
   /** 每次发送时取当前会话 id（映射为 Mastra memory thread，闭包注入随切换更新） */
   getConversationId?: () => string | undefined
   /** 预留请求头注入点（未来 Bearer token 等），本期 UI 不接入 */
@@ -17,6 +19,7 @@ export interface MastraAdapterOptions {
 
 const DEFAULT_BASE_URL = 'http://localhost:4111'
 const AGENT_ID = 'chat-agent'
+const DEFAULT_ENDPOINT = `/api/agents/${AGENT_ID}/stream`
 const MEMORY_RESOURCE = 'ai-chat-playground'
 
 /**
@@ -84,15 +87,18 @@ export function createMastraAdapter(
 
       let response: Response
       try {
-        response = await fetch(`${baseUrl}/api/agents/${AGENT_ID}/stream`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            ...(options.getHeaders?.() ?? {}),
+        response = await fetch(
+          `${baseUrl}${options.getEndpoint?.() ?? DEFAULT_ENDPOINT}`,
+          {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              ...(options.getHeaders?.() ?? {}),
+            },
+            body: JSON.stringify(body),
+            signal,
           },
-          body: JSON.stringify(body),
-          signal,
-        })
+        )
       } catch (err) {
         // 中断不算错误，直接结束流（对齐 sse-adapter）
         if (signal?.aborted || isAbortError(err)) return

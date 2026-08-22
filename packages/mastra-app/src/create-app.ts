@@ -3,6 +3,7 @@ import { MastraServer } from '@mastra/hono'
 import type { HonoBindings, HonoVariables } from '@mastra/hono'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { registerAppRoutes } from './app-routes'
 import { bearerAuth } from './bearer-auth'
 
 type App = Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>
@@ -27,6 +28,9 @@ export async function createApp(mastra: Mastra): Promise<App> {
   if (process.env.MASTRA_APP_TOKEN) {
     app.use('/api/*', bearerAuth([process.env.MASTRA_APP_TOKEN]))
   }
+
+  // 运行时模型路由（/api/app/* 独立前缀，与 MastraServer 的 /api/agents/* 无竞争）
+  registerAppRoutes(app)
 
   // 不设 prefix：保持默认 /api，studio 零 flag 直连
   const server = new MastraServer({ app, mastra })

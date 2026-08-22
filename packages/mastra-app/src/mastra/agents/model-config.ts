@@ -1,6 +1,6 @@
 /** env → Mastra model 字段（spec 12 §3.3）：Mastra 模型层构建在 AI SDK 上，model 支持三种形态 */
 export type ResolvedModelConfig =
-  string | { id: string; url: string; apiKey?: string }
+  string | { id: string; url?: string; apiKey?: string }
 
 /**
  * 有自定义端点走 { id, url, apiKey? } 对象（OpenAI 兼容端点；实测 Mastra 的 url 场景
