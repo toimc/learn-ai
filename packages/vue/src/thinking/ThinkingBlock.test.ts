@@ -84,13 +84,44 @@ describe('ThinkingBlock 展开/收起交互', () => {
     expect(w.find('.ai-chat-thinking__cursor').exists()).toBe(false)
   })
 
-  it('作用域外 slot 内容覆盖默认 content', async () => {
+  it('默认插槽渲染在思考文本之后，content 不被覆盖', async () => {
     const w = mount(ThinkingBlock, {
       props: { content: '默认' },
       slots: { default: '<p class="slot-content">自定义推理</p>' },
     })
     await w.get('.ai-chat-thinking__trigger').trigger('click')
     expect(w.find('.slot-content').exists()).toBe(true)
-    expect(w.get('.ai-chat-thinking__body').text()).not.toContain('默认')
+    const text = w.get('.ai-chat-thinking__body').text()
+    expect(text).toContain('默认')
+    expect(text).toContain('自定义推理')
+    // 顺序：思考文本在前，插槽内容在后
+    expect(text.indexOf('自定义推理')).toBeGreaterThan(text.indexOf('默认'))
+  })
+})
+
+describe('ThinkingBlock 默认插槽', () => {
+  it('传插槽时工具面板渲染在思考文本之后', () => {
+    const w = mount(ThinkingBlock, {
+      props: { content: '先思考要不要查天气', streaming: true },
+      slots: { default: '<div class="slot-tools">get_weather 工具面板</div>' },
+    })
+    const body = w.get('.ai-chat-thinking__body')
+    const text = body.text()
+    expect(text).toContain('先思考要不要查天气')
+    expect(text).toContain('get_weather 工具面板')
+    expect(text.indexOf('get_weather 工具面板')).toBeGreaterThan(
+      text.indexOf('先思考要不要查天气'),
+    )
+  })
+
+  it('不传插槽时与现状一致：仅思考文本 + 流式光标', () => {
+    const w = mount(ThinkingBlock, {
+      props: { content: '推理中', streaming: true },
+    })
+    const body = w.get('.ai-chat-thinking__body')
+    expect(body.text()).toBe('推理中')
+    // content 保持文本节点（非包裹元素），body 内仅光标一个元素子节点
+    expect(body.element.children).toHaveLength(1)
+    expect(body.element.children[0].className).toBe('ai-chat-thinking__cursor')
   })
 })
