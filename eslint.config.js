@@ -66,6 +66,8 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/.vitepress/cache/**',
       '**/*.d.ts',
+      // mastra CLI 构建产物目录（与 dist 同性质的生成代码）
+      '**/.mastra/**',
       // 遗留 worktree 内含重复 tsconfig，会触发 tsconfigRootDir 解析错误
       '.claude/worktrees/**',
     ],
