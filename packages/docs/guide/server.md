@@ -96,17 +96,19 @@ registry.registerAdapter('my-model', myAdapter, {
 
 上文各 provider 都是纯模型转发。需要**工具调用、会话记忆**这类 Agent 能力时，见[智能体接入](/guide/mastra)——`@toimc/agents/mastra` 子路径把 Mastra `Agent` 包装成标准 `IModelAdapter`，注册方式与自定义适配器一致。
 
+端口提示：mock-server 的 `npx mastra dev` Studio 与 `packages/mastra-app` 同占 **4111** 端口，二者互为替代、不能同时运行。
+
 ### 运行时注册 vs 环境变量注册
 
 上文 `MASTRA_MODEL` 是**启动时**经环境变量注册（id 固定 `mastra-agent`）；mock-server 还提供**运行时**注册：浏览器把表单配置 `POST /api/providers` 上来，服务端即刻组装注册（id 递增 `custom-{n}`，进程内存计数）。两条路径写进**同一个 registry**，并存不冲突，`GET /api/models` 里都可见：
 
-| | 环境变量注册 | 运行时注册（API） |
-| --- | --- | --- |
-| 触发时机 | 进程启动（`readMastraEnv` 探测） | 请求到达（`POST /api/providers`） |
-| 模型 id | `mastra-agent` | `custom-{n}` 递增（重启归零） |
+|          | 环境变量注册                               | 运行时注册（API）                                                           |
+| -------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| 触发时机 | 进程启动（`readMastraEnv` 探测）           | 请求到达（`POST /api/providers`）                                           |
+| 模型 id  | `mastra-agent`                             | `custom-{n}` 递增（重启归零）                                               |
 | 配置来源 | `MASTRA_MODEL` / `MASTRA_MODEL_URL` 等 env | 请求体（`ProviderFormPayload`：name / provider / baseURL / apiKey / model） |
-| 密钥去向 | 环境变量 | 服务端内存：不落盘、不进日志、不进任何 GET 响应 |
-| 注销 | 无（进程级） | `DELETE /api/providers/:id` |
+| 密钥去向 | 环境变量                                   | 服务端内存：不落盘、不进日志、不进任何 GET 响应                             |
+| 注销     | 无（进程级）                               | `DELETE /api/providers/:id`                                                 |
 
 组装逻辑在 `registerRuntimeProvider`（`packages/mock-server/src/mastra/register.ts`），按协议类型走 `createMastraModel` 的两种 `model` 形态：
 
