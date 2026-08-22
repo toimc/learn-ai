@@ -70,6 +70,11 @@ export class ModelRegistry {
     return this
   }
 
+  /** 注销适配器：存在则移除返回 true，不存在返回 false */
+  removeAdapter(id: string): boolean {
+    return this.models.delete(id)
+  }
+
   /** 未注册 id 抛错（消息包含 id） */
   get(id: string): RegisteredModel {
     const model = this.models.get(id)

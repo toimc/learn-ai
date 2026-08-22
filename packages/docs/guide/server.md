@@ -96,6 +96,33 @@ registry.registerAdapter('my-model', myAdapter, {
 
 上文各 provider 都是纯模型转发。需要**工具调用、会话记忆**这类 Agent 能力时，见[智能体接入](/guide/mastra)——`@toimc/agents/mastra` 子路径把 Mastra `Agent` 包装成标准 `IModelAdapter`，注册方式与自定义适配器一致。
 
+### 运行时注册 vs 环境变量注册
+
+上文 `MASTRA_MODEL` 是**启动时**经环境变量注册（id 固定 `mastra-agent`）；mock-server 还提供**运行时**注册：浏览器把表单配置 `POST /api/providers` 上来，服务端即刻组装注册（id 递增 `custom-{n}`，进程内存计数）。两条路径写进**同一个 registry**，并存不冲突，`GET /api/models` 里都可见：
+
+| | 环境变量注册 | 运行时注册（API） |
+| --- | --- | --- |
+| 触发时机 | 进程启动（`readMastraEnv` 探测） | 请求到达（`POST /api/providers`） |
+| 模型 id | `mastra-agent` | `custom-{n}` 递增（重启归零） |
+| 配置来源 | `MASTRA_MODEL` / `MASTRA_MODEL_URL` 等 env | 请求体（`ProviderFormPayload`：name / provider / baseURL / apiKey / model） |
+| 密钥去向 | 环境变量 | 服务端内存：不落盘、不进日志、不进任何 GET 响应 |
+| 注销 | 无（进程级） | `DELETE /api/providers/:id` |
+
+组装逻辑在 `registerRuntimeProvider`（`packages/mock-server/src/mastra/register.ts`），按协议类型走 `createMastraModel` 的两种 `model` 形态：
+
+```ts
+// openai-compat：{ id, url, apiKey } 对象（OpenAI 兼容自定义端点）
+model: { id: payload.model, url: payload.baseURL, apiKey: payload.apiKey }
+
+// anthropic：'anthropic/{model}' 路由串，注册前把密钥注入 env（Mastra 官方路由从 env 取）
+process.env.ANTHROPIC_API_KEY = payload.apiKey
+model: `anthropic/${payload.model}`
+```
+
+两条路径注册的模型都自动挂上 `get_time` / `get_weather` 两个演示工具与同一个 LibSQL 记忆（`file:.temp/mastra.db`），因此运行时注册的模型天然支持工具调用与会话记忆。注册**不做上游连通性校验**（惰性连接）：首次对话才真连上游，密钥错误 / 端点不通等失败按既有路径以 `error` chunk 呈现，SSE 流仍完整可解析。
+
+三端点契约（POST 校验失败 400、成功 201、DELETE 404、响应脱敏）见[接口文档](/mock-api#provider-运行时注册)；前端表单组件见 [ProviderSettingsDialog](/components/provider-settings-dialog)，端到端体验在 [Playground](/playground)。
+
 ## 中间件选项
 
 网关默认只开 CORS；鉴权与限流按需启用，均可单独 import 底层件挂到自己的 Hono 应用：

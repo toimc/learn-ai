@@ -101,6 +101,18 @@ const zhCN = {
       'mock-server 未启动（http://localhost:8787），请先运行 pnpm dev',
     goDemo: '去流式演示 →',
   },
+  providerSettings: {
+    open: '设置 Provider',
+    offlineHint:
+      '无法连接 mock-server（http://localhost:8787），暂时无法配置 Provider。请在项目根目录运行 pnpm dev 后重试。',
+    actionFailed: '操作失败：{message}',
+    dismiss: '知道了',
+  },
+  providerChat: {
+    selectModel: '选择模型（对新会话生效）',
+    modelDefault: 'AI Chat UI',
+    modelDefaultOption: '默认（本地演示）',
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -206,6 +218,18 @@ const enUS: typeof zhCN = {
     bannerOffline:
       'mock-server is not running (http://localhost:8787). Run pnpm dev first',
     goDemo: 'Streaming demo →',
+  },
+  providerSettings: {
+    open: 'Configure providers',
+    offlineHint:
+      'Cannot reach mock-server (http://localhost:8787) — provider settings are unavailable. Run pnpm dev at the project root, then retry.',
+    actionFailed: 'Action failed: {message}',
+    dismiss: 'Got it',
+  },
+  providerChat: {
+    selectModel: 'Select model (applies to new chats)',
+    modelDefault: 'AI Chat UI',
+    modelDefaultOption: 'Default (local demo)',
   },
 }
 

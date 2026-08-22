@@ -85,8 +85,9 @@ function toggleExpand() {
     </button>
 
     <transition name="ai-chat-thinking">
+      <!-- 思考文本恒渲染，默认插槽追加在其后（工具面板等），无插槽时视觉不变 -->
       <div v-if="isExpanded || streaming" class="ai-chat-thinking__body">
-        <slot>{{ content }}</slot
+        {{ content }}<slot></slot
         ><span v-if="streaming" class="ai-chat-thinking__cursor" />
       </div>
     </transition>

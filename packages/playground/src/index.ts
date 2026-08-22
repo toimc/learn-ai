@@ -24,3 +24,5 @@ export type {
   ConversationSummary,
   ConversationMessageDTO,
 } from './mock/sse-adapter'
+export { createDispatchAdapter } from './mock/dispatch-adapter'
+export type { DispatchConversation } from './mock/dispatch-adapter'

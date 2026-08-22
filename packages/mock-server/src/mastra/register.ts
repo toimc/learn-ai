@@ -25,6 +25,65 @@ function defaultMemory(): Memory {
   })
 }
 
+/** 运行时注册表单载荷（与 @toimc/vue 的 ProviderFormPayload 字段一致；服务端不依赖 vue 包，独立定义） */
+export interface ProviderFormPayload {
+  name: string
+  provider: 'openai-compat' | 'anthropic'
+  /** openai-compat 必填（路由校验）；anthropic 可选（官方端点） */
+  baseURL?: string
+  apiKey: string
+  model: string
+}
+
+/** 运行时注册项的公开视图（绝不含 apiKey / baseURL） */
+export interface ProviderOption {
+  id: string
+  name: string
+  provider: string
+  model?: string
+}
+
+/** 运行时注册计数：进程内存，重启归零 */
+let runtimeProviderSeq = 0
+
+/**
+ * 运行时注册 Provider：把表单配置组装为带工具与会话记忆的 Mastra Agent 模型。
+ * - openai-compat：model 为 { id, url, apiKey }（OpenAICompatibleConfig 形态）
+ * - anthropic：model 为 'anthropic/{model}' 路由串，注册前把 key 注入 env（Mastra 官方路由从 env 取）
+ * 注册不做上游连通性校验（惰性，首次对话才真连）。返回脱敏的公开视图。
+ */
+export async function registerRuntimeProvider(
+  registry: ModelRegistry,
+  payload: ProviderFormPayload,
+): Promise<ProviderOption> {
+  const id = `custom-${++runtimeProviderSeq}`
+  if (payload.provider === 'anthropic') {
+    process.env.ANTHROPIC_API_KEY = payload.apiKey
+  }
+  const created = await createMastraModel({
+    id,
+    name: payload.name,
+    description: `运行时注册的 ${payload.provider} 模型（${payload.model}），支持工具调用与会话记忆`,
+    model:
+      payload.provider === 'openai-compat'
+        ? {
+            id: payload.model,
+            url: payload.baseURL,
+            apiKey: payload.apiKey,
+          }
+        : `anthropic/${payload.model}`,
+    tools: { getTimeTool, getWeatherTool },
+    memory: defaultMemory(),
+  })
+  registry.registerAdapter(id, created.adapter, created.info)
+  return {
+    id,
+    name: payload.name,
+    provider: payload.provider,
+    model: payload.model,
+  }
+}
+
 export interface MastraEnvConfig {
   /** Mastra model 字段，如 'deepseek/deepseek-chat' */
   model: string

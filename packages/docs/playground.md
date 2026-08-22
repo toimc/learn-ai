@@ -33,6 +33,17 @@ title: Playground
 - **错误处理**：发送包含"error"或"错误"的消息，展示错误场景处理
 - **A/B 偏好对比**：选择「⚖️ A/B 回复对比」会话，[`ComparisonMessage`](/components/comparison-message) 双列展示两个候选回复；点「喜欢这个」后选中内容原地固化为普通 AI 消息，状态随会话保留（切走再切回不丢失）。
 
+### 真实模型会话（Provider 设置）
+
+本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key，密钥只存服务端内存，浏览器不落任何密钥），整条链路需要 mock-server 在线（`pnpm dev` 同时启动两者）：
+
+- **⚙ 设置按钮**：顶栏右侧 ⚙ 打开 [`ProviderSettingsDialog`](/components/provider-settings-dialog)，选择服务类型（OpenAI 兼容 / Anthropic）、填端点与 API Key、模型名，提交即注册（`POST /api/providers`，注册为带 get_time / get_weather 工具与会话记忆的 Agent 模型）；弹层底部的已注册列表可逐项删除（`DELETE /api/providers/:id`），删除当前选中的模型会自动回到默认行为。
+- **顶栏模型下拉**：mock-server 在线时下拉可用，数据源 `GET /api/models`（Mock 三模型 + 运行时注册的 `custom-*` 模型）；选中即对**新建会话**生效，选「默认（本地演示）」回到本地 mock 行为，已有会话不受影响。
+- **新建会话即真实模型**：选中模型后「新建会话」（含 ⌘K）会把模型 id 写进该会话，此后会话内发送的消息经 SSE 走真实模型；无模型的会话行为与现状完全一致。
+- **工具调用进思考面板**：真实模型会话里，模型调用工具的过程（调了什么工具、拿到什么结果）呈现在思考面板内部，随「正在思考… / 已思考 X 秒」折叠展开，下接整合后的 Markdown 回复——思考、工具、正文共享同一套 StreamChunk 流式协议，无需任何线协议改动。
+- **离线提示**：8787 端口的 mock-server 未启动时，点击 ⚙ 顶部出现通知条提示启动方式，模型下拉点击无效但保持装饰外观；服务恢复在线后提示自动消失，本地 mock 演示不受影响。
+- **隐私边界**：localStorage 只持久化「上次选中的模型 id」（key `ai-chat-playground:selected-model`），**绝不写入 apiKey**——密钥只在提交注册的瞬间经请求体直达服务端内存。
+
 ### 主题定制
 想可视化调整令牌并导出 CSS？前往 [主题配置器](/theme-builder)；「原始·断点」组内置 Bootstrap 式 sm/md/lg/xl 四档矩形示意，数值跟随滑块实时变化。
 
