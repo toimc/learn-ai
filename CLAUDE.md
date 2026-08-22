@@ -23,7 +23,9 @@ Provider 抽象层模式：组件与 AI 后端完全解耦，通过 `ChatAdapter
 ## 常用命令
 
 ```bash
-pnpm dev          # 启动 docs（VitePress 文档站 + Playground）
+pnpm dev          # 启动 docs + mock-server（VitePress 5173 + 8787）
+pnpm dev:mastra   # 单独启动 mastra-app（4111，需 packages/mastra-app/.env）
+pnpm dev:all      # 三服务全家桶：docs + mock-server + mastra-app
 pnpm build        # 构建所有包
 pnpm test         # 运行全部测试
 pnpm test:watch   # 监听模式

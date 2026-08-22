@@ -7,6 +7,8 @@
     "dev": "concurrently -n docs,mock -c blue,green \"pnpm -C packages/docs dev\" \"pnpm -C packages/mock-server dev\"",
     "dev:docs": "pnpm -C packages/docs dev",
     "dev:mock": "pnpm -C packages/mock-server dev",
+    "dev:mastra": "pnpm -C packages/mastra-app dev",
+    "dev:all": "concurrently -n docs,mock,mastra -c blue,green,magenta \"pnpm -C packages/docs dev\" \"pnpm -C packages/mock-server dev\" \"pnpm -C packages/mastra-app dev\"",
     "build": "pnpm -r --filter='./packages/*' run build",
     "test": "vitest run",
     "test:watch": "vitest",

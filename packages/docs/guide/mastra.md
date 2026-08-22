@@ -126,9 +126,17 @@ model: myLanguageModel
 ### 快速开始
 
 ```bash
+# 方式一：仓库根目录一条命令起全家桶（docs 5173 + mock-server 8787 + mastra-app 4111）
+cp packages/mastra-app/.env.example packages/mastra-app/.env  # 填 MASTRA_APP_MODEL 与 API Key（如 DEEPSEEK_API_KEY）
+corepack pnpm dev:all
+
+# 方式二：只起 mastra-app（4111，tsx watch 热重载）
+corepack pnpm dev:mastra
+
+# 方式三：进入包目录直跑
 cd packages/mastra-app
-cp .env.example .env    # 填 MASTRA_APP_MODEL 与模型路由约定的 API Key（如 DEEPSEEK_API_KEY）
-corepack pnpm dev       # 起 4111（tsx watch 热重载）
+cp .env.example .env    # 同上
+corepack pnpm dev       # 起 4111
 
 # 验证：列出 agent
 curl http://localhost:4111/api/agents
@@ -164,9 +172,16 @@ corepack pnpm studio    # mastra studio，默认连本进程 4111
 - 请求携带全量 `messages` + `memory: { thread: 会话id, resource: 'ai-chat-playground' }`，Mastra 按线程补全历史
 - `abort` 中断静默无错误残留；4111 停机时发送按既有错误路径提示
 
-### 端口互斥
+### 端口并存与 Studio 调试
 
-mock-server 的 `npx mastra dev`（Studio 调试模式）与 mastra-app **同占 4111**，二者互为替代、不能同时运行；需要同时跑 8787 与 4111 时，mock-server 侧不要开 `MASTRA_TELEMETRY` 的 Studio。
+**日常三服务并存零冲突**：`corepack pnpm dev:all` 同时起 docs（5173）+ mock-server（8787）+ mastra-app（4111）——三者端口互不重叠，Playground 后端选择器可在「mock-server · 8787」与「Mastra · 4111」间自由切换。
+
+**唯一的端口冲突场景**是手动起 mock-server 的 Studio 调试器：`npx mastra dev`（需 `MASTRA_TELEMETRY=true`）与 mastra-app 同占 4111，且当前 CLI 无 `--port` 参数、`PORT` 环境变量不生效。此时二选一：
+
+- 只想调试 mock-server 侧 agent：停掉 mastra-app（`corepack pnpm dev:mastra` 那个终端 Ctrl-C）再起 Studio
+- 想保住 mastra-app：`MASTRA_APP_PORT=4112 corepack pnpm dev:mastra` 临时挪走它——注意 Playground 后端选择器当前固定指向 4111，挪端口后该选择器探活会显示离线（已知限制，后续可做后端地址自定义）
+
+Studio 只是**按需调试工具**（查看 agent 定义 / trace / playground 试验），不参与任何 dev 编排，日常开发不需要它。
 
 ## 流事件映射（两条链路同构）
 
