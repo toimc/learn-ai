@@ -120,6 +120,17 @@ describe('createMastraAdapter', () => {
     )
   })
 
+  it('getEndpoint 可配：请求指向 custom-agent 运行时端点（baseUrl 不变）', async () => {
+    const fetchMock = stubSse([FINISH_FRAME])
+    const adapter = createMastraAdapter({
+      getEndpoint: () => '/api/app/agents/custom-agent/stream',
+    })
+    await sendMessages(adapter)
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'http://localhost:4111/api/app/agents/custom-agent/stream',
+    )
+  })
+
   it('未传 getConversationId 与 temperature 时 body 不含 memory 与 modelSettings 字段', async () => {
     const fetchMock = stubSse([FINISH_FRAME])
     await sendMessages(createMastraAdapter())

@@ -155,6 +155,79 @@ describe('createDispatchAdapter', () => {
     )
   })
 
+  it('backend=mastra 且 getMastraCustomModelActive 为 true 时切 custom-agent 运行时端点', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse([
+          'data: {"type":"text-delta","payload":{"id":"t1","text":"hi"},"runId":"run_1"}\n\n',
+          'data: {"type":"finish","payload":{"stepResult":{"reason":"stop"}},"runId":"run_1"}\n\n',
+        ]),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adapter = createDispatchAdapter({
+      getConversation: () => ({ id: 'conv_c', backend: 'mastra' }),
+      getMastraCustomModelActive: () => true,
+    })
+    const chunks = await collect(
+      adapter.sendMessage({ messages: [userMessage('hi')] }),
+    )
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'http://localhost:4111/api/app/agents/custom-agent/stream',
+    )
+    expect(chunks).toEqual([
+      { type: 'text', content: 'hi' },
+      { type: 'done', content: '' },
+    ])
+  })
+
+  it('getMastraCustomModelActive 显式 false 时保持默认 chat-agent 端点', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse(['data: {"type":"finish","payload":{}}\n\n']),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const adapter = createDispatchAdapter({
+      getConversation: () => ({ id: 'conv_d', backend: 'mastra' }),
+      getMastraCustomModelActive: () => false,
+    })
+    await collect(adapter.sendMessage({ messages: [userMessage('hi')] }))
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'http://localhost:4111/api/agents/chat-agent/stream',
+    )
+  })
+
+  it('custom 模型状态在两次发送之间变化：端点随每次发送快照，互不影响', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okSseResponse(['data: {"type":"finish","payload":{}}\n\n']),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    let customActive = false
+    const adapter = createDispatchAdapter({
+      getConversation: () => ({ id: 'conv_e', backend: 'mastra' }),
+      getMastraCustomModelActive: () => customActive,
+    })
+
+    await collect(adapter.sendMessage({ messages: [userMessage('a')] }))
+    customActive = true
+    await collect(adapter.sendMessage({ messages: [userMessage('b')] }))
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'http://localhost:4111/api/agents/chat-agent/stream',
+    )
+    expect(fetchMock.mock.calls[1][0]).toBe(
+      'http://localhost:4111/api/app/agents/custom-agent/stream',
+    )
+  })
+
   it('backend=mock-server 且无 model 时保持本地 mock 行为（快照只记录，分发仍按 model）', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

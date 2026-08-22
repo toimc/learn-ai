@@ -14,6 +14,13 @@ function okResponse(): Response {
   return new Response('{}', { status: 200 })
 }
 
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
+}
+
 describe('useBackendSelector', () => {
   afterEach(() => vi.unstubAllGlobals())
 
@@ -49,7 +56,7 @@ describe('useBackendSelector', () => {
     expect(storage.getItem(BACKEND_STORAGE_KEY)).toBe('local')
   })
 
-  it('selectBackend(mastra) 探活 GET /api/agents，成功后切换并持久化', async () => {
+  it('selectBackend(mastra) 探活 GET /api/agents 与 GET /api/app/model，成功后切换并持久化', async () => {
     const fetchMock = vi.fn().mockResolvedValue(okResponse())
     vi.stubGlobal('fetch', fetchMock)
     const storage = memoryStorage()
@@ -58,14 +65,96 @@ describe('useBackendSelector', () => {
     const ok = await selector.selectBackend('mastra')
 
     expect(ok).toBe(true)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toBe('http://localhost:4111/api/agents')
-    expect(init.method).toBe('GET')
-    expect(init.signal).toBeInstanceOf(AbortSignal)
+    // 探活 + 运行时模型配置两连发
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const urls = fetchMock.mock.calls.map((call) => call[0] as string).sort()
+    expect(urls).toEqual([
+      'http://localhost:4111/api/agents',
+      'http://localhost:4111/api/app/model',
+    ])
+    const agentsCall = fetchMock.mock.calls.find(
+      (call) => call[0] === 'http://localhost:4111/api/agents',
+    ) as [string, RequestInit]
+    expect(agentsCall[1].method).toBe('GET')
+    expect(agentsCall[1].signal).toBeInstanceOf(AbortSignal)
     expect(selector.backend.value).toBe('mastra')
     expect(storage.getItem(BACKEND_STORAGE_KEY)).toBe('mastra')
     expect(selector.isOffline('mastra')).toBe(false)
+  })
+
+  it('mastra 在线且 GET /api/app/model 返回 config 时 customModelActive 为 true 并透出配置', async () => {
+    const config = {
+      name: '2api 中转',
+      provider: 'openai-compat',
+      model: 'gpt-test-mini',
+      baseURL: 'https://api.example.com/v1',
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url: string) => {
+        if (url.endsWith('/api/app/model'))
+          return Promise.resolve(jsonResponse({ config }))
+        return Promise.resolve(okResponse())
+      }),
+    )
+    const selector = useBackendSelector({ storage: memoryStorage() })
+
+    expect(selector.customModelActive.value).toBe(false)
+    await selector.selectBackend('mastra')
+
+    expect(selector.customModelActive.value).toBe(true)
+    expect(selector.mastraRuntimeConfig.value).toEqual(config)
+  })
+
+  it('config 为 null（未配置运行时模型）时 customModelActive 保持 false', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url: string) => {
+        if (url.endsWith('/api/app/model'))
+          return Promise.resolve(jsonResponse({ config: null }))
+        return Promise.resolve(okResponse())
+      }),
+    )
+    const selector = useBackendSelector({ storage: memoryStorage() })
+    await selector.selectBackend('mastra')
+
+    expect(selector.mastraOnline.value).toBe(true)
+    expect(selector.customModelActive.value).toBe(false)
+    expect(selector.mastraRuntimeConfig.value).toBeNull()
+  })
+
+  it('mastra 离线时 customModelActive 恒 false（即使本地残留旧配置也会清空）', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('fetch failed')),
+    )
+    const selector = useBackendSelector({ storage: memoryStorage() })
+    const ok = await selector.selectBackend('mastra')
+
+    expect(ok).toBe(false)
+    expect(selector.customModelActive.value).toBe(false)
+    expect(selector.mastraRuntimeConfig.value).toBeNull()
+  })
+
+  it('refreshCustomModel 单独刷新运行时模型状态（探活后配置端点变化时复用）', async () => {
+    let config: { name: string } | null = null
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url: string) => {
+        if (url.endsWith('/api/app/model'))
+          return Promise.resolve(jsonResponse({ config }))
+        return Promise.resolve(okResponse())
+      }),
+    )
+    const selector = useBackendSelector({ storage: memoryStorage() })
+    await selector.selectBackend('mastra')
+    expect(selector.customModelActive.value).toBe(false)
+
+    config = { name: '新模型' }
+    await selector.refreshCustomModel()
+
+    expect(selector.customModelActive.value).toBe(true)
+    expect(selector.mastraRuntimeConfig.value).toEqual({ name: '新模型' })
   })
 
   it('mastra 探活失败（HTTP 500）时不切换、不持久化并标记离线', async () => {
