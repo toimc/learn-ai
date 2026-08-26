@@ -4,6 +4,13 @@ import { createUserMessage, createAssistantMessage } from '../utils'
 import { estimateTokens } from '../utils/estimate-tokens'
 import { truncateContext } from './context-window'
 
+/** done 帧 usage 来自开放结构（metadata 不可信）：两字段均为 number 才采信，否则估算兜底 */
+function isTokenUsage(value: unknown): value is TokenUsage {
+  if (typeof value !== 'object' || value === null) return false
+  const { inputTokens, outputTokens } = value as Record<string, unknown>
+  return typeof inputTokens === 'number' && typeof outputTokens === 'number'
+}
+
 export function useChat(
   adapter: ChatAdapter,
   options?: ChatOptions,
@@ -96,7 +103,8 @@ export function useChat(
         const chunk = result.value
 
         if (chunk.type === 'done') {
-          reportedUsage = chunk.metadata?.usage as TokenUsage | undefined
+          const usage = chunk.metadata?.usage
+          if (isTokenUsage(usage)) reportedUsage = usage
           // 计算思考时长
           if (assistantMessage.thinking && thinkingStartTime) {
             assistantMessage.thinking.duration = Date.now() - thinkingStartTime
@@ -256,6 +264,7 @@ export function useChat(
   function abort(): void {
     if (currentController) {
       currentController.abort()
+      // abort 立即复位供 UI 响应；finally 会再次收敛到同一终态（幂等双写）
       state.isStreaming = false
     }
   }

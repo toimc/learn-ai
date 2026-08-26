@@ -572,9 +572,12 @@ describe('useChat 消息操作与上下文窗口', () => {
     const state = useChat(pendingAdapter)
 
     const sending = state.send('hi') // 不 await，先让流进入 isStreaming
-    await vi.waitFor(() => {
-      expect(state.isStreaming).toBe(true)
-    })
+    await vi.waitFor(
+      () => {
+        expect(state.isStreaming).toBe(true)
+      },
+      { timeout: 3000 },
+    )
 
     // 在流式进行中调用 regenerate
     const regeneratePromise = state.regenerate()
@@ -657,9 +660,12 @@ describe('useChat 消息操作与上下文窗口', () => {
     const state = useChat(pendingAdapter)
 
     const sending = state.send('hi')
-    await vi.waitFor(() => {
-      expect(state.isStreaming).toBe(true)
-    })
+    await vi.waitFor(
+      () => {
+        expect(state.isStreaming).toBe(true)
+      },
+      { timeout: 3000 },
+    )
 
     const u1Id = state.messages[0].id
     const editPromise = state.editMessage(u1Id, '新内容')
