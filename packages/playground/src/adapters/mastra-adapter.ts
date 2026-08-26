@@ -38,6 +38,9 @@ interface MastraChunk {
     result?: unknown
     isError?: boolean
     error?: unknown
+    /** finish 事件（ai-sdk v5）带 totalUsage；旧版本字段名 usage */
+    totalUsage?: { inputTokens?: number; outputTokens?: number }
+    usage?: { inputTokens?: number; outputTokens?: number }
   }
 }
 
@@ -231,7 +234,22 @@ export function createMastraAdapter(
             return
           }
           case 'finish': {
-            yield { type: 'done', content: '' }
+            // ai-sdk v5 的 finish 事件带 usage（totalUsage 优先，旧版 usage 次之），
+            // 透传给 useChat 做真实 token 校准；两处都没有则不带，前端估算兜底
+            const u = payload.totalUsage ?? payload.usage
+            const usage =
+              typeof u?.inputTokens === 'number' ||
+              typeof u?.outputTokens === 'number'
+                ? {
+                    inputTokens: u?.inputTokens ?? 0,
+                    outputTokens: u?.outputTokens ?? 0,
+                  }
+                : undefined
+            yield {
+              type: 'done',
+              content: '',
+              ...(usage ? { metadata: { usage } } : {}),
+            }
             return
           }
           default:

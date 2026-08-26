@@ -45,8 +45,12 @@ const zhCN = {
   },
   actions: {
     copy: '复制',
+    copied: '已复制',
     regenerate: '重新生成',
     preferred: '你更喜欢的回复：{chosen}',
+    edit: '编辑',
+    confirmEdit: '确认',
+    cancelEdit: '取消',
   },
   tools: {
     upload: '上传文件',
@@ -103,6 +107,7 @@ const zhCN = {
   },
   chat: {
     sendFailed: '发送失败：{msg}',
+    contextTruncated: '已省略 {n} 条较早消息（超出上下文窗口）',
   },
   providerSettings: {
     open: '设置 Provider',
@@ -115,6 +120,9 @@ const zhCN = {
     selectModel: '选择模型（对新会话生效）',
     modelDefault: 'AI Chat UI',
     modelDefaultOption: '默认（本地演示）',
+    contextWindow: '上下文窗口（token）',
+    contextWindowPlaceholder: '0 = 不限制',
+    contextWindowHint: '超出窗口时自动省略最旧消息（仅影响发送，不删聊天记录）',
   },
   backend: {
     label: '后端（对新会话生效）',
@@ -177,8 +185,12 @@ const enUS: typeof zhCN = {
   },
   actions: {
     copy: 'Copy',
+    copied: 'Copied',
     regenerate: 'Regenerate',
     preferred: 'Your preferred response: {chosen}',
+    edit: 'Edit',
+    confirmEdit: 'Confirm',
+    cancelEdit: 'Cancel',
   },
   tools: {
     upload: 'Upload file',
@@ -238,6 +250,7 @@ const enUS: typeof zhCN = {
   },
   chat: {
     sendFailed: 'Send failed: {msg}',
+    contextTruncated: '{n} earlier messages omitted (context window exceeded)',
   },
   providerSettings: {
     open: 'Configure providers',
@@ -250,6 +263,10 @@ const enUS: typeof zhCN = {
     selectModel: 'Select model (applies to new chats)',
     modelDefault: 'AI Chat UI',
     modelDefaultOption: 'Default (local demo)',
+    contextWindow: 'Context window (tokens)',
+    contextWindowPlaceholder: '0 = unlimited',
+    contextWindowHint:
+      'Oldest messages are omitted when exceeded (send-only, chat history kept)',
   },
   backend: {
     label: 'Backend (applies to new chats)',

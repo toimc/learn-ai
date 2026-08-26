@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { watchEffect } from 'vue'
 import { useChat } from '../composables'
-import type { ChatAdapter, StreamChunk } from '../types'
+import type { ChatAdapter, Message, StreamChunk } from '../types'
 
 function createMockAdapter(chunks: StreamChunk[]): ChatAdapter {
   return {
@@ -477,5 +477,340 @@ describe('useChat maxHistory 历史上限', () => {
     await state.send('c') // 6→4 条，收到 3 条
 
     expect(lastReceived).toBe(3)
+  })
+})
+
+describe('useChat 消息操作与上下文窗口', () => {
+  /** 记录 adapter 收到的 messages 的辅助函数 */
+  function createRecordingAdapter(
+    chunks: StreamChunk[],
+    received: Message[][],
+  ): ChatAdapter {
+    return {
+      async *sendMessage(options) {
+        received.push([...options.messages]) // 浅拷贝记录
+        for (const chunk of chunks) {
+          yield chunk
+        }
+      },
+    }
+  }
+
+  it('T1: regenerate() 缺省删除最后一条 assistant 重发', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: '回复1' },
+        { type: 'done', content: '' },
+        { type: 'text', content: '回复2' },
+        { type: 'done', content: '' },
+        { type: 'text', content: '重新生成的回复' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+    const state = useChat(adapter)
+
+    await state.send('问题1')
+    await state.send('问题2')
+    expect(state.messages).toHaveLength(4) // [u1, a1, u2, a2]
+
+    const beforeIds = state.messages.map((m) => m.id)
+    await state.regenerate() // 缺省 = 删除最后一条 assistant
+
+    expect(state.messages).toHaveLength(4) // 删 a2 + 新占位 = 4
+    expect(state.messages[0].id).toBe(beforeIds[0]) // u1 不变
+    expect(state.messages[1].id).toBe(beforeIds[1]) // a1 不变
+    expect(state.messages[2].id).toBe(beforeIds[2]) // u2 不变
+    expect(state.messages[3].id).not.toBe(beforeIds[3]) // 新 assistant
+    expect(state.messages[3].role).toBe('assistant')
+
+    // adapter 最后一次收到的 messages 以 u2 结尾（不含已删的 a2）
+    const lastReceived = received[received.length - 1]
+    expect(lastReceived[lastReceived.length - 1].content).toBe('问题2')
+  })
+
+  it('T2: regenerate(id) 删除指定 assistant 及其后所有消息', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: '新回复' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+    const state = useChat(adapter)
+
+    await state.send('问题1')
+    await state.send('问题2')
+    expect(state.messages).toHaveLength(4)
+
+    const a1Id = state.messages[1].id // 第一条 assistant
+    await state.regenerate(a1Id) // 删除 a1 及其后的 u2, a2
+
+    expect(state.messages).toHaveLength(2) // [u1, 新 assistant]
+    expect(state.messages[0].id).toBe(state.messages[0].id) // u1 保留
+    expect(state.messages[1].role).toBe('assistant')
+
+    // adapter 收到的只有 u1
+    expect(received[received.length - 1]).toHaveLength(1)
+    expect(received[received.length - 1][0].content).toBe('问题1')
+  })
+
+  it('T3: isStreaming 中 regenerate 被拒绝', async () => {
+    let callCount = 0
+    const received: Message[][] = []
+    const pendingAdapter: ChatAdapter = {
+      async *sendMessage(options) {
+        callCount += 1
+        received.push([...options.messages])
+        yield { type: 'text', content: '开始' }
+        // 挂起流，等 abort
+        await new Promise<void>(() => {})
+      },
+    }
+    const state = useChat(pendingAdapter)
+
+    const sending = state.send('hi') // 不 await，先让流进入 isStreaming
+    await vi.waitFor(
+      () => {
+        expect(state.isStreaming).toBe(true)
+      },
+      { timeout: 3000 },
+    )
+
+    // 在流式进行中调用 regenerate
+    const regeneratePromise = state.regenerate()
+
+    // 等 streaming 真结束（abort 后）
+    state.abort()
+    await sending
+
+    // regenerate 应该已完成（被拒绝），不会增加 adapter 调用次数
+    await regeneratePromise
+
+    // adapter 只被调用一次（send 调用的那次），regenerate 没产生新请求
+    expect(callCount).toBe(1)
+    expect(received).toHaveLength(1)
+  })
+
+  it('T4: editMessage 覆盖+删后续+重发', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: '基于新内容的回复' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+    const state = useChat(adapter)
+
+    await state.send('原始问题1')
+    await state.send('原始问题2')
+    expect(state.messages).toHaveLength(4)
+
+    const u1Id = state.messages[0].id
+    await state.editMessage(u1Id, '改写后的提问')
+
+    expect(state.messages).toHaveLength(2) // [u1(修改), 新 assistant]
+    expect(state.messages[0].id).toBe(u1Id) // ID 不变
+    expect(state.messages[0].content).toBe('改写后的提问')
+    expect(state.messages[0].role).toBe('user')
+    expect(state.messages[1].role).toBe('assistant')
+
+    // adapter 收到的 messages[0] 是新内容
+    const lastReceived = received[received.length - 1]
+    expect(lastReceived[0].content).toBe('改写后的提问')
+  })
+
+  it('T5: editMessage 重算 tokenCount', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: 'ok' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+    // 注入 estimator: 字符串长度 = token 数
+    const state = useChat(adapter, {
+      tokenEstimator: (t) => t.length,
+    })
+
+    await state.send('hello') // 5 字符
+    const u1Id = state.messages[0].id
+
+    await state.editMessage(u1Id, '改写后的提问') // '改写后的提问' = 6 字符
+
+    // 手写数字面量：'改写后的提问'.length = 6
+    expect(state.messages[0].metadata?.tokenCount).toBe(6)
+  })
+
+  it('T6: isStreaming 中 editMessage 拒绝', async () => {
+    let callCount = 0
+    const received: Message[][] = []
+    const pendingAdapter: ChatAdapter = {
+      async *sendMessage(options) {
+        callCount += 1
+        received.push([...options.messages])
+        yield { type: 'text', content: '开始' }
+        await new Promise<void>(() => {})
+      },
+    }
+    const state = useChat(pendingAdapter)
+
+    const sending = state.send('hi')
+    await vi.waitFor(
+      () => {
+        expect(state.isStreaming).toBe(true)
+      },
+      { timeout: 3000 },
+    )
+
+    const u1Id = state.messages[0].id
+    const editPromise = state.editMessage(u1Id, '新内容')
+
+    state.abort()
+    await sending
+    await editPromise
+
+    expect(callCount).toBe(1)
+    expect(received).toHaveLength(1)
+  })
+
+  it('T7: done 带 usage.outputTokens 回填真实值', async () => {
+    const adapter = createMockAdapter([
+      { type: 'text', content: '你好吗' },
+      {
+        type: 'done',
+        content: '',
+        metadata: {
+          usage: {
+            inputTokens: 99,
+            outputTokens: 42,
+          },
+        },
+      },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('hi')
+
+    // 手写数字面量：42 是 metadata.usage.outputTokens
+    expect(state.messages[1].metadata?.tokenCount).toBe(42)
+  })
+
+  it('T8: done 无 usage 回退估算', async () => {
+    const adapter = createMockAdapter([
+      { type: 'text', content: '你好吗' }, // 3 字符
+      { type: 'done', content: '' }, // 无 metadata.usage
+    ])
+    const state = useChat(adapter, {
+      tokenEstimator: (t) => t.length,
+    })
+
+    await state.send('hi')
+
+    // 手写数字面量：'你好吗'.length = 3
+    expect(state.messages[1].metadata?.tokenCount).toBe(3)
+  })
+
+  it('T9: maxContextTokens 截断只影响发送数组', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: '回复' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+    // 每条消息 content 长 4，estimator 按 length 算
+    // maxContextTokens=5，最多容纳 1 条消息
+    const state = useChat(adapter, {
+      maxContextTokens: 5,
+      tokenEstimator: (t) => t.length,
+    })
+
+    // 先构造两条历史消息
+    await state.send('1234') // 4 token
+    await state.send('5678') // 4 token
+
+    const beforeSend = state.messages.length
+    await state.send('abcd') // 4 token，触发截断
+
+    // state.messages 条数不变（UI 不删）
+    expect(state.messages.length).toBe(beforeSend + 2) // + user + assistant
+
+    // 但 adapter 收到的少于 state.messages
+    const lastReceived = received[received.length - 1]
+    expect(lastReceived.length).toBeLessThan(state.messages.length)
+
+    // truncatedCount > 0
+    expect(state.truncatedCount).toBeGreaterThan(0)
+  })
+
+  it('T10: maxContextTokens 为 getter 时每次发送求值', async () => {
+    const received: Message[][] = []
+    const adapter = createRecordingAdapter(
+      [
+        { type: 'text', content: 'ok' },
+        { type: 'done', content: '' },
+      ],
+      received,
+    )
+
+    // 用闭包变量控制 getter 返回值
+    let getterValue = 100 // 初始大值，不截断
+    const state = useChat(adapter, {
+      maxContextTokens: () => getterValue,
+      tokenEstimator: (t) => t.length,
+    })
+
+    await state.send('第一次')
+
+    // getterValue=100 时 truncatedCount 应为 0
+    expect(state.truncatedCount).toBe(0)
+
+    getterValue = 5 // 改为小值，触发截断
+    await state.send('第二次')
+
+    // getterValue=5 时 truncatedCount 应大于 0
+    expect(state.truncatedCount).toBeGreaterThan(0)
+  })
+
+  it('T11: send 后 user 消息带估算 tokenCount', async () => {
+    const adapter = createMockAdapter([
+      { type: 'text', content: '回复' },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter, {
+      tokenEstimator: (t) => t.length,
+    })
+
+    await state.send('hello') // 'hello'.length = 5
+
+    // 手写数字面量：5 = 'hello'.length
+    expect(state.messages[0].metadata?.tokenCount).toBe(5)
+  })
+
+  it('T12: clear() 归零 truncatedCount', async () => {
+    const adapter = createMockAdapter([
+      { type: 'text', content: '回复' },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter, {
+      maxContextTokens: 1, // 极小值确保截断
+      tokenEstimator: (t) => t.length,
+    })
+
+    await state.send('消息足够长导致截断')
+
+    // 截断发生后 truncatedCount > 0
+    expect(state.truncatedCount).toBeGreaterThan(0)
+
+    state.clear()
+
+    expect(state.truncatedCount).toBe(0)
+    expect(state.messages).toHaveLength(0)
   })
 })

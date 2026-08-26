@@ -33,6 +33,29 @@ title: Playground
 - **错误处理**：发送包含"error"或"错误"的消息，展示错误场景处理
 - **A/B 偏好对比**：选择「⚖️ A/B 回复对比」会话，[`ComparisonMessage`](/components/comparison-message) 双列展示两个候选回复；点「喜欢这个」后选中内容原地固化为普通 AI 消息，状态随会话保留（切走再切回不丢失）。
 
+### 消息操作与上下文窗口
+
+消息列表支持三个基础操作（消息 hover 后底部图标）：
+
+| 操作 | 适用消息 | 行为 |
+|---|---|---|
+| 复制 | 用户 / AI | 复制 Markdown 原文到剪贴板 |
+| 重新生成 | AI（任意位置） | 删除该回复及其后所有消息，以完整前置历史重发 |
+| 编辑 | 用户 | 消息变为编辑框，确认后覆盖原消息、删除其后回复并重发 |
+
+三条路径发送的均为「窗口内完整历史」（一次性发送，非增量）。
+
+**上下文窗口截断**：模型下拉中每个模型项右侧的齿轮可配置 `maxContextTokens`（token 数，0 = 不限制）。超出窗口时发送请求自动省略最旧消息——仅影响发送内容，聊天记录完整保留，消息列表顶部会出现省略提示。token 计量以 done 帧回传的真实 `usage` 优先（mock-server 与 Mastra 链路均回传），无 usage 时前端估算兜底。
+
+```ts
+const chat = useChat(adapter, {
+  // 支持 getter：配置随选中模型变化时每次发送求值
+  maxContextTokens: () => currentModelWindow,
+})
+await chat.editMessage(userMsg.id, '修改后的提问')  // 覆盖 + 删后续 + 重发
+await chat.regenerate(assistantMsg.id)             // 任意位置重新生成
+```
+
 ### 后端选择器（顶栏左侧下拉）
 
 顶栏左侧下拉选择**消息走哪条链路**（对新建会话生效，已有会话不受影响）：

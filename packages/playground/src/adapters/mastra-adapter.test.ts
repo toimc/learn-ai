@@ -555,4 +555,38 @@ describe('Mastra 事件映射', () => {
       { type: 'done', content: '' },
     ])
   })
+
+  it('finish 帧 payload.totalUsage 透传为 done 帧 metadata.usage', async () => {
+    stubSse([
+      'data: {"type":"text-delta","payload":{"id":"t1","text":"hi"}}\n\n',
+      'data: {"type":"finish","payload":{"totalUsage":{"inputTokens":11,"outputTokens":3}}}\n\n',
+    ])
+
+    const chunks = await sendMessages(createMastraAdapter())
+
+    expect(chunks).toEqual([
+      { type: 'text', content: 'hi' },
+      {
+        type: 'done',
+        content: '',
+        metadata: { usage: { inputTokens: 11, outputTokens: 3 } },
+      },
+    ])
+  })
+
+  it('finish 帧无 usage 字段时 done 帧不带 metadata.usage', async () => {
+    stubSse([
+      'data: {"type":"text-delta","payload":{"id":"t1","text":"hi"}}\n\n',
+      'data: {"type":"finish","payload":{"finishReason":"stop"}}\n\n',
+    ])
+
+    const chunks = await sendMessages(createMastraAdapter())
+
+    expect(chunks).toEqual([
+      { type: 'text', content: 'hi' },
+      { type: 'done', content: '' },
+    ])
+    const done = chunks.at(-1)
+    expect(done?.metadata?.usage).toBeUndefined()
+  })
 })

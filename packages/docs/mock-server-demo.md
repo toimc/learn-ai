@@ -12,3 +12,19 @@ title: Mock 服务端演示
 - **自适应高度**：聊天区域占满视口剩余高度（矮窗口下限 480px），消息在区域内滚动，输入框始终可见。
 
 完整交互式 Playground（本地 mock 数据版）见 [Playground](/playground)；接口清单与在线执行见 [接口文档](/mock-api)。
+
+## 线协议格式
+
+SSE 响应为 `text/event-stream`，每帧格式：
+
+```
+event: chunk
+data: {"type":"text","content":"你好"}
+```
+
+剧本收尾的 done 帧携带模拟 usage（与真实 provider 的 usage 透传同构），供前端做上下文窗口的真实 token 校准：
+
+```
+event: chunk
+data: {"type":"done","content":"","metadata":{"usage":{"inputTokens":42,"outputTokens":18}}}
+```

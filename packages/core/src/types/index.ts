@@ -56,6 +56,12 @@ export interface StreamChunk {
   }
 }
 
+/** done 帧回传的 token 用量（metadata.usage 约定） */
+export interface TokenUsage {
+  inputTokens: number
+  outputTokens: number
+}
+
 export interface SendMessageOptions {
   messages: Message[]
   model?: string
@@ -80,13 +86,22 @@ export interface ChatOptions {
   onError?: (error: Error) => void
   onResponse?: (chunk: StreamChunk) => void
   maxHistory?: number
+  /** 上下文窗口（token）；支持 getter 以便宿主配置随选中模型变化。空/0/负 = 不截断 */
+  maxContextTokens?: number | (() => number)
+  /** 可注入的 token 估算器，默认 estimateTokens */
+  tokenEstimator?: (text: string) => number
 }
 
 export interface ChatState {
   messages: Message[]
   isStreaming: boolean
   error: Error | null
+  truncatedCount: number
   send: (content: string, attachments?: Attachment[]) => Promise<void>
+  /** 重新生成：删除目标 assistant 消息及其后所有消息后重发；缺省取最后一条 assistant */
+  regenerate: (messageId?: string) => Promise<void>
+  /** 编辑用户消息：覆盖内容、删除其后所有消息、以新内容重发 */
+  editMessage: (messageId: string, content: string) => Promise<void>
   abort: () => void
   clear: () => void
 }
