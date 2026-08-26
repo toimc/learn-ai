@@ -29,6 +29,8 @@ interface ChatAdapter {
 |--------|------|--------|------|
 | initialMessages | `Message[]` | `[]` | 初始消息列表 |
 | maxHistory | `number` | — | 最大消息数量，超出删除最早的 |
+| maxContextTokens | `number \| (() => number)` | — | 上下文窗口 token 上限（0 = 不限制），支持 getter 每次发送求值 |
+| tokenEstimator | `(text: string) => number` | — | 自定义 token 估算函数 |
 | onError | `(error: Error) => void` | — | 错误回调 |
 | onResponse | `(chunk: StreamChunk) => void` | — | 每个 chunk 回调 |
 
@@ -39,9 +41,12 @@ interface ChatAdapter {
 | messages | `Message[]` | 消息列表（响应式） |
 | isStreaming | `boolean` | 是否正在流式输出 |
 | error | `Error \| null` | 最近一次错误（含**零产出守卫**：流正常结束但无任何文本/思考/工具产出时置「回复为空：上游未返回内容，请检查模型服务配置」——坏 key 的中转站空回复即此形态，中断不算错误） |
+| truncatedCount | `number` | 当前发送窗口被截断的消息条数 |
 | send | `(content: string, attachments?: Attachment[]) => Promise<void>` | 发送消息 |
 | abort | `() => void` | 中止当前流式输出 |
 | clear | `() => void` | 清空所有消息和错误 |
+| regenerate | `(messageId?: string) => Promise<void>` | 重新生成 AI 消息（删除该消息及其后所有消息并重发，缺省为最后一条） |
+| editMessage | `(messageId: string, content: string) => Promise<void>` | 编辑用户消息（覆盖原消息、删除其后回复并重发） |
 
 > 💡 流式期间 assistant 消息的 `content` / `thinking` / `toolCalls` 均为**实时响应式更新**——每个 chunk 到达即触发界面重渲染，可直接绑定到模板做逐字输出效果。
 
