@@ -47,6 +47,7 @@ import {
   useBackendSelector,
 } from '../composables/useBackendSelector'
 import type { PlaygroundBackendId } from '../composables/useBackendSelector'
+import MessageEditor from './MessageEditor.vue'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
@@ -82,6 +83,61 @@ const {
   isOffline: isBackendOffline,
 } = useBackendSelector()
 
+// —— 上下文窗口（spec 13）：模型级配置持久化，getter 每次发送时求值 ——
+const CONTEXT_WINDOW_KEY = 'pg.modelContextTokens'
+
+function loadContextWindowMap(): Record<string, number> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CONTEXT_WINDOW_KEY) ?? '{}')
+    if (raw && typeof raw === 'object') {
+      return raw as Record<string, number>
+    }
+  } catch {
+    // 损坏数据回退默认（安全规范：localStorage 视为不可信输入）
+  }
+  return {}
+}
+
+const contextWindowMap = ref(loadContextWindowMap())
+// 窗口设置 popover 状态：目标模型 id + 输入草稿
+const contextTargetModelId = ref<string | null>(null)
+const contextWindowDraft = ref('')
+
+function contextWindowOf(modelId: string): number {
+  return contextWindowMap.value[modelId] ?? 0
+}
+
+function openContextWindow(modelId: string) {
+  contextTargetModelId.value = modelId
+  contextWindowDraft.value = String(contextWindowOf(modelId) || '')
+}
+
+function closeContextWindow() {
+  contextTargetModelId.value = null
+}
+
+function saveContextWindow() {
+  const id = contextTargetModelId.value
+  if (!id) return
+  const value = Math.max(0, Math.floor(Number(contextWindowDraft.value) || 0))
+  contextWindowMap.value = { ...contextWindowMap.value, [id]: value }
+  try {
+    localStorage.setItem(
+      CONTEXT_WINDOW_KEY,
+      JSON.stringify(contextWindowMap.value),
+    )
+  } catch {
+    // 写失败不阻断（隐私模式等场景）
+  }
+  closeContextWindow()
+}
+
+// 当前生效窗口：选中模型的配置，缺省回退 default 档（本地 Mock 无模型概念）
+function resolveChatMaxContextTokens(): number {
+  const key = selectedModelId.value ?? 'default'
+  return contextWindowMap.value[key] || contextWindowMap.value.default || 0
+}
+
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
 // adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）；
 // mastra 会话在运行时模型已配置时走 custom-agent 端点（每次发送快照，流中不切换）
@@ -91,6 +147,7 @@ const chat = useChat(
       conversations.value.find((c) => c.id === activeConversationId.value),
     getMastraCustomModelActive: () => customModelActive.value,
   }),
+  { maxContextTokens: resolveChatMaxContextTokens },
 )
 
 const sidebarOpen = ref(false)
@@ -115,6 +172,48 @@ function onPrefer(
 ) {
   msg.content = p.chosen === 'A' ? p.left : p.right
   msg.comparison = undefined
+}
+
+// —— 消息操作（spec 13）——
+// 命名带 Message 后缀：与侧边栏会话标题编辑（editingId/startEdit/cancelEdit）区分
+const copiedId = ref<string | null>(null)
+
+async function copyMessage(
+  msg: typeof import('@toimc/core').Message,
+): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(msg.content)
+    copiedId.value = msg.id
+    setTimeout(() => {
+      if (copiedId.value === msg.id) copiedId.value = null
+    }, 1500)
+  } catch {
+    // 剪贴板权限被拒时静默（不打断聊天）
+  }
+}
+
+const editingMessageId = ref<string | null>(null)
+
+function startEditMessage(msg: typeof import('@toimc/core').Message): void {
+  if (chat.isStreaming) return
+  editingMessageId.value = msg.id
+}
+
+function cancelEditMessage(): void {
+  editingMessageId.value = null
+}
+
+async function confirmEditMessage(
+  msg: typeof import('@toimc/core').Message,
+  content: string,
+): Promise<void> {
+  editingMessageId.value = null
+  await chat.editMessage(msg.id, content)
+}
+
+function regenerateMessage(msg: typeof import('@toimc/core').Message): void {
+  if (chat.isStreaming) return
+  void chat.regenerate(msg.id)
 }
 
 // 主题统一走 @toimc/vue 的 useTheme 单例（持久化 + 系统跟随 + 写 data-theme）
@@ -884,14 +983,36 @@ watch(() => chat.messages.length, scrollToBottom)
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-            <!-- 模型下拉：数据源 GET /api/models（mock 三模型 + custom-*） -->
+            <!-- 模型下拉：数据源 GET /api/models（mock 三模型 + custom-*）；
+                 齿轮配置每模型上下文窗口（spec 13），default 档兜底 -->
             <div v-if="modelMenuOpen" class="pg-model-menu">
               <button
                 class="pg-model-option"
                 :class="{ selected: !selectedModelId }"
                 @click="pickModel(undefined)"
               >
-                {{ t('pg.providerChat.modelDefaultOption') }}
+                <span>{{ t('pg.providerChat.modelDefaultOption') }}</span>
+                <span
+                  class="pg-model-option-gear"
+                  :title="t('pg.providerChat.contextWindow')"
+                  @click.stop="openContextWindow('default')"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                    />
+                  </svg>
+                </span>
               </button>
               <button
                 v-for="m in modelList"
@@ -900,8 +1021,63 @@ watch(() => chat.messages.length, scrollToBottom)
                 :class="{ selected: m.id === selectedModelId }"
                 @click="pickModel(m.id)"
               >
-                {{ m.name }}
+                <span>{{ m.name }}</span>
+                <span
+                  class="pg-model-option-gear"
+                  :title="t('pg.providerChat.contextWindow')"
+                  @click.stop="openContextWindow(m.id)"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                    />
+                  </svg>
+                </span>
               </button>
+              <!-- 窗口设置 popover（spec 13） -->
+              <div
+                v-if="contextTargetModelId"
+                class="pg-context-popover"
+                @click.stop
+              >
+                <label class="pg-context-popover__label">
+                  {{ t('pg.providerChat.contextWindow') }}
+                </label>
+                <input
+                  v-model="contextWindowDraft"
+                  type="number"
+                  min="0"
+                  class="pg-context-popover__input"
+                  :placeholder="t('pg.providerChat.contextWindowPlaceholder')"
+                />
+                <p class="pg-context-popover__hint">
+                  {{ t('pg.providerChat.contextWindowHint') }}
+                </p>
+                <div class="pg-context-popover__actions">
+                  <button
+                    class="pg-message-editor__btn"
+                    @click="closeContextWindow"
+                  >
+                    {{ t('pg.actions.cancelEdit') }}
+                  </button>
+                  <button
+                    class="pg-message-editor__btn pg-message-editor__btn--primary"
+                    @click="saveContextWindow"
+                  >
+                    {{ t('pg.actions.confirmEdit') }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1046,6 +1222,11 @@ watch(() => chat.messages.length, scrollToBottom)
             </div>
           </ConversationEmpty>
 
+          <!-- 上下文窗口截断提示（spec 13）：只影响发送，聊天记录完整保留 -->
+          <div v-if="chat.truncatedCount > 0" class="pg-context-truncated">
+            {{ t('pg.chat.contextTruncated', { n: chat.truncatedCount }) }}
+          </div>
+
           <!-- Messages -->
           <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
             <!-- A/B 回复对比：消息类型驱动渲染，选中后固化为普通消息 -->
@@ -1079,13 +1260,19 @@ watch(() => chat.messages.length, scrollToBottom)
                 />
               </template>
 
-              <!-- 纯 mock 会话：现有渲染路径（保持不动） -->
+              <!-- 纯 mock 会话：现有渲染路径（用户消息支持编辑态替换） -->
               <template v-else>
                 <MessageContent
                   v-if="msg.role === 'assistant'"
                   :content="msg.content"
                   :thinking="msg.thinking"
                   :streaming="chat.isStreaming"
+                />
+                <MessageEditor
+                  v-else-if="editingMessageId === msg.id"
+                  :content="msg.content"
+                  @confirm="(content) => confirmEditMessage(msg, content)"
+                  @cancel="cancelEditMessage"
                 />
                 <MessageContent v-else>
                   {{ msg.content }}
@@ -1096,7 +1283,14 @@ watch(() => chat.messages.length, scrollToBottom)
               </template>
 
               <MessageActions v-if="msg.role === 'assistant'">
-                <MessageAction :title="t('pg.actions.copy')">
+                <MessageAction
+                  :title="
+                    copiedId === msg.id
+                      ? t('pg.actions.copied')
+                      : t('pg.actions.copy')
+                  "
+                  @click="copyMessage(msg)"
+                >
                   <svg
                     width="15"
                     height="15"
@@ -1113,7 +1307,11 @@ watch(() => chat.messages.length, scrollToBottom)
                     />
                   </svg>
                 </MessageAction>
-                <MessageAction :title="t('pg.actions.regenerate')">
+                <MessageAction
+                  :title="t('pg.actions.regenerate')"
+                  :disabled="chat.isStreaming"
+                  @click="regenerateMessage(msg)"
+                >
                   <svg
                     width="15"
                     height="15"
@@ -1126,6 +1324,57 @@ watch(() => chat.messages.length, scrollToBottom)
                   >
                     <polyline points="23 4 23 10 17 10" />
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                  </svg>
+                </MessageAction>
+              </MessageActions>
+
+              <!-- 用户消息操作区：复制 + 编辑（spec 13） -->
+              <MessageActions v-else-if="msg.role === 'user'">
+                <MessageAction
+                  :title="
+                    copiedId === msg.id
+                      ? t('pg.actions.copied')
+                      : t('pg.actions.copy')
+                  "
+                  @click="copyMessage(msg)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </MessageAction>
+                <MessageAction
+                  :title="t('pg.actions.edit')"
+                  :disabled="chat.isStreaming"
+                  @click="startEditMessage(msg)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                    />
+                    <path
+                      d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    />
                   </svg>
                 </MessageAction>
               </MessageActions>
@@ -1578,6 +1827,8 @@ watch(() => chat.messages.length, scrollToBottom)
 .pg-model-option {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   height: 32px;
   width: 100%;
   padding: 0 10px;
@@ -1947,5 +2198,132 @@ watch(() => chat.messages.length, scrollToBottom)
   .pg-input-area {
     padding: 0 12px 12px;
   }
+}
+
+/* ===== 消息编辑卡片（spec 13，供 MessageEditor 使用） ===== */
+.pg-message-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.pg-message-editor__textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 240px;
+  padding: 8px 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: var(--ai-chat-radius-md);
+  background: var(--ai-chat-color-bg-primary);
+  color: var(--ai-chat-color-text-primary);
+  font: inherit;
+  line-height: 1.6;
+  resize: none;
+  overflow-y: auto;
+}
+
+.pg-message-editor__textarea:focus {
+  outline: none;
+  border-color: var(--ai-chat-color-accent-500);
+}
+
+.pg-message-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pg-message-editor__btn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: var(--ai-chat-radius-sm);
+  background: var(--ai-chat-color-bg-primary);
+  color: var(--ai-chat-color-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pg-message-editor__btn--primary {
+  background: var(--ai-chat-color-accent-500);
+  border-color: var(--ai-chat-color-accent-500);
+  color: var(--ai-chat-color-text-on-accent);
+}
+
+.pg-message-editor__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 上下文窗口截断提示条（spec 13） ===== */
+.pg-context-truncated {
+  margin: 4px auto 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--ai-chat-color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+  width: fit-content;
+}
+
+/* ===== 模型项齿轮与窗口 popover（spec 13） ===== */
+.pg-model-option-gear {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--ai-chat-radius-sm);
+  color: var(--ai-chat-color-text-secondary);
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.pg-model-option:hover .pg-model-option-gear,
+.pg-model-option.selected .pg-model-option-gear {
+  visibility: visible;
+}
+
+.pg-model-option-gear:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-context-popover {
+  position: relative;
+  margin: 4px 0;
+  padding: 10px;
+  border-top: 1px solid var(--ai-chat-color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg-context-popover__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ai-chat-color-text-primary);
+}
+
+.pg-context-popover__input {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--ai-chat-color-border);
+  border-radius: var(--ai-chat-radius-sm);
+  background: var(--ai-chat-color-bg-primary);
+  color: var(--ai-chat-color-text-primary);
+  font-size: 13px;
+}
+
+.pg-context-popover__hint {
+  font-size: 12px;
+  color: var(--ai-chat-color-text-secondary);
+  line-height: 1.5;
+}
+
+.pg-context-popover__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 </style>
