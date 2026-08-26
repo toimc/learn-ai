@@ -235,7 +235,7 @@ const files: Attachment[] = [
 |--------|------|--------|------|
 | content | `string` | — | 消息正文内容（传值后走 Markdown 渲染，不传走默认插槽） |
 | thinking | `ThinkingInfo` | — | 思考过程信息，提供后显示折叠式思考块 |
-| streaming | `boolean` | — | 是否正在流式更新（思考块显示「正在思考…」，正文走流式渲染） |
+| streaming | `boolean` | — | 是否正在流式更新（思考块显示「正在思考…」，正文走流式渲染；**正文为空时显示三点跳动指示**（发送→首 token 的空窗反馈），有正文时行尾由 MarkdownRenderer 挂**呼吸光标**） |
 
 ```typescript
 interface ThinkingInfo {

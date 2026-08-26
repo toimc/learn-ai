@@ -38,7 +38,7 @@ interface ChatAdapter {
 |--------|------|------|
 | messages | `Message[]` | 消息列表（响应式） |
 | isStreaming | `boolean` | 是否正在流式输出 |
-| error | `Error \| null` | 最近一次错误 |
+| error | `Error \| null` | 最近一次错误（含**零产出守卫**：流正常结束但无任何文本/思考/工具产出时置「回复为空：上游未返回内容，请检查模型服务配置」——坏 key 的中转站空回复即此形态，中断不算错误） |
 | send | `(content: string, attachments?: Attachment[]) => Promise<void>` | 发送消息 |
 | abort | `() => void` | 中止当前流式输出 |
 | clear | `() => void` | 清空所有消息和错误 |
