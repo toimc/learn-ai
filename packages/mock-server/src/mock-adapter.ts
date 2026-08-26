@@ -1,5 +1,6 @@
 import type { ChatRequest, ChatResponse, IModelAdapter } from '@toimc/agents'
 import type { StreamChunk } from '@toimc/core'
+import { estimateTokens } from '@toimc/core'
 import { buildReply, type ScriptedChunk } from './scenarios'
 
 /** 三档演示模型的差异化因子 */
@@ -62,6 +63,8 @@ export function createMockAdapter(variant: MockVariant = 'pro'): IModelAdapter {
       script.unshift(...spec.thinkingLead)
     }
 
+    // 模拟真实 API 的 usage 回传：剧本收尾时按 core 同款估算器计算
+    let outputText = ''
     const speed = Math.max(0, Number(request.passthrough?.speed ?? 1))
     for (const { chunk, delayMs } of script) {
       if (request.signal?.aborted) return
@@ -70,6 +73,23 @@ export function createMockAdapter(variant: MockVariant = 'pro'): IModelAdapter {
         request.signal,
       )
       if (request.signal?.aborted) return
+      if (chunk.type === 'text') outputText += chunk.content
+      if (chunk.type === 'done') {
+        yield {
+          ...chunk,
+          metadata: {
+            ...chunk.metadata,
+            usage: {
+              inputTokens: request.messages.reduce(
+                (sum, m) => sum + estimateTokens(String(m.content ?? '')),
+                0,
+              ),
+              outputTokens: estimateTokens(outputText),
+            },
+          },
+        }
+        continue
+      }
       yield chunk
     }
   }
