@@ -50,4 +50,22 @@ describe('MarkdownRenderer', () => {
     await flushPromises()
     expect(wrapper.find('.ai-chat-mermaid').exists()).toBe(true)
   })
+
+  // 流式光标（主流 AI 聊天形态）：streaming 时容器带 is-streaming 类，
+  // 光标由 CSS 挂在最后一个块级元素的行尾
+  it('streaming 时容器带 is-streaming 类', async () => {
+    const wrapper = mount(MarkdownRenderer, {
+      props: { content: '流式中...', streaming: true },
+    })
+    await flushPromises()
+    expect(wrapper.find('.ai-chat-markdown.is-streaming').exists()).toBe(true)
+  })
+
+  it('非 streaming 时容器无 is-streaming 类', async () => {
+    const wrapper = mount(MarkdownRenderer, {
+      props: { content: '已完成的回复', streaming: false },
+    })
+    await flushPromises()
+    expect(wrapper.find('.ai-chat-markdown.is-streaming').exists()).toBe(false)
+  })
 })

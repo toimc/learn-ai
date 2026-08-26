@@ -40,12 +40,17 @@ watch(
 <style>
 @layer ai-chat-components {
   .ai-chat-stream-text__cursor {
-    animation: ai-chat-blink 1s step-end infinite;
+    /* 柔和呼吸替代硬闪烁，与 MarkdownRenderer 流式光标同一节奏 */
+    animation: ai-chat-caret-breathe 1.1s ease-in-out infinite;
   }
 
-  @keyframes ai-chat-blink {
+  @keyframes ai-chat-caret-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
     50% {
-      opacity: 0;
+      opacity: 0.25;
     }
   }
 }

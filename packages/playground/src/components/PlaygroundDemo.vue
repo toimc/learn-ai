@@ -1137,7 +1137,11 @@ watch(() => chat.messages.length, scrollToBottom)
 
         <!-- Input -->
         <div class="pg-input-area">
-          <PromptInput :before-send="mockUpload" @send="onSend">
+          <PromptInput
+            send-key="enter"
+            :before-send="mockUpload"
+            @send="onSend"
+          >
             <PromptInputAttachments />
             <PromptInputBody>
               <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />

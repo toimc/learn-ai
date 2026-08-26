@@ -25,6 +25,7 @@ export default {
   message: {
     you: 'You',
     assistant: 'AI Chat UI',
+    typingAria: 'AI is typing',
   },
   toolCall: {
     parameters: 'Parameters',

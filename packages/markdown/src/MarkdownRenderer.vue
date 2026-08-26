@@ -73,7 +73,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="ai-chat-markdown" v-html="html" />
+  <div
+    ref="root"
+    class="ai-chat-markdown"
+    :class="{ 'is-streaming': props.streaming }"
+    v-html="html"
+  />
 </template>
 
 <!-- 必须 scoped：:deep() 才能穿透到 v-html 注入的 ul/table/code 等子节点。
@@ -83,6 +88,30 @@ onBeforeUnmount(() => {
   font-size: 14px;
   line-height: 1.7;
   word-wrap: break-word;
+}
+
+/* 流式光标（主流 AI 聊天形态）：挂在最后一个块级元素的行尾，柔和呼吸
+   （opacity 渐变）替代硬闪烁；streaming 结束随 is-streaming 类移除消失 */
+.ai-chat-markdown.is-streaming > :deep(*:last-child)::after {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  background: var(--ai-chat-color-accent, #6366f1);
+  animation: ai-chat-caret-breathe 1.1s ease-in-out infinite;
+}
+
+@keyframes ai-chat-caret-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 .ai-chat-markdown :deep(h1),

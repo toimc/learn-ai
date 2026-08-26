@@ -70,6 +70,49 @@ describe('useChat', () => {
     expect(state.isStreaming).toBe(false)
   })
 
+  // 零产出完成：上游空转收尾（坏 key 的中转站空回复形态），
+  // UI 必须显式报错而非沉默——否则用户感知"发出去石沉大海"
+  it('流正常 done 但零产出（无文本/思考/工具）时置空回复错误', async () => {
+    const adapter = createMockAdapter([{ type: 'done', content: '' }])
+    const onError = vi.fn()
+    const state = useChat(adapter, { onError })
+
+    await state.send('Hi')
+
+    expect(state.error).toBeInstanceOf(Error)
+    expect(state.error!.message).toBe(
+      '回复为空：上游未返回内容，请检查模型服务配置',
+    )
+    expect(onError).toHaveBeenCalledOnce()
+  })
+
+  it('中断导致的零产出不置错（中断不算错误）', async () => {
+    const adapter = {
+      async *sendMessage() {
+        // 直接被中断，无任何 chunk
+      },
+    }
+    const state = useChat(adapter)
+
+    const pending = state.send('Hi')
+    state.abort()
+    await pending
+
+    expect(state.error).toBeNull()
+  })
+
+  it('有思考产出的流不视为空回复', async () => {
+    const adapter = createMockAdapter([
+      { type: 'thinking', content: '推理中' },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('Hi')
+
+    expect(state.error).toBeNull()
+  })
+
   it('should clear messages', async () => {
     const adapter = createMockAdapter([{ type: 'done', content: '' }])
     const state = useChat(adapter)

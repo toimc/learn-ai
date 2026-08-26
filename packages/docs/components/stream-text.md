@@ -1,6 +1,6 @@
 # StreamText
 
-流式文本组件，在文本末尾显示闪烁光标。当 `stream` 有值时显示光标，为 `undefined` 时隐藏。
+流式文本组件，在文本末尾显示呼吸光标（柔和 opacity 渐变，替代硬闪烁，与 MarkdownRenderer 流式光标同一节奏）。当 `stream` 有值时显示光标，为 `undefined` 时隐藏。
 
 ## 基础用法
 

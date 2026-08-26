@@ -135,6 +135,18 @@ export function useChat(
         options?.onError?.(err)
       }
     } finally {
+      // 零产出完成（无文本/思考/工具且非中断非报错）：上游空转收尾（坏 key 的
+      // 中转站空回复即此形态），显式置错避免 UI 沉默——否则消息发出石沉大海
+      if (
+        !state.error &&
+        !currentController?.signal.aborted &&
+        !assistantMessage.content &&
+        !assistantMessage.thinking &&
+        !assistantMessage.toolCalls?.length
+      ) {
+        state.error = new Error('回复为空：上游未返回内容，请检查模型服务配置')
+        options?.onError?.(state.error)
+      }
       state.isStreaming = false
       currentController = null
     }

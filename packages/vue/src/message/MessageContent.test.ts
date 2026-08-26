@@ -1,29 +1,48 @@
 import { describe, expect, it } from 'vitest'
-import { defineComponent, h, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
 import MessageContent from './MessageContent.vue'
-import { markdownRendererKey } from '../composables/useMarkdownRenderer'
 
-const FakeRenderer = defineComponent({
-  props: { content: { type: String, default: '' } },
-  setup: (p: { content: string }) => () =>
-    h('div', { class: 'fake-renderer' }, `rendered:${p.content}`),
-})
-
-describe('MessageContent', () => {
-  it('无注入时回退 slot', () => {
-    const wrapper = mount(MessageContent, { slots: { default: '纯文本' } })
-    expect(wrapper.text()).toContain('纯文本')
-    expect(wrapper.find('.fake-renderer').exists()).toBe(false)
-  })
-  it('有注入 + content prop 时用 renderer', () => {
+/**
+ * 空窗期反馈（发送→首 token 之间）：streaming 且正文为空时渲染三点跳动指示，
+ * 有正文或非流式时不渲染——否则用户面对空白气泡像卡死。
+ */
+describe('MessageContent 空窗期打字指示', () => {
+  it('streaming 且 content 为空串时渲染三点指示', () => {
     const wrapper = mount(MessageContent, {
-      props: { content: '# 标题' },
-      global: {
-        provide: { [markdownRendererKey as symbol]: FakeRenderer as Component },
+      props: { content: '', streaming: true },
+    })
+    expect(wrapper.findAll('.ai-chat-typing-dot')).toHaveLength(3)
+  })
+
+  it('streaming 且 content 为 undefined 时渲染三点指示', () => {
+    const wrapper = mount(MessageContent, {
+      props: { streaming: true },
+    })
+    expect(wrapper.findAll('.ai-chat-typing-dot')).toHaveLength(3)
+  })
+
+  it('已有正文时不渲染指示（光标交由 markdown 渲染层）', () => {
+    const wrapper = mount(MessageContent, {
+      props: { content: '你好', streaming: true },
+    })
+    expect(wrapper.find('.ai-chat-typing-dot').exists()).toBe(false)
+  })
+
+  it('非 streaming 时不渲染指示', () => {
+    const wrapper = mount(MessageContent, {
+      props: { content: '', streaming: false },
+    })
+    expect(wrapper.find('.ai-chat-typing-dot').exists()).toBe(false)
+  })
+
+  it('thinking 进行中时不渲染指示（思考面板即反馈）', () => {
+    const wrapper = mount(MessageContent, {
+      props: {
+        content: '',
+        streaming: true,
+        thinking: { content: '推理中' },
       },
     })
-    expect(wrapper.find('.fake-renderer').exists()).toBe(true)
-    expect(wrapper.text()).toContain('rendered:# 标题')
+    expect(wrapper.find('.ai-chat-typing-dot').exists()).toBe(false)
   })
 })

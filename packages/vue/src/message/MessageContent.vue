@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useMarkdownRenderer } from '../composables/useMarkdownRenderer'
+import { aiChatI18n } from '../locales'
 import ThinkingBlock from '../thinking/ThinkingBlock.vue'
 import type { ThinkingInfo } from '@toimc/core'
+
+const { t } = aiChatI18n.global
 
 const props = defineProps<{
   content?: string
@@ -29,6 +32,17 @@ const thinkingProps = computed(() => {
   <div class="ai-chat-message-content">
     <!-- 思考过程展示 -->
     <ThinkingBlock v-if="thinkingProps" v-bind="thinkingProps" />
+
+    <!-- 空窗期反馈：发送→首 token 之间正文为空，三点跳动避免"卡死"观感 -->
+    <div
+      v-if="props.streaming && !props.content && !props.thinking"
+      class="ai-chat-typing"
+      :aria-label="t('message.typingAria')"
+    >
+      <span class="ai-chat-typing-dot" />
+      <span class="ai-chat-typing-dot" />
+      <span class="ai-chat-typing-dot" />
+    </div>
 
     <!-- 消息内容 -->
     <component

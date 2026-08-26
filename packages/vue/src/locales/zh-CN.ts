@@ -24,6 +24,7 @@ const zhCN = {
   message: {
     you: '你',
     assistant: 'AI Chat UI',
+    typingAria: 'AI 正在输入',
   },
   toolCall: {
     parameters: '参数',
