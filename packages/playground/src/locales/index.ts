@@ -119,10 +119,15 @@ const zhCN = {
   backend: {
     label: '后端（对新会话生效）',
     local: '本地 Mock',
+    localDesc: '前端内置剧本，离线可用，零依赖',
     mockServer: 'mock-server · 8787',
+    mockServerDesc: "{'@'}toimc/server 网关 + SSE 线协议（模型下拉选择）",
     mastra: 'Mastra · 4111',
+    mastraDesc: 'Mastra Agent：工具调用 + 会话记忆（模型在设置弹层注册）',
     offline: '（离线）',
     agentTag: 'Mastra chat-agent',
+    agentTagDefault: 'chat-agent（服务端默认模型）',
+    agentTagManage: '点击注册 / 更换模型',
     offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
   },
 }
@@ -249,10 +254,16 @@ const enUS: typeof zhCN = {
   backend: {
     label: 'Backend (applies to new chats)',
     local: 'Local mock',
+    localDesc: 'Built-in frontend scripts, works offline, zero deps',
     mockServer: 'mock-server · 8787',
+    mockServerDesc:
+      "{'@'}toimc/server gateway + SSE protocol (pick model in dropdown)",
     mastra: 'Mastra · 4111',
+    mastraDesc: 'Mastra Agent: tools + memory (register model in settings)',
     offline: ' (offline)',
     agentTag: 'Mastra chat-agent',
+    agentTagDefault: 'chat-agent (server default model)',
+    agentTagManage: 'Click to register / change model',
     offlineHint: 'Cannot reach {url} — start the service first, then switch.',
   },
 }

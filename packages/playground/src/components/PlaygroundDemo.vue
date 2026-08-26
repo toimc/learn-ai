@@ -393,10 +393,30 @@ function pickModel(id: string | undefined) {
 const backendMenuOpen = ref(false)
 
 const backendOptions = computed(() => [
-  { id: 'local' as const, label: t('pg.backend.local') },
-  { id: 'mock-server' as const, label: t('pg.backend.mockServer') },
-  { id: 'mastra' as const, label: t('pg.backend.mastra') },
+  {
+    id: 'local' as const,
+    label: t('pg.backend.local'),
+    desc: t('pg.backend.localDesc'),
+  },
+  {
+    id: 'mock-server' as const,
+    label: t('pg.backend.mockServer'),
+    desc: t('pg.backend.mockServerDesc'),
+  },
+  {
+    id: 'mastra' as const,
+    label: t('pg.backend.mastra'),
+    desc: t('pg.backend.mastraDesc'),
+  },
 ])
+
+/** mastra 后端标签：运行时模型已配置 → 展示注册的模型；否则默认 agent 提示 */
+const mastraAgentLabel = computed(() => {
+  const config = mastraRuntimeConfig.value
+  return config
+    ? `${config.name} · ${config.model}`
+    : t('pg.backend.agentTagDefault')
+})
 
 const currentBackendLabel = computed(
   () =>
@@ -821,19 +841,28 @@ watch(() => chat.messages.length, scrollToBottom)
                 :disabled="isBackendOffline(opt.id) && opt.id !== backendId"
                 @click="pickBackend(opt.id)"
               >
-                {{ opt.label }}
-                <span
-                  v-if="isBackendOffline(opt.id)"
-                  class="pg-backend-offline"
-                  >{{ t('pg.backend.offline') }}</span
-                >
+                <span class="pg-backend-option-name">
+                  {{ opt.label }}
+                  <span
+                    v-if="isBackendOffline(opt.id)"
+                    class="pg-backend-offline"
+                    >{{ t('pg.backend.offline') }}</span
+                  >
+                </span>
+                <span class="pg-backend-option-desc">{{ opt.desc }}</span>
               </button>
             </div>
           </div>
-          <!-- Mastra 后端：agent 由服务端配置决定，隐藏模型下拉显示固定 agent 标签 -->
-          <div v-if="backendId === 'mastra'" class="pg-agent-tag">
-            {{ t('pg.backend.agentTag') }}
-          </div>
+          <!-- Mastra 后端：agent 由服务端运行时配置决定，标签动态显示当前模型，
+               点击直达设置弹层（注册即切换模型，4111 只有一条全局运行时模型） -->
+          <button
+            v-if="backendId === 'mastra'"
+            class="pg-agent-tag pg-agent-tag--manage"
+            :title="t('pg.backend.agentTagManage')"
+            @click="openSettings"
+          >
+            {{ mastraAgentLabel }}
+          </button>
           <div v-else class="pg-model-wrap">
             <button
               class="pg-model-selector"
@@ -1639,11 +1668,11 @@ watch(() => chat.messages.length, scrollToBottom)
 
 .pg-backend-option {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
   width: 100%;
-  padding: 0 10px;
+  padding: 8px 10px;
   border: none;
   border-radius: 6px;
   background: transparent;
@@ -1685,6 +1714,35 @@ watch(() => chat.messages.length, scrollToBottom)
   border-radius: 6px;
   color: var(--ai-chat-color-text-secondary);
   font-size: 13px;
+}
+
+/* 可点击形态（button 元素）：重置原生样式并给 hover 反馈，指引用户去注册/更换模型 */
+.pg-agent-tag--manage {
+  background: transparent;
+  cursor: pointer;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    color var(--ai-chat-duration-fast) var(--ai-chat-easing),
+    border-color var(--ai-chat-duration-fast) var(--ai-chat-easing);
+}
+
+.pg-agent-tag--manage:hover {
+  color: var(--ai-chat-color-accent);
+  border-color: var(--ai-chat-color-accent);
+}
+
+.pg-backend-option-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pg-backend-option-desc {
+  font-size: 12px;
+  color: var(--ai-chat-color-text-muted);
 }
 
 /* 离线/操作失败通知条 */
