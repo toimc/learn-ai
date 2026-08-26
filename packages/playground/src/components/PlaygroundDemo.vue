@@ -1132,31 +1132,8 @@ watch(() => chat.messages.length, scrollToBottom)
             </template>
           </Message>
 
-          <!-- Typing indicator -->
-          <div
-            v-if="
-              chat.isStreaming &&
-              !chat.messages[chat.messages.length - 1]?.content
-            "
-            class="pg-message"
-          >
-            <div class="pg-avatar-assistant">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            </div>
-            <div class="pg-message-body">
-              <div class="pg-message-role">AI Chat UI</div>
-              <div class="pg-typing"><span /><span /><span /></div>
-            </div>
-          </div>
+          <!-- 空窗期反馈已由 MessageContent 内置三点指示接管（消息流内渲染，
+               不再叠加独立 typing 气泡——此前双份呈现为"2 个回复"） -->
         </ConversationContent>
 
         <ConversationScrollBtn
@@ -1887,40 +1864,6 @@ watch(() => chat.messages.length, scrollToBottom)
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 4px;
-}
-
-.pg-typing {
-  display: flex;
-  gap: 4px;
-  padding: 4px 0;
-}
-
-.pg-typing span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ai-chat-color-text-muted);
-  animation: typing 1.2s infinite;
-}
-
-.pg-typing span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.pg-typing span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typing {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 @keyframes fadeInUp {
