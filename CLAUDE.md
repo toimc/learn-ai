@@ -65,11 +65,14 @@ pnpm clean        # 清理所有 dist
 
 - 所有 UI 文案进 `packages/vue/src/locales/` 字典（中英双语同步更新），组件内用 `aiChatI18n.global` 的 `t()`；详见 `.claude/skills/i18n/SKILL.md`，新建/修改组件时必须遵循
 
-## 目录约定
+## 目录约定与包结构
+
+每个包统一结构：`src/`（纯源码，根级只留 `index.ts`/`env.d.ts`/包级 `types.ts`，按功能模块建目录，同类文件 ≥2 才成组）+ `__tests__/`（与 src 平级，内部镜像 src 目录树）。测试文件**必须**放 `__tests__/`，禁止与源码混放。完整规则见 [`.claude/rules/project-structure.md`](.claude/rules/project-structure.md)。
 
 ```
-packages/<pkg>/src/     ← 源码
-packages/<pkg>/dist/    ← 构建产物（不提交）
+packages/<pkg>/src/          ← 源码（零测试文件）
+packages/<pkg>/__tests__/    ← 测试（镜像 src 结构）
+packages/<pkg>/dist/         ← 构建产物（不提交）
 packages/<pkg>/vite.config.ts
 packages/<pkg>/tsconfig.json
 packages/<pkg>/package.json

@@ -4,7 +4,7 @@
 
 ## 1. 文件组织
 
-- 测试文件放在被测模块旁（`foo.ts` ↔ `foo.test.ts`），不集中建 `__tests__` 目录
+- 测试文件统一放 `packages/<pkg>/__tests__/`，目录结构镜像 src（`src/composables/foo.ts` ↔ `__tests__/composables/foo.test.ts`），禁止与源码混放；详见 [project-structure.md](project-structure.md)
 - 按模块分文件：`useChat.test.ts`、`MessageBubble.test.ts`；一个被测单元一个测试文件
 - 命名描述行为而非实现：`'空内容时点击发送不触发 send 事件'` 优于 `'test send 1'`
 
