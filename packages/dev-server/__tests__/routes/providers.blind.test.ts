@@ -12,7 +12,7 @@
 import { describe, it, expect } from 'vitest'
 import { createChatGateway } from '@toimc/server'
 import { ModelRegistry } from '@toimc/agents'
-import { createProvidersRoutes } from './providers'
+import { createProvidersRoutes } from '../../src/routes/providers'
 
 type TestApp = Awaited<ReturnType<typeof createTestApp>>
 

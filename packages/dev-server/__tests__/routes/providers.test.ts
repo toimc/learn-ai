@@ -1,8 +1,8 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { createMastraModel } from '@toimc/agents/mastra'
-import { createDevApp } from '../app'
-import { getTimeTool } from '../tools/get-time'
-import { getWeatherTool } from '../tools/get-weather'
+import { createDevApp } from '../../src/app'
+import { getTimeTool } from '../../src/tools/get-time'
+import { getWeatherTool } from '../../src/tools/get-weather'
 
 /**
  * 运行时 Provider 路由测试。

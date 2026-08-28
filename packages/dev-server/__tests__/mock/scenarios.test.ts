@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildReply, scenarioNames } from './scenarios'
+import { buildReply, scenarioNames } from '../../src/mock/scenarios'
 
 function types(input: string) {
   return buildReply(input).map((s) => s.chunk.type)

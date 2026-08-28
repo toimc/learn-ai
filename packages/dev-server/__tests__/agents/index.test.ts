@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildAgentDefinitions } from './index'
-import { CHAT_AGENT_ID } from './chat-agent'
+import { buildAgentDefinitions } from '../../src/agents/index'
+import { CHAT_AGENT_ID } from '../../src/agents/chat-agent'
 
 describe('buildAgentDefinitions', () => {
   it('产出 chat-agent 定义：路由串直传 + 双工具 + memory 工厂', () => {

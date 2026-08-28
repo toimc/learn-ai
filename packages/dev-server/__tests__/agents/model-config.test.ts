@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveModelConfig } from './model-config'
+import { resolveModelConfig } from '../../src/agents/model-config'
 
 describe('resolveModelConfig', () => {
   it('无 modelUrl：路由串原样直传（Mastra 按 provider/model 路由）', () => {

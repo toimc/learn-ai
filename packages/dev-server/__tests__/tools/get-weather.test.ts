@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { z } from 'zod'
-import { getWeatherTool } from './get-weather'
+import { getWeatherTool } from '../../src/tools/get-weather'
 
 /** createTool 传入的 inputSchema 就是 zod v4 实例（联合类型收窄有依据）；execute 走外网不实测 */
 const schema = getWeatherTool.inputSchema as z.ZodType

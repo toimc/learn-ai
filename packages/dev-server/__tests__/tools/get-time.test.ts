@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { z } from 'zod'
-import { getTimeTool } from './get-time'
+import { getTimeTool } from '../../src/tools/get-time'
 
 /** createTool 传入的 inputSchema 就是 zod v4 实例（联合类型收窄有依据） */
 const schema = getTimeTool.inputSchema as z.ZodType

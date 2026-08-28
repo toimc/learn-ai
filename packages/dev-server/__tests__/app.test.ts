@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { StreamChunk } from '@toimc/core'
-import { createDevApp } from './app'
+import { createDevApp } from '../src/app'
 
 /** 从 SSE 文本里解出全部 chunk 载荷（与前端 sse-adapter 同构的简化解析） */
 function parseChunks(body: string): StreamChunk[] {
@@ -190,7 +190,7 @@ describe('OpenAPI 规范', () => {
   it('VERCEL 函数环境下 servers 为空串（Scalar Test Request 同源）', async () => {
     vi.stubEnv('VERCEL', '1')
     vi.resetModules()
-    const { createDevApp: freshCreateDevApp } = await import('./app')
+    const { createDevApp: freshCreateDevApp } = await import('../src/app')
     const res = await (await freshCreateDevApp()).request('/api/openapi.json')
     const spec = (await res.json()) as { servers: { url: string }[] }
     expect(spec.servers[0].url).toBe('')

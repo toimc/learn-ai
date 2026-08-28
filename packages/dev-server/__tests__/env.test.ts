@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { readDevServerEnv } from './env'
+import { readDevServerEnv } from '../src/env'
 
 describe('readDevServerEnv', () => {
   it('缺 MASTRA_MODEL 时 mastra 为 null（纯 mock 模式），端口默认 8787', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createMockAdapter } from './mock-adapter'
+import { createMockAdapter } from '../../src/mock/mock-adapter'
 import type { ChatRequest } from '@toimc/agents'
 
 async function collect(request: ChatRequest) {
