@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { truncateContext } from './context-window'
-import type { Message } from '../types'
+import { truncateContext } from '../../src/composables/context-window'
+import type { Message } from '../../src/types'
 
 function msg(id: string, role: Message['role'], content: string): Message {
   return { id, role, content, createdAt: new Date() }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { estimateTokens } from './estimate-tokens'
+import { estimateTokens } from '../../src/utils/estimate-tokens'
 
 describe('estimateTokens', () => {
   it('空串返回 0', () => {

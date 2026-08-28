@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { watchEffect } from 'vue'
-import { useChat } from '../composables'
-import type { ChatAdapter, Message, StreamChunk } from '../types'
+import { useChat } from '../../src/composables'
+import type { ChatAdapter, Message, StreamChunk } from '../../src/types'
 
 function createMockAdapter(chunks: StreamChunk[]): ChatAdapter {
   return {

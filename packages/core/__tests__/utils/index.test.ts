@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { generateId, createUserMessage, createAssistantMessage } from '../utils'
+import {
+  generateId,
+  createUserMessage,
+  createAssistantMessage,
+} from '../../src/utils'
 
 describe('generateId', () => {
   it('should generate unique ids', () => {
