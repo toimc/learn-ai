@@ -120,6 +120,49 @@ describe('createApp 端点', () => {
   })
 })
 
+describe('studio 直连（CORS credentials + 根路径探活）', () => {
+  // 预期值来源：浏览器规范限制（wildcard origin 与 credentials:'include' 互斥）
+  // 与 studio 实发请求头（x-mastra-client-type / x-mastra-dev-playground）
+
+  it('GET / 返回服务标识（studio 根路径探活可达，404 会被判定服务离线）', async () => {
+    const app = await createApp(makeTestMastra())
+    const res = await app.request('/')
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ status: 'ok', server: 'mastra-app' })
+  })
+
+  it('跨源请求回显具体 origin 且允许 credentials', async () => {
+    const app = await createApp(makeTestMastra())
+    const res = await app.request('/health', {
+      headers: { origin: 'http://localhost:3000' },
+    })
+    expect(res.headers.get('access-control-allow-origin')).toBe(
+      'http://localhost:3000',
+    )
+    expect(res.headers.get('access-control-allow-credentials')).toBe('true')
+  })
+
+  it('OPTIONS 预检回显 origin 并放行 x-mastra-* 自定义头', async () => {
+    const app = await createApp(makeTestMastra())
+    const res = await app.request('/api/auth/capabilities', {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://localhost:3000',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers':
+          'content-type,x-mastra-client-type,x-mastra-dev-playground',
+      },
+    })
+    expect(res.headers.get('access-control-allow-origin')).toBe(
+      'http://localhost:3000',
+    )
+    expect(res.headers.get('access-control-allow-credentials')).toBe('true')
+    expect(res.headers.get('access-control-allow-headers')).toContain(
+      'x-mastra-client-type',
+    )
+  })
+})
+
 describe('POST /api/agents/chat-agent/stream（mock model 无 key 验证）', () => {
   it('返回 SSE：data 帧含 text-delta 增量与 finish 收尾', async () => {
     const app = await createApp(makeTestMastra())

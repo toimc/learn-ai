@@ -18,11 +18,22 @@ export async function createApp(mastra: Mastra): Promise<App> {
     Variables: HonoVariables
   }>()
 
-  // 先注册，不受后续中间件影响（健康探活始终公开）
+  // 4111 × 5173 跨源；studio(3000) 的 fetch 带 credentials: 'include'，
+  // 通配符 origin 与 credentials 模式互斥（浏览器规范），必须回显具体 origin。
+  // 中间件须先于所有路由注册（Hono 按注册顺序执行，晚注册不回溯生效）
+  app.use(
+    '*',
+    cors({
+      origin: (origin) => origin ?? '*',
+      credentials: true,
+    }),
+  )
+
+  // 先注册路由（探活始终公开）
   app.get('/health', (c) => c.json({ status: 'ok' }))
 
-  // 4111 × 5173 跨源
-  app.use('/api/*', cors())
+  // studio 根路径探活：404 无 CORS 头会被判定为服务不可达
+  app.get('/', (c) => c.json({ status: 'ok', server: 'mastra-app' }))
 
   // 可选 Bearer：复刻 mock-server 语义（401 { error: 'Unauthorized' }）
   if (process.env.MASTRA_APP_TOKEN) {

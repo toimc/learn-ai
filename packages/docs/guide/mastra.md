@@ -146,8 +146,10 @@ curl http://localhost:4111/api/agents
 Studio 监控面板（对话调试、thread 查看）：
 
 ```bash
-corepack pnpm studio    # mastra studio，默认连本进程 4111
+corepack pnpm studio    # mastra studio，UI 默认 3000，连本进程 4111
 ```
+
+首次打开需在配置页填 Mastra instance URL：`http://localhost:4111`（**不带尾斜杠**，否则拼出 `//api` 双斜杠 404）。服务端 CORS 已适配 studio 的 `credentials: 'include'` 请求模式——回显具体 origin 而非通配符 `*`（浏览器规范两者互斥），并放行根路径 `/` 探活与 `x-mastra-*` 预检头。
 
 ### 环境变量（`packages/mastra-app/.env`）
 
