@@ -38,9 +38,10 @@ ai-chat-ui/
 │   ├── core/                  # @toimc/core — 核心类型与 composables（零外部依赖）
 │   │   ├── src/types/         # Message, StreamChunk, ChatAdapter, ToolCallInfo
 │   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
-│   │   └── src/utils/         # generateId, createUserMessage, createAssistantMessage
+│   │   ├── src/utils/         # generateId, createUserMessage, createAssistantMessage
+│   │   └── __tests__/         # 测试（镜像 src 结构，各包同）
 │   │
-│   ├── vue/                   # @toimc/vue — 33 个 Vue 3 组件
+│   ├── vue/                   # @toimc/vue — 46 个组件导出（含 4 个 deprecated）
 │   │   └── src/
 │   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
 │   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
@@ -48,33 +49,37 @@ ai-chat-ui/
 │   │       ├── prompt-input/  # PromptInput / Textarea / Submit / Footer / Tools / Button / Header
 │   │       ├── attachment/    # Attachments / Attachment / Preview / Info / Remove / Empty
 │   │       ├── tool-call/     # ToolCall / Header / Content / Input / Output
-│   │       ├── shared/        # StreamText / Button / Shimmer / Toast
-│   │       ├── composables/   # useScrollAnchor
+│   │       ├── thinking/      # ThinkingBlock（思考链）
+│   │       ├── comparison/    # ComparisonMessage（A/B 对比）
+│   │       ├── preview/       # ImageLightbox
+│   │       ├── provider/      # ProviderSettingsDialog
+│   │       ├── shared/        # StreamText / Button / Shimmer / Toast / Input / Select / Radio / LanguageToggle
+│   │       ├── composables/   # useScrollAnchor / useTheme / useThemePreset / useMarkdownRenderer
+│   │       ├── deprecated/    # ChatWindow / MessageList / MessageBubble / InputArea（v1.0.0 移除）
 │   │       └── utils/         # media.ts + format.ts
 │   │
 │   ├── markdown/              # @toimc/markdown — Markdown 渲染
-│   │   └── src/               # MarkdownRenderer / CodeBlock / LatexBlock
+│   │   └── src/
+│   │       ├── components/    # MarkdownRenderer / CodeBlock / LatexBlock / MermaidBlock
+│   │       ├── composables/   # useMarkdownIt / useHighlighter / useShikiTokenizer / useStreamingMarkdown
+│   │       └── renderers/     # tokensToHtml
 │   │
 │   ├── agents/                # @toimc/agents — 服务端模型适配层（零外部依赖）
 │   │   └── src/               # IModelAdapter / ModelRegistry / OpenAI 兼容与 Anthropic 适配器 / SSE 解析 / mastra 可选子路径（Mastra Agent 包装）
 │   │
 │   ├── server/                # @toimc/server — Hono 聊天网关（接收与转发）
-│   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件
+│   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件 / mastra 子路径（createMastraGateway）
 │   │
-│   ├── mock-server/           # @toimc/mock-server — 本地 mock 服务端（私有，基于 @toimc/server 组装）
-│   │   └── src/               # 会话种子数据 / mock 剧本适配器 / Mastra Agent（env 门控，经 @toimc/agents/mastra 注册）/ 演示路由 + OpenAPI 规范，pnpm dev 随文档站一起启动
-│   │
-│   ├── mastra-app/            # @toimc/mastra-app — Mastra 标准工程（私有，不依赖任何 @toimc/* 包）
-│   │   └── src/               # @mastra/hono 原生端点（4111）/ chat-agent（真实模型 + get_time·get_weather 工具 + LibSQL 记忆）/ Studio；Playground 经前端 MastraAdapter 直连
+│   ├── dev-server/            # @toimc/dev-server — 私有 dev 服务（8787，pnpm dev 随文档站启动）
+│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ Studio 宿主（4111，pnpm dev:studio）
 │   │
 │   ├── playground/            # @toimc/playground — Playground 演示包（私有）
-│   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / mock 与 Mastra 前端适配器
+│   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / sse-adapter 前端适配器
 │   │
 │   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
 │           ├── components/    # PlaygroundDemo（完整 Playground）
-│           ├── theme/         # 全局组件注册
-│           └── utils/         # mock-adapter（支持 tool_call）
+│           └── theme/         # 全局组件注册
 ```
 
 ## 架构图
@@ -86,20 +91,19 @@ ai-chat-ui/
 ```mermaid
 flowchart TB
     subgraph fe["前端组件层 · npm 发布"]
-        VUE["@toimc/vue<br/>33 个可组合组件<br/>Design Token / 样式隔离 / i18n"]
+        VUE["@toimc/vue<br/>46 个组件导出<br/>Design Token / 样式隔离 / i18n"]
         MD["@toimc/markdown<br/>流式 Markdown 渲染<br/>Shiki 高亮 / KaTeX 公式 / Mermaid 图表"]
     end
 
     subgraph be["服务端层 · npm 发布"]
-        SERVER["@toimc/server<br/>Hono 聊天网关<br/>认证 / 限流 / SSE 转发"]
+        SERVER["@toimc/server<br/>Hono 聊天网关<br/>认证 / 限流 / SSE 转发<br/>+ /mastra 可选子路径"]
         AGENTS["@toimc/agents<br/>多模型适配层<br/>OpenAI 兼容 / Anthropic / Mastra"]
     end
 
     subgraph dev["私有开发包 · 不发布"]
         DOCS["@toimc/docs<br/>VitePress 文档站（5173）"]
-        PG["@toimc/playground<br/>Playground 演示页 + mock / Mastra 适配器"]
-        MOCK["@toimc/mock-server<br/>本地 mock 服务（8787）"]
-        MA["@toimc/mastra-app<br/>Mastra 真实模型服务（4111）<br/>不依赖任何 @toimc/* 包"]
+        PG["@toimc/playground<br/>Playground 演示页 + sse-adapter"]
+        DEV["@toimc/dev-server<br/>dev 服务（8787）<br/>mock 剧本 + Mastra Agent（env 门控）<br/>Studio 宿主（4111）"]
     end
 
     CORE["@toimc/core<br/>核心类型与 composables<br/>Message / StreamChunk / ChatAdapter / useChat<br/>零外部依赖"]
@@ -111,7 +115,8 @@ flowchart TB
     PG --> VUE
     PG --> MD
     DOCS --> PG
-    MOCK --> SERVER
+    DEV --> SERVER
+    DEV --> AGENTS
 ```
 
 ### 运行时数据流
@@ -131,8 +136,7 @@ flowchart LR
     subgraph serverSide["服务端（可选）· API Key 只留在此层"]
         GW["@toimc/server<br/>认证 / 限流 / SSE"]
         AG["@toimc/agents<br/>ModelRegistry"]
-        MOCK["mock-server :8787<br/>mock 剧本"]
-        MA["mastra-app :4111<br/>Agent + LibSQL 记忆"]
+        DEV["dev-server :8787<br/>mock 剧本 / MASTRA_MODEL 门控真实 Agent<br/>Studio :4111 调试"]
     end
 
     LLM[("LLM<br/>OpenAI / Anthropic / GLM …")]
@@ -142,9 +146,8 @@ flowchart LR
     AD -->|"SSE 流式响应"| GW
     GW --> AG
     AG -->|"模型协议"| LLM
-    AD -.->|"开发联调"| MOCK
-    AD -.->|"MastraAdapter（playground 提供）"| MA
-    MA --> LLM
+    AD -.->|"开发联调（sse-adapter）"| DEV
+    DEV -->|"MASTRA_MODEL 启用时"| LLM
     UC ==>|"for await StreamChunk<br/>text / tool_call / thinking / done"| UI
     UI -.->|"渲染 AI 回复"| MD
 ```
@@ -355,9 +358,10 @@ interface ChatAdapter {
 
 ```bash
 pnpm install        # 安装依赖
-pnpm dev            # 启动文档站 + mock-server（5173 + 8787）
-pnpm dev:mastra     # 单独启动 mastra-app（4111，需 packages/mastra-app/.env）
-pnpm dev:all        # 三服务全家桶：docs + mock-server + mastra-app
+pnpm dev            # 启动文档站 + dev-server（5173 + 8787）
+pnpm dev:docs       # 只启动文档站
+pnpm dev:server     # 只启动 dev-server（8787）
+pnpm dev:studio     # 启动 Mastra Studio（4111，需 packages/dev-server/.env 配置 MASTRA_MODEL）
 pnpm build          # 构建所有包
 pnpm test           # 运行单元测试
 pnpm test:e2e       # 运行端到端测试
