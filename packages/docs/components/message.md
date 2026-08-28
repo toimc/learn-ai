@@ -78,13 +78,13 @@
 
 ## 思考过程
 
-`MessageContent` 传入 `thinking` 后，消息顶部展示折叠式思考块。点击下方按钮体验完整的流式生命周期 —— **正在思考…（内容实时展开）→ 已思考 X 秒（自动折叠）**：
+`MessageContent` 传入 `thinking` 后，消息顶部展示折叠式思考块。点击下方按钮体验完整的流式生命周期 —— **正在思考…（内容实时展开，可随时手动折叠）→ 正文开始流式时思考块自动收起为「已思考 X 秒」（思考光标消失，光标只跟正文走）**：
 
 <DemoContainer>
   <ThinkingMessageDemo />
 </DemoContainer>
 
-思考内容由 `useChat` 消费 `thinking` chunk 自动累积，耗时在 `done` 时自动计算，无需手动维护：
+思考内容由 `useChat` 消费 `thinking` chunk 自动累积，思考结束于**首个正文/工具帧到达**（此刻收尾 `active` 并就地计算耗时，`done` 帧与中断路径兜底），无需手动维护：
 
 <details>
 <summary>查看源码</summary>
@@ -235,13 +235,14 @@ const files: Attachment[] = [
 |--------|------|--------|------|
 | content | `string` | — | 消息正文内容（传值后走 Markdown 渲染，不传走默认插槽） |
 | thinking | `ThinkingInfo` | — | 思考过程信息，提供后显示折叠式思考块 |
-| streaming | `boolean` | — | 是否正在流式更新（思考块显示「正在思考…」，正文走流式渲染；**正文为空时显示三点跳动指示**（发送→首 token 的空窗反馈），有正文时行尾由 MarkdownRenderer 挂**呼吸光标**） |
+| streaming | `boolean` | — | 是否正在流式更新（思考块仅在**思考自身进行中**（`thinking.active` 非 `false`）显示「正在思考…」，正文流式期间思考块保持收起；**正文为空时显示三点跳动指示**（发送→首 token 的空窗反馈），有正文时行尾由 MarkdownRenderer 挂**呼吸光标**） |
 
 ```typescript
 interface ThinkingInfo {
   content: string   // 思考内容
-  duration?: number // 思考耗时（毫秒），useChat 在 done 时自动计算
+  duration?: number // 思考耗时（毫秒），思考结束时由 useChat 自动计算
   startTime?: Date  // 思考开始时间
+  active?: boolean  // 思考是否仍在进行：useChat 流式期间维护，首个正文/工具帧到达即置 false
 }
 ```
 

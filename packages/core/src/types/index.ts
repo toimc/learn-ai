@@ -20,6 +20,8 @@ export interface ThinkingInfo {
   content: string
   duration?: number // 思考耗时（毫秒）
   startTime?: Date // 思考开始时间
+  /** 思考是否仍在进行：流式期间由 useChat 维护，首个非 thinking 内容帧到达即置 false */
+  active?: boolean
 }
 
 // A/B 回复对比：由服务端响应指定，宿主据此渲染 ComparisonMessage 而非普通消息

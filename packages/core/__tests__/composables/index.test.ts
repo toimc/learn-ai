@@ -302,6 +302,69 @@ describe('useChat 流式响应性（回归：raw 对象 mutation 不触发更新
   })
 })
 
+describe('useChat thinking 生命周期', () => {
+  it('thinking 流式中 active=true，首个正文帧到达即置 false 并就地记录耗时（不等 done）', async () => {
+    const seen: Array<{ type: string; active: boolean | undefined }> = []
+    const adapter: ChatAdapter = {
+      async *sendMessage() {
+        yield { type: 'thinking', content: '推理' }
+        yield { type: 'text', content: '答' }
+        yield { type: 'done', content: '' }
+      },
+    }
+    const state = useChat(adapter, {
+      onResponse: (chunk) => {
+        const t = state.messages[1]?.thinking
+        seen.push({ type: chunk.type, active: t?.active })
+      },
+    })
+
+    await state.send('q')
+
+    // thinking 帧处理完：思考进行中
+    expect(seen[0]).toMatchObject({ type: 'thinking', active: true })
+    // 首个 text 帧处理完：思考已结束、耗时已记录（而非等到 done 帧）
+    expect(seen[1]).toMatchObject({ type: 'text', active: false })
+    expect(state.messages[1].thinking?.duration).toBeGreaterThanOrEqual(0)
+    expect(state.messages[1].thinking?.active).toBe(false)
+  })
+
+  it('纯 thinking 流由 done 帧收尾：active=false 且耗时已记录', async () => {
+    const adapter = createMockAdapter([
+      { type: 'thinking', content: '只想不答' },
+      { type: 'done', content: '' },
+    ])
+    const state = useChat(adapter)
+
+    await state.send('q')
+
+    expect(state.messages[1].thinking?.active).toBe(false)
+    expect(state.messages[1].thinking?.duration).toBeGreaterThanOrEqual(0)
+  })
+
+  it('流式中断时 thinking 也收尾 active=false', async () => {
+    const adapter: ChatAdapter = {
+      async *sendMessage({ signal }) {
+        yield { type: 'thinking', content: '想了一半' }
+        await new Promise<void>((resolve) => {
+          if (signal?.aborted) return resolve()
+          signal?.addEventListener('abort', () => resolve(), { once: true })
+        })
+      },
+    }
+    const state = useChat(adapter)
+
+    const sending = state.send('q')
+    await vi.waitFor(() => {
+      expect(state.messages[1]?.thinking?.content).toBe('想了一半')
+    })
+    state.abort()
+    await sending
+
+    expect(state.messages[1].thinking?.active).toBe(false)
+  })
+})
+
 describe('useChat abort 中断', () => {
   /** 产出首个 chunk 后挂起，等 signal 中断再按适配器契约决定是否继续产出 */
   function createAbortAwareAdapter(mode: 'stop' | 'throw') {

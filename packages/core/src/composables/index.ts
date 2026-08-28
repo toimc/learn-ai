@@ -73,6 +73,17 @@ export function useChat(
     let thinkingStartTime: number | null = null
     let reportedUsage: TokenUsage | undefined
 
+    // 思考收尾：active 置 false 并就地计算耗时（思考真正结束于首个非 thinking
+    // 内容帧，而非整条流结束——否则正文流式时间被计入"已思考 X 秒"）
+    const finalizeThinking = () => {
+      const thinking = assistantMessage.thinking
+      if (!thinking || thinking.active !== true) return
+      thinking.active = false
+      if (thinkingStartTime !== null && thinking.duration === undefined) {
+        thinking.duration = Date.now() - thinkingStartTime
+      }
+    }
+
     const controller = new AbortController()
     currentController = controller
 
@@ -105,10 +116,8 @@ export function useChat(
         if (chunk.type === 'done') {
           const usage = chunk.metadata?.usage
           if (isTokenUsage(usage)) reportedUsage = usage
-          // 计算思考时长
-          if (assistantMessage.thinking && thinkingStartTime) {
-            assistantMessage.thinking.duration = Date.now() - thinkingStartTime
-          }
+          // 纯 thinking 流没有后续内容帧，由 done 帧兜底收尾
+          finalizeThinking()
           break
         }
 
@@ -119,6 +128,8 @@ export function useChat(
         }
 
         if (chunk.type === 'text') {
+          // 正文开始即思考结束（思考与正文按到达顺序交错，正文为首帧即收尾）
+          finalizeThinking()
           assistantMessage.content += chunk.content
         }
 
@@ -127,13 +138,17 @@ export function useChat(
             assistantMessage.thinking = {
               content: '',
               startTime: new Date(),
+              active: true,
             }
             thinkingStartTime = Date.now()
           }
+          assistantMessage.thinking.active = true
           assistantMessage.thinking.content += chunk.content
         }
 
         if (chunk.type === 'tool_call') {
+          // 工具调用同样意味着思考阶段结束
+          finalizeThinking()
           if (!assistantMessage.toolCalls) assistantMessage.toolCalls = []
           // 同 toolCallId 可能来多帧（流式起点帧 + 完整参数帧）：命中则原位更新，
           // 避免重复 entry 停在 calling 状态与渲染层重复 key
@@ -183,6 +198,8 @@ export function useChat(
         options?.onError?.(err)
       }
     } finally {
+      // 中断/报错路径思考同样收尾，不残留 active=true 的"幽灵进行中"状态
+      finalizeThinking()
       // tokenCount 回填：done 帧真实 usage 优先，估算兜底（中断/报错路径也在 finally 兜底）
       if (typeof assistantMessage.metadata?.tokenCount !== 'number') {
         assistantMessage.metadata = {

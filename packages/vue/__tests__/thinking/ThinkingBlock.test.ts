@@ -77,11 +77,48 @@ describe('ThinkingBlock 展开/收起交互', () => {
     const w = mount(ThinkingBlock, {
       props: { content: '推理', streaming: true },
     })
-    await w.get('.ai-chat-thinking__trigger').trigger('click') // isExpanded = true
+    // 默认随流式展开；用户折叠再展开（手动干预，userTouched 置位）
+    await w.get('.ai-chat-thinking__trigger').trigger('click')
+    await w.get('.ai-chat-thinking__trigger').trigger('click')
     await w.setProps({ streaming: false })
-    // 展开态：body 由 isExpanded 维持，光标消失
+    // 用户手动展开的：流结束后保持展开，光标消失
     expect(w.find('.ai-chat-thinking__body').exists()).toBe(true)
     expect(w.find('.ai-chat-thinking__cursor').exists()).toBe(false)
+  })
+
+  it('streaming 中点击折叠立即生效（用户意图优先于流式强制展开），再点恢复', async () => {
+    const w = mount(ThinkingBlock, {
+      props: { content: '推理中', streaming: true },
+    })
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(true)
+
+    await w.get('.ai-chat-thinking__trigger').trigger('click')
+    // 折叠生效：body 移除，即使流式仍在进行
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(false)
+
+    await w.get('.ai-chat-thinking__trigger').trigger('click')
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(true)
+  })
+
+  it('streaming 结束且用户未干预时自动折叠', async () => {
+    const w = mount(ThinkingBlock, {
+      props: { content: '推理', streaming: true },
+    })
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(true)
+
+    await w.setProps({ streaming: false })
+    // 完成后回收到触发器形态（"已思考 X 秒"可回溯），光标消失
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(false)
+    expect(w.find('.ai-chat-thinking__cursor').exists()).toBe(false)
+  })
+
+  it('streaming 中手动折叠后，流结束保持折叠', async () => {
+    const w = mount(ThinkingBlock, {
+      props: { content: '推理', streaming: true },
+    })
+    await w.get('.ai-chat-thinking__trigger').trigger('click') // 手动折叠
+    await w.setProps({ streaming: false })
+    expect(w.find('.ai-chat-thinking__body').exists()).toBe(false)
   })
 
   it('默认插槽渲染在思考文本之后，content 不被覆盖', async () => {

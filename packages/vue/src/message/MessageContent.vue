@@ -23,7 +23,10 @@ const thinkingProps = computed(() => {
     content: props.thinking.content,
     duration: props.thinking.duration,
     showDuration: true,
-    streaming: props.streaming,
+    // 思考局部流式信号：消息还在流式 ≠ 思考还在进行（正文流式期间思考已结束，
+    // 光标与"正在思考…"应消失，否则与正文光标双闪）。active 显式 false 才视为
+    // 结束；缺信号（宿主自组装消息/旧数据）保持消息级 streaming 行为
+    streaming: props.streaming && props.thinking.active !== false,
   }
 })
 </script>

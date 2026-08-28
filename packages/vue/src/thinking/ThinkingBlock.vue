@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { aiChatI18n } from '../locales'
 
 const { t } = aiChatI18n.global
@@ -16,8 +16,18 @@ const props = withDefaults(defineProps<Props>(), {
   streaming: false,
 })
 
-// 流式时内容实时展示，完成后自动折叠为触发器
+// 展开态跟随流式起止（开始自动展开实时展示，结束自动折叠为触发器）；
+// 用户点击后状态完全归用户——流式中折叠必须立即生效，不能被 streaming 压制
 const isExpanded = ref(false)
+let userTouched = false
+
+watch(
+  () => props.streaming,
+  (val) => {
+    if (!userTouched) isExpanded.value = val
+  },
+  { immediate: true },
+)
 
 // 时长格式化：<10s 保留 1 位小数，≥10s 取整
 const formattedDuration = computed(() => {
@@ -38,6 +48,7 @@ const headerLabel = computed(() => {
 })
 
 function toggleExpand() {
+  userTouched = true
   isExpanded.value = !isExpanded.value
 }
 </script>
@@ -86,7 +97,7 @@ function toggleExpand() {
 
     <transition name="ai-chat-thinking">
       <!-- 思考文本恒渲染，默认插槽追加在其后（工具面板等），无插槽时视觉不变 -->
-      <div v-if="isExpanded || streaming" class="ai-chat-thinking__body">
+      <div v-if="isExpanded" class="ai-chat-thinking__body">
         {{ content }}<slot></slot
         ><span v-if="streaming" class="ai-chat-thinking__cursor" />
       </div>
