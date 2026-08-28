@@ -3,7 +3,7 @@ import {
   useHighlighter,
   normalizeLang,
   SUPPORTED_LANGS,
-} from './useHighlighter'
+} from '../../src/composables/useHighlighter'
 
 describe('useHighlighter', () => {
   it('返回可用的 highlighter 单例', async () => {

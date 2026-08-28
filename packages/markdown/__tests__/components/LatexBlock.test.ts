@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import LatexBlock from './LatexBlock.vue'
+import LatexBlock from '../../src/components/LatexBlock.vue'
 
 describe('LatexBlock', () => {
   it('有效行内公式渲染出 katex 标记（FR-3.1）', () => {

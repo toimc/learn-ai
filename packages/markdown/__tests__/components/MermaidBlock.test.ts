@@ -7,7 +7,7 @@ vi.mock('mermaid', () => ({
   default: { initialize: vi.fn(), render: renderMock },
 }))
 // import AFTER mock setup (vi.mock is hoisted automatically)
-import MermaidBlock from './MermaidBlock.vue'
+import MermaidBlock from '../../src/components/MermaidBlock.vue'
 
 describe('MermaidBlock', () => {
   it('渲染成功：done 状态显示 svg', async () => {

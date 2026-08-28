@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import CodeBlock from './CodeBlock.vue'
+import CodeBlock from '../../src/components/CodeBlock.vue'
 import { aiChatI18n } from '@toimc/vue'
-import { renderCodeFinal } from './composables/useShikiTokenizer'
+import { renderCodeFinal } from '../../src/composables/useShikiTokenizer'
 
 // 默认透传真实实现，仅在「高亮异常降级」用例里对单次调用注入 rejection
-vi.mock('./composables/useShikiTokenizer', async (importOriginal) => {
+vi.mock('../../src/composables/useShikiTokenizer', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./composables/useShikiTokenizer')>()
+    await importOriginal<
+      typeof import('../../src/composables/useShikiTokenizer')
+    >()
   return { ...actual, renderCodeFinal: vi.fn(actual.renderCodeFinal) }
 })
 

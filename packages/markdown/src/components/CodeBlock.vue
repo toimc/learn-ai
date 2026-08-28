@@ -4,7 +4,7 @@ import { aiChatI18n } from '@toimc/vue'
 import {
   renderCodeStreaming,
   renderCodeFinal,
-} from './composables/useShikiTokenizer'
+} from '../composables/useShikiTokenizer'
 
 const { t } = aiChatI18n.global
 

@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { __resetMarkdownIt, useMarkdownIt } from './useMarkdownIt'
+import {
+  __resetMarkdownIt,
+  useMarkdownIt,
+} from '../../src/composables/useMarkdownIt'
 
 describe('useMarkdownIt', () => {
   // 单例会跨用例残留插件状态，每个用例前重置以保持隔离

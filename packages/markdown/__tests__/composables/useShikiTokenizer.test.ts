@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { renderCodeStreaming, renderCodeFinal } from './useShikiTokenizer'
+import {
+  renderCodeStreaming,
+  renderCodeFinal,
+} from '../../src/composables/useShikiTokenizer'
 
 /** 从 HTML 中提取纯文本（去标签、反转义），用于断言源码可见性 */
 function textOf(html: string): string {

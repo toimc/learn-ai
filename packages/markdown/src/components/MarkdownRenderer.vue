@@ -3,7 +3,7 @@ import { nextTick, onBeforeUnmount, ref, watchEffect } from 'vue'
 import { createApp, type App } from 'vue'
 import CodeBlock from './CodeBlock.vue'
 import MermaidBlock from './MermaidBlock.vue'
-import { useStreamingMarkdown } from './composables/useStreamingMarkdown'
+import { useStreamingMarkdown } from '../composables/useStreamingMarkdown'
 
 const props = defineProps<{
   content: string

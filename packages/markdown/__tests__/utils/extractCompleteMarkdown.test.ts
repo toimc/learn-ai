@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractCompleteMarkdown } from './extractCompleteMarkdown'
+import { extractCompleteMarkdown } from '../../src/utils/extractCompleteMarkdown'
 
 describe('extractCompleteMarkdown', () => {
   it('正常成对代码块原样返回', () => {

@@ -28,7 +28,13 @@ function copyKatexCss(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [vue(), dts({ rollupTypes: true }), copyKatexCss()],
+  plugins: [
+    vue(),
+    // entryRoot: 'src' —— 组件移入 src/components/ 后公共根变深，
+    // 不固定 entryRoot 会把声明产物掉进 dist/src/，破坏 package.json 的 dist/index.d.ts types 入口
+    dts({ rollupTypes: true, entryRoot: 'src', exclude: ['__tests__'] }),
+    copyKatexCss(),
+  ],
   build: {
     lib: {
       entry: 'src/index.ts',

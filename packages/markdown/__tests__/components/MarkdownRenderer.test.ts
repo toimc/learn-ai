@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import MarkdownRenderer from './MarkdownRenderer.vue'
+import MarkdownRenderer from '../../src/components/MarkdownRenderer.vue'
 
 const stubRequestAnimationFrame = (cb: FrameRequestCallback): number =>
   setTimeout(() => cb(0), 0) as unknown as number

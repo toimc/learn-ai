@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, nextTick } from 'vue'
-import { useStreamingMarkdown } from './useStreamingMarkdown'
+import { useStreamingMarkdown } from '../../src/composables/useStreamingMarkdown'
 
 describe('useStreamingMarkdown', () => {
   let rafCbs: FrameRequestCallback[]

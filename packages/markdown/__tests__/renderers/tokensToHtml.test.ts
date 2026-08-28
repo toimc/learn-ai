@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ThemedToken } from 'shiki/core'
-import { tokensToHtml, escapeHtml } from './tokensToHtml'
+import { tokensToHtml, escapeHtml } from '../../src/renderers/tokensToHtml'
 
 describe('escapeHtml', () => {
   it('转义 & < >', () => {
