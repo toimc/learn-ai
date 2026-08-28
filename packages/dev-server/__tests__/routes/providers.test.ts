@@ -97,7 +97,9 @@ describe('POST /api/providers：正常注册', () => {
         id: 'custom-1',
         name: 'DeepSeek',
         model: {
-          id: 'deepseek-chat',
+          // Mastra 对象形态的 id 必须是 provider/model 路由串（裸模型名解析报
+          // "doesn't appear to contain a provider"），openai-compat 统一补 openai/ 前缀
+          id: 'openai/deepseek-chat',
           url: 'https://api.deepseek.com/v1',
           apiKey: 'sk-test-deepseek-123',
         },
@@ -107,6 +109,29 @@ describe('POST /api/providers：正常注册', () => {
     )
     // 注册后对前端可见
     expect(await listModelIds(app)).toContain('custom-1')
+  })
+
+  it('model 已含 provider 前缀时原样透传，不重复加前缀', async () => {
+    const app = await createDevApp()
+
+    const res = await postProvider(app, {
+      name: 'DeepSeek 路由串',
+      provider: 'openai-compat',
+      baseURL: 'https://api.deepseek.com/v1',
+      apiKey: 'sk-test-789',
+      model: 'deepseek/deepseek-chat',
+    })
+
+    expect(res.status).toBe(201)
+    expect(vi.mocked(createMastraModel)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: {
+          id: 'deepseek/deepseek-chat',
+          url: 'https://api.deepseek.com/v1',
+          apiKey: 'sk-test-789',
+        },
+      }),
+    )
   })
 
   it('anthropic：model 组装为 anthropic/ 前缀字符串，注册前注入 ANTHROPIC_API_KEY', async () => {
@@ -121,7 +146,7 @@ describe('POST /api/providers：正常注册', () => {
 
     expect(res.status).toBe(201)
     await expect(res.json()).resolves.toEqual({
-      id: 'custom-2',
+      id: 'custom-3',
       name: 'Claude',
       provider: 'anthropic',
       model: 'claude-sonnet-4-5',
@@ -154,7 +179,7 @@ describe('GET /api/providers', () => {
     expect(JSON.parse(text)).toEqual({
       providers: [
         {
-          id: 'custom-3',
+          id: 'custom-4',
           name: 'DeepSeek',
           provider: 'openai-compat',
           model: 'deepseek-chat',
@@ -183,7 +208,7 @@ describe('DELETE /api/providers/:id', () => {
     })
     expect(registered.status).toBe(201)
 
-    const res = await app.request('/api/providers/custom-4', {
+    const res = await app.request('/api/providers/custom-5', {
       method: 'DELETE',
     })
 

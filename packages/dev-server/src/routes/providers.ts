@@ -44,14 +44,20 @@ export async function registerRuntimeProvider(
     id,
     name: payload.name,
     description: `运行时注册的 ${payload.provider} 模型（${payload.model}），支持工具调用与会话记忆`,
+    // Mastra 的 model id 必须是 'provider/model' 路由串：裸模型名在首次调用时
+    // 解析失败（"doesn't appear to contain a provider"），统一补默认前缀，已带前缀的原样透传
     model:
       payload.provider === 'openai-compat'
         ? {
-            id: payload.model,
+            id: payload.model.includes('/')
+              ? payload.model
+              : `openai/${payload.model}`,
             url: payload.baseURL,
             apiKey: payload.apiKey,
           }
-        : `anthropic/${payload.model}`,
+        : payload.model.startsWith('anthropic/')
+          ? payload.model
+          : `anthropic/${payload.model}`,
     tools: { getTimeTool, getWeatherTool },
     memory: createMemory(),
   })
