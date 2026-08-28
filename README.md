@@ -67,11 +67,86 @@ ai-chat-ui/
 │   ├── mastra-app/            # @toimc/mastra-app — Mastra 标准工程（私有，不依赖任何 @toimc/* 包）
 │   │   └── src/               # @mastra/hono 原生端点（4111）/ chat-agent（真实模型 + get_time·get_weather 工具 + LibSQL 记忆）/ Studio；Playground 经前端 MastraAdapter 直连
 │   │
+│   ├── playground/            # @toimc/playground — Playground 演示包（私有）
+│   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / mock 与 Mastra 前端适配器
+│   │
 │   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
 │           ├── components/    # PlaygroundDemo（完整 Playground）
 │           ├── theme/         # 全局组件注册
 │           └── utils/         # mock-adapter（支持 tool_call）
+```
+
+## 架构图
+
+### 包依赖关系
+
+箭头从使用方指向被依赖方（`workspace:*`），仅画出主要依赖边，完整依赖见各包 `package.json`：
+
+```mermaid
+flowchart TB
+    subgraph fe["前端组件层 · npm 发布"]
+        VUE["@toimc/vue<br/>33 个可组合组件<br/>Design Token / 样式隔离 / i18n"]
+        MD["@toimc/markdown<br/>流式 Markdown 渲染<br/>Shiki 高亮 / KaTeX 公式 / Mermaid 图表"]
+    end
+
+    subgraph be["服务端层 · npm 发布"]
+        SERVER["@toimc/server<br/>Hono 聊天网关<br/>认证 / 限流 / SSE 转发"]
+        AGENTS["@toimc/agents<br/>多模型适配层<br/>OpenAI 兼容 / Anthropic / Mastra"]
+    end
+
+    subgraph dev["私有开发包 · 不发布"]
+        DOCS["@toimc/docs<br/>VitePress 文档站（5173）"]
+        PG["@toimc/playground<br/>Playground 演示页 + mock / Mastra 适配器"]
+        MOCK["@toimc/mock-server<br/>本地 mock 服务（8787）"]
+        MA["@toimc/mastra-app<br/>Mastra 真实模型服务（4111）<br/>不依赖任何 @toimc/* 包"]
+    end
+
+    CORE["@toimc/core<br/>核心类型与 composables<br/>Message / StreamChunk / ChatAdapter / useChat<br/>零外部依赖"]
+
+    VUE --> CORE
+    MD --> VUE
+    AGENTS --> CORE
+    SERVER --> AGENTS
+    PG --> VUE
+    PG --> MD
+    DOCS --> PG
+    MOCK --> SERVER
+```
+
+### 运行时数据流
+
+前端只认 `ChatAdapter` 接口，后端任选；API Key 只留在服务端：
+
+```mermaid
+flowchart LR
+    subgraph browser["浏览器 · 宿主应用"]
+        UI["@toimc/vue<br/>PromptInput 发送 / Message 展示"]
+        UC["@toimc/core<br/>useChat 状态机"]
+        MD["@toimc/markdown<br/>高亮 / 公式 / 图表"]
+    end
+
+    AD{{"ChatAdapter 接口<br/>AsyncGenerator&lt;StreamChunk&gt;"}}
+
+    subgraph serverSide["服务端（可选）· API Key 只留在此层"]
+        GW["@toimc/server<br/>认证 / 限流 / SSE"]
+        AG["@toimc/agents<br/>ModelRegistry"]
+        MOCK["mock-server :8787<br/>mock 剧本"]
+        MA["mastra-app :4111<br/>Agent + LibSQL 记忆"]
+    end
+
+    LLM[("LLM<br/>OpenAI / Anthropic / GLM …")]
+
+    UI -->|"chat.send()"| UC
+    UC -->|"messages + AbortSignal"| AD
+    AD -->|"SSE 流式响应"| GW
+    GW --> AG
+    AG -->|"模型协议"| LLM
+    AD -.->|"开发联调"| MOCK
+    AD -.->|"MastraAdapter（playground 提供）"| MA
+    MA --> LLM
+    UC ==>|"for await StreamChunk<br/>text / tool_call / thinking / done"| UI
+    UI -.->|"渲染 AI 回复"| MD
 ```
 
 ## 快速开始
