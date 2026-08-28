@@ -436,6 +436,15 @@ function toggleModelMenu() {
 
 function pickModel(id: string | undefined) {
   selectModel(id)
+  // 即时作用于当前会话：同步分发快照，下一次发送就走新模型（用户预期：
+  // 顶部切换对当前会话立即生效，而不是只影响新会话）；选回默认则摘除快照回本地 mock
+  const conv = conversations.value.find(
+    (c) => c.id === activeConversationId.value,
+  )
+  if (conv) {
+    if (id) conv.model = id
+    else delete conv.model
+  }
   modelMenuOpen.value = false
 }
 
