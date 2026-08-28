@@ -1,5 +1,7 @@
 # MessageList
 
+> ⚠️ **已废弃**：请迁移到 [ConversationContent](/components/conversation) 内直接 `v-for` 渲染消息。本组件保留导出仅为向后兼容。
+
 渲染消息列表，通过作用域插槽自定义每条消息的渲染方式。
 
 ## 基础用法

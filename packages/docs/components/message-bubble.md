@@ -1,5 +1,7 @@
 # MessageBubble
 
+> ⚠️ **已废弃**：请迁移到 [Message](/components/message) + MessageContent 组合。本组件保留导出仅为向后兼容。
+
 单条消息气泡，包含头像、内容和操作按钮三个区域。根据 `message.role` 自动应用不同样式。
 
 ## 基础用法

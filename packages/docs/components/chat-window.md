@@ -1,5 +1,7 @@
 # ChatWindow
 
+> ⚠️ **已废弃**：请迁移到 [Conversation](/components/conversation) + ConversationContent 组合。本组件保留导出仅为向后兼容。
+
 聊天窗口布局容器，提供可滚动的消息区域和固定底部区域。
 
 ## 基础用法
