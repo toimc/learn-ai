@@ -4,6 +4,7 @@ import { createMastraModel } from '@toimc/agents/mastra'
 import { createMemory } from '../memory'
 import { getTimeTool } from '../tools/get-time'
 import { getWeatherTool } from '../tools/get-weather'
+import { normalizeEndpointUrl } from '../agents/model-config'
 
 /** 运行时注册表单载荷（与 @toimc/vue 的 ProviderFormPayload 字段一致；服务端不依赖 vue 包，独立定义） */
 export interface ProviderFormPayload {
@@ -52,7 +53,9 @@ export async function registerRuntimeProvider(
             id: payload.model.includes('/')
               ? payload.model
               : `openai/${payload.model}`,
-            url: payload.baseURL,
+            url: payload.baseURL
+              ? normalizeEndpointUrl(payload.baseURL)
+              : undefined,
             apiKey: payload.apiKey,
           }
         : payload.model.startsWith('anthropic/')

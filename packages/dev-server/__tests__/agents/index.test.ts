@@ -22,7 +22,7 @@ describe('buildAgentDefinitions', () => {
     })
     expect(def.model).toEqual({
       id: 'my-qwen3',
-      url: 'https://gw.example/v1',
+      url: 'https://gw.example/v1/chat/completions',
       apiKey: 'sk-x',
     })
   })

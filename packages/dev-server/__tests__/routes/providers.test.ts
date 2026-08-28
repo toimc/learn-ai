@@ -100,7 +100,7 @@ describe('POST /api/providers：正常注册', () => {
           // Mastra 对象形态的 id 必须是 provider/model 路由串（裸模型名解析报
           // "doesn't appear to contain a provider"），openai-compat 统一补 openai/ 前缀
           id: 'openai/deepseek-chat',
-          url: 'https://api.deepseek.com/v1',
+          url: 'https://api.deepseek.com/v1/chat/completions',
           apiKey: 'sk-test-deepseek-123',
         },
         tools: { getTimeTool, getWeatherTool },
@@ -127,7 +127,7 @@ describe('POST /api/providers：正常注册', () => {
       expect.objectContaining({
         model: {
           id: 'deepseek/deepseek-chat',
-          url: 'https://api.deepseek.com/v1',
+          url: 'https://api.deepseek.com/v1/chat/completions',
           apiKey: 'sk-test-789',
         },
       }),

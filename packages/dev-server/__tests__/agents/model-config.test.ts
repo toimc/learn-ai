@@ -8,7 +8,7 @@ describe('resolveModelConfig', () => {
     )
   })
 
-  it('有 modelUrl：组装为 { id, url } 对象（OpenAI 兼容端点形态）', () => {
+  it('有 modelUrl：组装为 { id, url } 对象（url 规范化补全端点后缀）', () => {
     expect(
       resolveModelConfig({
         model: 'glm-4-plus',
@@ -16,7 +16,7 @@ describe('resolveModelConfig', () => {
       }),
     ).toEqual({
       id: 'glm-4-plus',
-      url: 'https://open.bigmodel.cn/api/paas/v4',
+      url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
     })
   })
 
@@ -24,12 +24,12 @@ describe('resolveModelConfig', () => {
     expect(
       resolveModelConfig({
         model: 'openai/gpt-5.6-terra',
-        modelUrl: 'https://2api.store/v1',
+        modelUrl: 'https://2api.store/v1/chat/completions',
         modelApiKey: 'sk-e2e',
       }),
     ).toEqual({
       id: 'openai/gpt-5.6-terra',
-      url: 'https://2api.store/v1',
+      url: 'https://2api.store/v1/chat/completions',
       apiKey: 'sk-e2e',
     })
   })
@@ -38,5 +38,31 @@ describe('resolveModelConfig', () => {
     expect(resolveModelConfig({ model: 'openai/gpt-4o', modelUrl: '' })).toBe(
       'openai/gpt-4o',
     )
+  })
+
+  it('modelUrl 缺 /chat/completions 后缀时自动补全（AI SDK 把 url 当完整端点，裸 base 会打到中转站首页换 200 HTML 空流）', () => {
+    expect(
+      resolveModelConfig({
+        model: 'openai/gpt-5.6-terra',
+        modelUrl: 'https://2api.store/v1',
+        modelApiKey: 'sk-e2e',
+      }),
+    ).toEqual({
+      id: 'openai/gpt-5.6-terra',
+      url: 'https://2api.store/v1/chat/completions',
+      apiKey: 'sk-e2e',
+    })
+  })
+
+  it('modelUrl 已带 /chat/completions 后缀时原样透传，不重复追加', () => {
+    expect(
+      resolveModelConfig({
+        model: 'glm-4-plus',
+        modelUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+      }),
+    ).toEqual({
+      id: 'glm-4-plus',
+      url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    })
   })
 })
