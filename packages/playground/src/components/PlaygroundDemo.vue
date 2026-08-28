@@ -39,10 +39,6 @@ import type { ProviderFormPayload, ProviderOption } from '@toimc/vue'
 import { createDispatchAdapter } from '../mock/dispatch-adapter'
 import { useProviderModels } from '../composables/useProviderModels'
 import {
-  removeMastraRuntimeModel,
-  saveMastraRuntimeModel,
-} from '../composables/mastra-runtime-model'
-import {
   BACKEND_BASE_URLS,
   useBackendSelector,
 } from '../composables/useBackendSelector'
@@ -68,18 +64,13 @@ const {
   selectModel,
 } = useProviderModels()
 
-// 后端选择器（spec 12）：本地 Mock / mock-server 8787 / Mastra 4111；
-// 选中 id 持久化 localStorage，切换远端前探活，不可达不切换并标离线禁用；
-// mastra 后端探活时并行拉取运行时模型配置（customModelActive → custom-agent 端点）
+// 后端选择器（spec 12）：本地 Mock / dev-server 8787；
+// 选中 id 持久化 localStorage，切换远端前探活，不可达不切换并标离线禁用
 const {
   backend: backendId,
-  mockServerOnline,
-  mastraOnline,
-  mastraRuntimeConfig,
-  customModelActive,
+  serverOnline,
   probeAll: probeBackends,
   selectBackend,
-  refreshCustomModel,
   isOffline: isBackendOffline,
 } = useBackendSelector()
 
@@ -139,13 +130,11 @@ function resolveChatMaxContextTokens(): number {
 }
 
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
-// adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）；
-// mastra 会话在运行时模型已配置时走 custom-agent 端点（每次发送快照，流中不切换）
+// adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）
 const chat = useChat(
   createDispatchAdapter({
     getConversation: () =>
       conversations.value.find((c) => c.id === activeConversationId.value),
-    getMastraCustomModelActive: () => customModelActive.value,
   }),
   { maxContextTokens: resolveChatMaxContextTokens },
 )
@@ -229,8 +218,6 @@ interface PlaygroundConv {
   messages: (typeof import('@toimc/core').Message)[]
   /** 绑定的服务端模型 id（spec 11）：带值会话经 SSE 走真实模型，缺省走本地 mock */
   model?: string
-  /** 创建时快照的后端（spec 12）：'mastra' 会话走 4111 原生端点，agent 由服务端决定 */
-  backend?: 'mock-server' | 'mastra'
 }
 
 const conversations = ref<PlaygroundConv[]>([
@@ -299,11 +286,8 @@ const activeConversationId = ref('1')
 const activeConv = computed(() =>
   conversations.value.find((c) => c.id === activeConversationId.value),
 )
-// 真实模型/Agent 会话（绑定 model 或 mastra 后端）：工具过程进思考面板的渲染路径
-const isAgentConv = computed(
-  () =>
-    Boolean(activeConv.value?.model) || activeConv.value?.backend === 'mastra',
-)
+// 真实模型会话（绑定 model）：工具过程进思考面板的渲染路径
+const isAgentConv = computed(() => Boolean(activeConv.value?.model))
 
 // 初始化时加载第一个会话的消息
 chat.messages.push(...conversations.value[0].messages)
@@ -378,8 +362,7 @@ function newChat() {
     currentConv.messages = [...chat.messages]
   }
 
-  // 创建新会话；快照当前后端选择（mastra 会话不带 model，agent 由服务端决定），
-  // 其余后端在选中模型时写入该 model（此后本会话经真实模型收发）
+  // 创建新会话；选中模型时快照进会话（此后本会话经真实模型收发）
   const newId = `${Date.now()}`
   const newConv: PlaygroundConv = {
     id: newId,
@@ -387,14 +370,7 @@ function newChat() {
     group: 'today',
     active: true,
     messages: [],
-    ...(backendId.value === 'mastra'
-      ? { backend: 'mastra' as const }
-      : {
-          ...(backendId.value === 'mock-server'
-            ? { backend: 'mock-server' as const }
-            : {}),
-          ...(selectedModelId.value ? { model: selectedModelId.value } : {}),
-        }),
+    ...(selectedModelId.value ? { model: selectedModelId.value } : {}),
   }
 
   // 取消其他会话的激活状态
@@ -441,35 +417,10 @@ const selectedModelName = computed(() => {
   )
 })
 
-/** 设置弹层的 providers 数据源：mastra 后端来自 4111 的单条运行时配置，其余为 8787 列表 */
-const dialogProviders = computed<ProviderOption[]>(() => {
-  if (backendId.value !== 'mastra') return providerList.value
-  const config = mastraRuntimeConfig.value
-  return config
-    ? [
-        {
-          id: 'custom-agent',
-          name: config.name,
-          provider: config.provider,
-          model: config.model,
-        },
-      ]
-    : []
-})
+/** 设置弹层的 providers 数据源：dev-server 的 /api/providers 列表 */
+const dialogProviders = computed<ProviderOption[]>(() => providerList.value)
 
 function openSettings() {
-  // mastra 后端弹层管理 4111 运行时模型，离线判断与提示都按 4111 走
-  if (backendId.value === 'mastra') {
-    if (mastraOnline.value === false) {
-      notice.value = t('pg.backend.offlineHint', {
-        url: BACKEND_BASE_URLS.mastra,
-      })
-      return
-    }
-    void refreshCustomModel()
-    settingsOpen.value = true
-    return
-  }
   if (providerStatus.value === 'offline') {
     notice.value = t('pg.providerSettings.offlineHint')
     return
@@ -488,7 +439,7 @@ function pickModel(id: string | undefined) {
   modelMenuOpen.value = false
 }
 
-// ===== 后端选择器（spec 12：本地 Mock / mock-server 8787 / Mastra 4111） =====
+// ===== 后端选择器（spec 12：本地 Mock / dev-server 8787） =====
 const backendMenuOpen = ref(false)
 
 const backendOptions = computed(() => [
@@ -498,24 +449,11 @@ const backendOptions = computed(() => [
     desc: t('pg.backend.localDesc'),
   },
   {
-    id: 'mock-server' as const,
-    label: t('pg.backend.mockServer'),
-    desc: t('pg.backend.mockServerDesc'),
-  },
-  {
-    id: 'mastra' as const,
-    label: t('pg.backend.mastra'),
-    desc: t('pg.backend.mastraDesc'),
+    id: 'dev-server' as const,
+    label: t('pg.backend.devServer'),
+    desc: t('pg.backend.devServerDesc'),
   },
 ])
-
-/** mastra 后端标签：运行时模型已配置 → 展示注册的模型；否则默认 agent 提示 */
-const mastraAgentLabel = computed(() => {
-  const config = mastraRuntimeConfig.value
-  return config
-    ? `${config.name} · ${config.model}`
-    : t('pg.backend.agentTagDefault')
-})
 
 const currentBackendLabel = computed(
   () =>
@@ -529,11 +467,10 @@ function toggleBackendMenu() {
 }
 
 function showBackendOfflineNotice(id: PlaygroundBackendId) {
-  const url =
-    id === 'mastra'
-      ? BACKEND_BASE_URLS.mastra
-      : BACKEND_BASE_URLS['mock-server']
-  notice.value = t('pg.backend.offlineHint', { url })
+  if (id === 'local') return
+  notice.value = t('pg.backend.offlineHint', {
+    url: BACKEND_BASE_URLS['dev-server'],
+  })
 }
 
 async function pickBackend(id: PlaygroundBackendId) {
@@ -545,12 +482,6 @@ async function pickBackend(id: PlaygroundBackendId) {
 
 async function onCreateProvider(payload: ProviderFormPayload) {
   try {
-    // mastra 后端：表单提交 4111 即换模型（免重启），成功后刷新 custom 端点状态
-    if (backendId.value === 'mastra') {
-      await saveMastraRuntimeModel(BACKEND_BASE_URLS.mastra, payload)
-      await refreshCustomModel()
-      return
-    }
     await createProvider(payload)
   } catch (err) {
     notice.value = t('pg.providerSettings.actionFailed', {
@@ -561,12 +492,6 @@ async function onCreateProvider(payload: ProviderFormPayload) {
 
 async function onRemoveProvider(id: string) {
   try {
-    // mastra 后端：单条配置无 id 维度，DELETE 后回到 .env 静态模型
-    if (backendId.value === 'mastra') {
-      await removeMastraRuntimeModel(BACKEND_BASE_URLS.mastra)
-      await refreshCustomModel()
-      return
-    }
     await removeProvider(id)
     // 删除的是当前选中模型 → 回退默认，新会话回到本地 mock 行为
     if (selectedModelId.value === id) selectModel(undefined)
@@ -592,9 +517,9 @@ watch(
   },
 )
 
-// 任一远端后端探活恢复在线后同样撤掉离线提示
-watch([mockServerOnline, mastraOnline], ([mock, mastra]) => {
-  if (mock === true || mastra === true) notice.value = null
+// 远端后端探活恢复在线后同样撤掉离线提示
+watch(serverOnline, (online) => {
+  if (online === true) notice.value = null
 })
 
 onMounted(() => {
@@ -911,7 +836,7 @@ watch(() => chat.messages.length, scrollToBottom)
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <!-- 后端选择器（spec 12）：本地 Mock / mock-server 8787 / Mastra 4111，只对新会话生效 -->
+          <!-- 后端选择器（spec 12）：本地 Mock / dev-server 8787，只对新会话生效 -->
           <div class="pg-backend-wrap">
             <button
               class="pg-backend-selector"
@@ -952,17 +877,7 @@ watch(() => chat.messages.length, scrollToBottom)
               </button>
             </div>
           </div>
-          <!-- Mastra 后端：agent 由服务端运行时配置决定，标签动态显示当前模型，
-               点击直达设置弹层（注册即切换模型，4111 只有一条全局运行时模型） -->
-          <button
-            v-if="backendId === 'mastra'"
-            class="pg-agent-tag pg-agent-tag--manage"
-            :title="t('pg.backend.agentTagManage')"
-            @click="openSettings"
-          >
-            {{ mastraAgentLabel }}
-          </button>
-          <div v-else class="pg-model-wrap">
+          <div class="pg-model-wrap">
             <button
               class="pg-model-selector"
               :class="{ open: modelMenuOpen }"
@@ -1240,7 +1155,7 @@ watch(() => chat.messages.length, scrollToBottom)
             />
 
             <template v-else>
-              <!-- 真实模型/Agent 会话（绑定 model 或 mastra 后端）：工具过程进思考面板，随折叠/展开 -->
+              <!-- 真实模型会话（绑定 model）：工具过程进思考面板，随折叠/展开 -->
               <template v-if="isAgentConv && msg.role === 'assistant'">
                 <ThinkingBlock
                   v-if="msg.thinking || msg.toolCalls?.length"
@@ -1851,7 +1766,7 @@ watch(() => chat.messages.length, scrollToBottom)
   font-weight: 500;
 }
 
-/* ===== 后端选择器（本地 Mock / mock-server 8787 / Mastra 4111） ===== */
+/* ===== 后端选择器（本地 Mock / dev-server 8787） ===== */
 .pg-backend-wrap {
   position: relative;
   display: flex;
@@ -1930,36 +1845,6 @@ watch(() => chat.messages.length, scrollToBottom)
   margin-left: auto;
   font-size: 11px;
   color: var(--ai-chat-color-text-muted);
-}
-
-/* Mastra 后端的固定 agent 标签（替代模型下拉，agent 由服务端配置决定） */
-.pg-agent-tag {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px dashed var(--ai-chat-color-border);
-  border-radius: 6px;
-  color: var(--ai-chat-color-text-secondary);
-  font-size: 13px;
-}
-
-/* 可点击形态（button 元素）：重置原生样式并给 hover 反馈，指引用户去注册/更换模型 */
-.pg-agent-tag--manage {
-  background: transparent;
-  cursor: pointer;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition:
-    color var(--ai-chat-duration-fast) var(--ai-chat-easing),
-    border-color var(--ai-chat-duration-fast) var(--ai-chat-easing);
-}
-
-.pg-agent-tag--manage:hover {
-  color: var(--ai-chat-color-accent);
-  border-color: var(--ai-chat-color-accent);
 }
 
 .pg-backend-option-name {

@@ -1,28 +1,24 @@
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { checkHealth } from '../mock/sse-adapter'
-import { fetchMastraRuntimeModel } from './mastra-runtime-model'
-import type { MastraRuntimeConfig } from './mastra-runtime-model'
 
-/** 后端选择器三选项：local=本地剧本，其余为远端服务 */
-export type PlaygroundBackendId = 'local' | 'mock-server' | 'mastra'
+/** 后端选择器两选项：local=本地剧本，dev-server=统一服务（mock + mastra agents） */
+export type PlaygroundBackendId = 'local' | 'dev-server'
 
 export const BACKEND_STORAGE_KEY = 'pg.backend'
 
-const KNOWN_BACKENDS: readonly PlaygroundBackendId[] = [
-  'local',
-  'mock-server',
-  'mastra',
-]
+const KNOWN_BACKENDS: readonly PlaygroundBackendId[] = ['local', 'dev-server']
+
+/** 旧值迁移：spec 14 前的三后端值映射（未知值回退 local 安全默认） */
+const LEGACY_ALIASES: Record<string, PlaygroundBackendId> = {
+  'mock-server': 'dev-server',
+  mastra: 'dev-server',
+}
 
 /** 远端后端基地址（探活与提示共用） */
 export const BACKEND_BASE_URLS = {
-  'mock-server': 'http://localhost:8787',
-  mastra: 'http://localhost:4111',
+  'dev-server': 'http://localhost:8787',
 } as const
-
-/** 4111 探活超时：ping /api/agents，2s 无响应视为离线 */
-const MASTRA_PING_TIMEOUT_MS = 2000
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
@@ -44,13 +40,14 @@ function safeGet(storage: StorageLike): PlaygroundBackendId {
     if (value && (KNOWN_BACKENDS as readonly string[]).includes(value)) {
       return value as PlaygroundBackendId
     }
+    if (value && value in LEGACY_ALIASES) return LEGACY_ALIASES[value]
   } catch {
     // 读取失败回退默认
   }
   return 'local'
 }
 
-function safeSet(storage: StorageLike, id: PlaygroundBackendId): void {
+function safeSet(storage: StorageLike, id: PlaygroundBackendId) {
   try {
     storage.setItem(BACKEND_STORAGE_KEY, id)
   } catch {
@@ -58,85 +55,36 @@ function safeSet(storage: StorageLike, id: PlaygroundBackendId): void {
   }
 }
 
-/** 探活 mastra-app：GET /api/agents（agent 列表端点），2s 超时 */
-async function pingMastra(): Promise<boolean> {
-  try {
-    const res = await fetch(`${BACKEND_BASE_URLS.mastra}/api/agents`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(MASTRA_PING_TIMEOUT_MS),
-    })
-    return res.ok
-  } catch {
-    return false
-  }
-}
-
-/** 探测 4111 的运行时模型配置；不可达/未配置返回 null（探活与配置互不拖累） */
-async function pingRuntimeModel(): Promise<MastraRuntimeConfig | null> {
-  try {
-    return await fetchMastraRuntimeModel(
-      BACKEND_BASE_URLS.mastra,
-      AbortSignal.timeout(MASTRA_PING_TIMEOUT_MS),
-    )
-  } catch {
-    return null
-  }
-}
-
 /**
- * Playground 后端选择器状态（spec 12 §4.3）：本地 Mock / mock-server 8787 / Mastra 4111。
- * 选中 id 持久化 localStorage（pg.backend）；切换远端前探活，不可达不切换并标记离线。
- * 选择只影响新会话（创建时快照进会话，对齐 spec 11 的 model 语义）。
+ * Playground 后端选择器：本地 Mock / dev-server 8787。
+ * 选中 id 持久化 localStorage（pg.backend，旧值自动迁移）；切换远端前探活，
+ * 不可达不切换并标记离线。选择只影响新会话（创建时快照，对齐 spec 11 语义）。
  */
 export function useBackendSelector(options: UseBackendSelectorOptions = {}) {
   const storage = options.storage ?? defaultStorage()
 
   const backend: Ref<PlaygroundBackendId> = ref(safeGet(storage))
   /** null = 未探测 */
-  const mockServerOnline: Ref<boolean | null> = ref(null)
-  const mastraOnline: Ref<boolean | null> = ref(null)
-  /** 4111 的运行时模型配置（探活时并行拉取）；null = 未配置或离线 */
-  const mastraRuntimeConfig: Ref<MastraRuntimeConfig | null> = ref(null)
-  /** 4111 在线且运行时模型已配置：mastra 会话切 custom-agent 端点的依据 */
-  const customModelActive = computed(
-    () => mastraOnline.value === true && mastraRuntimeConfig.value !== null,
-  )
+  const serverOnline: Ref<boolean | null> = ref(null)
 
-  async function probeRemote(id: 'mock-server' | 'mastra'): Promise<boolean> {
-    if (id === 'mock-server') {
-      const online = await checkHealth(BACKEND_BASE_URLS['mock-server'])
-      mockServerOnline.value = online
-      return online
-    }
-    const [online, config] = await Promise.all([
-      pingMastra(),
-      pingRuntimeModel(),
-    ])
-    mastraOnline.value = online
-    mastraRuntimeConfig.value = online ? config : null
+  async function probeRemote(id: 'dev-server'): Promise<boolean> {
+    const online = await checkHealth(BACKEND_BASE_URLS[id])
+    serverOnline.value = online
     return online
   }
 
-  /** 单独刷新运行时模型状态（表单 create/delete 后回调，不重试探活） */
-  async function refreshCustomModel(): Promise<void> {
-    mastraRuntimeConfig.value = await pingRuntimeModel()
-  }
-
-  /** 并行探测两个远端（挂载时初始化离线标记，不改变当前选中） */
+  /** 探测远端（挂载时初始化离线标记，不改变当前选中） */
   async function probeAll(): Promise<void> {
-    await Promise.all([probeRemote('mock-server'), probeRemote('mastra')])
+    await probeRemote('dev-server')
   }
 
   /** 探活结果为离线（未探测返回 false，不禁用） */
   function isOffline(id: PlaygroundBackendId): boolean {
-    if (id === 'mock-server') return mockServerOnline.value === false
-    if (id === 'mastra') return mastraOnline.value === false
+    if (id === 'dev-server') return serverOnline.value === false
     return false
   }
 
-  /**
-   * 切换后端：远端先探活，不可达返回 false 且保持原选中（重选当前远端项 = 重试探活）。
-   */
+  /** 切换后端：远端先探活，不可达返回 false 且保持原选中（重选当前远端项 = 重试探活） */
   async function selectBackend(id: PlaygroundBackendId): Promise<boolean> {
     if (id !== 'local' && !(await probeRemote(id))) return false
     backend.value = id
@@ -146,13 +94,9 @@ export function useBackendSelector(options: UseBackendSelectorOptions = {}) {
 
   return {
     backend,
-    mockServerOnline,
-    mastraOnline,
-    mastraRuntimeConfig,
-    customModelActive,
+    serverOnline,
     probeAll,
     selectBackend,
-    refreshCustomModel,
     isOffline,
   }
 }

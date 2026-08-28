@@ -26,5 +26,3 @@ export type {
 } from './mock/sse-adapter'
 export { createDispatchAdapter } from './mock/dispatch-adapter'
 export type { DispatchConversation } from './mock/dispatch-adapter'
-export { createMastraAdapter } from './adapters/mastra-adapter'
-export type { MastraAdapterOptions } from './adapters/mastra-adapter'

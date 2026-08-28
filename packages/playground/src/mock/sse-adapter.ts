@@ -123,7 +123,7 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
 }
 
 /**
- * 解析 SSE 字节流为帧载荷序列（T 默认 StreamChunk；mastra-adapter 以 Mastra 原生 chunk 复用）。
+ * 解析 SSE 字节流为帧载荷序列（T 默认 StreamChunk）。
  * 帧 separator 为空行（\n\n），容忍 \r\n；只认 data: 行，其余（event:/id:/注释）忽略。
  */
 export async function* parseSseStream<
