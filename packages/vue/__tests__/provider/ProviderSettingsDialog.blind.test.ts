@@ -158,10 +158,10 @@ describe('ProviderSettingsDialog 盲测（spec §2.1）', () => {
     // Arrange
     const wrapper = mountDialog()
     const buttons = deleteButtons(wrapper)
-    // spec：已注册列表区每项一个删除按钮 → 数量等于 providers 数
-    expect(buttons).toHaveLength(twoProviders.length)
-    // Act：列表首项（providers[0]，id 'custom-1'）的删除按钮
-    await buttons[0].trigger('click')
+    // spec：已注册列表区每项两颗操作按钮（编辑 + 删除）→ 总数 = providers 数 × 2
+    expect(buttons).toHaveLength(twoProviders.length * 2)
+    // Act：列表首项（providers[0]，id 'custom-1'）的第二颗按钮即删除
+    await buttons[1].trigger('click')
     // Assert
     expect(wrapper.emitted('remove')).toEqual([['custom-1']])
   })

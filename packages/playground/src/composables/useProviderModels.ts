@@ -156,6 +156,40 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
     return (await res.json()) as ProviderOption
   }
 
+  /** PUT /api/providers/:id 原位更新（id 沿用），成功后联动替换持久化条目并刷新列表 */
+  async function updateProvider(
+    id: string,
+    payload: ProviderFormPayload,
+  ): Promise<ProviderOption> {
+    const res = await fetch(`${baseUrl}/api/providers/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) throw new Error(await httpErrorMessage(res))
+    const option = (await res.json()) as ProviderOption
+    // 持久化条目按「编辑前的注册项」三元组定位（providers 列表此时还是旧值）
+    const before = providers.value.find((p) => p.id === id)
+    if (before) {
+      const saved = readSavedProviders(storage)
+      const idx = saved.findIndex(
+        (s) =>
+          s.name === before.name &&
+          s.provider === before.provider &&
+          s.model === before.model,
+      )
+      if (idx !== -1) {
+        const rest = { ...payload } as SavedProvider
+        delete rest.persist
+        if (payload.persist !== false) saved[idx] = rest
+        else saved.splice(idx, 1)
+        writeSavedProviders(storage, saved)
+      }
+    }
+    await refresh()
+    return option
+  }
+
   /** DELETE /api/providers/:id 注销，成功后刷新两份列表并联动移除持久化配置 */
   async function removeProvider(id: string): Promise<void> {
     const res = await fetch(`${baseUrl}/api/providers/${id}`, {
@@ -214,6 +248,7 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
     selectedModelId,
     refresh,
     createProvider,
+    updateProvider,
     removeProvider,
     restoreSavedProviders,
     selectModel,

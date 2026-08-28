@@ -121,7 +121,7 @@ onMounted(refresh)
 - **`anthropic` 留空 baseURL 时，`create` 载荷省略 `baseURL` 键**（不是空字符串）——宿主/服务端无需处理空值归一化
 - **「记住此配置」勾选框**（默认勾选）：勾选状态以 `persist: boolean` 随 `create` 载荷上抛。组件自身仍不落任何存储——宿主据此决定是否把表单配置持久化（如存 localStorage，服务重启后重注册恢复）；取消勾选即一次性配置
 - 关闭方式有三种：Esc 键、点击遮罩空白处、右上角 ×，均通过 `update:open` 写回 `false`
-- 已注册列表每项展示 name / provider / model 与「删除」按钮，点击即发 `remove(id)` 事件（无二次确认弹层，按钮文案即确认语义）；组件不维护列表状态，增删后由宿主刷新 `providers`
+- 已注册列表每项展示 name / provider / model 与「编辑」「删除」两颗操作按钮：编辑进入表单编辑态（预填除 apiKey 外的字段，提交发 `update(id, payload)`，可取消回到新增模式）；删除发 `remove(id)`（无二次确认弹层，按钮文案即确认语义）；组件不维护列表状态，增删改后由宿主刷新 `providers`
 - 密钥安全：组件不持久化任何表单值（不写 storage、不发请求），`persist` 仅是勾选状态的透传；`create` 后表单不清空、弹层不自动关闭，关闭时机由宿主决定
 
 ## API
@@ -137,8 +137,10 @@ onMounted(refresh)
 
 | 事件名 | 参数 | 说明 |
 |--------|------|------|
-| create | `(payload: ProviderFormPayload)` | 校验通过后提交表单时触发，`apiKey` 在此刻交宿主 |
+| create | `(payload: ProviderFormPayload)` | 新增模式校验通过后提交表单时触发，`apiKey` 在此刻交宿主 |
+| update | `(id: string, payload: ProviderFormPayload)` | 编辑模式提交时触发：预填来自列表项「编辑」（apiKey 不回传须重填），宿主 PUT 原位更新 |
 | remove | `(id: string)` | 点击已注册项的删除按钮时触发 |
+| cancel-edit | — | 编辑模式点「取消编辑」时触发（组件已自行复位表单，宿主可不做处理） |
 | update:open | `(value: boolean)` | `v-model:open` 更新事件 |
 
 ### 类型

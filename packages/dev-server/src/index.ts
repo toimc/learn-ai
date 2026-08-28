@@ -4,7 +4,7 @@ import { readDevServerEnv } from './env'
 
 const env = readDevServerEnv()
 
-const app = await createDevApp(env)
+const app = await createDevApp(env, { providersPersist: true })
 const server = serve({ fetch: app.fetch, port: env.port }, (info) => {
   console.log(`[dev-server] listening on http://localhost:${info.port}`)
   console.log(

@@ -74,6 +74,9 @@ export default {
     modelPlaceholder: 'e.g. deepseek-chat / claude-sonnet-4-5',
     rememberLabel:
       'Remember this provider (stored in browser, auto-restored after server restart)',
+    edit: 'Edit',
+    submitEdit: 'Save changes',
+    cancelEdit: 'Cancel edit',
     submit: 'Register',
     remove: 'Delete',
     listTitle: 'Registered models',

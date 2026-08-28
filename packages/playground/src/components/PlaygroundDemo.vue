@@ -59,6 +59,7 @@ const {
   status: providerStatus,
   selectedModelId,
   createProvider,
+  updateProvider,
   removeProvider,
   restoreSavedProviders,
   selectModel,
@@ -492,6 +493,16 @@ async function pickBackend(id: PlaygroundBackendId) {
 async function onCreateProvider(payload: ProviderFormPayload) {
   try {
     await createProvider(payload)
+  } catch (err) {
+    notice.value = t('pg.providerSettings.actionFailed', {
+      message: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
+async function onUpdateProvider(id: string, payload: ProviderFormPayload) {
+  try {
+    await updateProvider(id, payload)
   } catch (err) {
     notice.value = t('pg.providerSettings.actionFailed', {
       message: err instanceof Error ? err.message : String(err),
@@ -1399,6 +1410,7 @@ watch(() => chat.messages.length, scrollToBottom)
       v-model:open="settingsOpen"
       :providers="dialogProviders"
       @create="onCreateProvider"
+      @update="onUpdateProvider"
       @remove="onRemoveProvider"
     />
   </div>

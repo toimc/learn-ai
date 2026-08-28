@@ -1,3 +1,5 @@
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { createMastraGateway } from '@toimc/server/mastra'
 import { ModelRegistry } from '@toimc/agents'
 import { buildAgentDefinitions } from './agents'
@@ -12,7 +14,10 @@ import { createProvidersRoutes } from './routes/providers'
  * 线协议与前端 sse-adapter 完全一致（导出供测试用 app.request() 直接调用，不监听端口）。
  * async：MASTRA_MODEL 存在时要等 createMastraModel（内部动态加载 @mastra/core）完成注册。
  */
-export async function createDevApp(env = readDevServerEnv()) {
+export async function createDevApp(
+  env = readDevServerEnv(),
+  options: { providersPersist?: boolean } = {},
+) {
   const conversations = createConversationsRoutes()
 
   const registry = new ModelRegistry()
@@ -29,7 +34,18 @@ export async function createDevApp(env = readDevServerEnv()) {
     description: '始终先输出思考过程',
   })
 
-  const providers = createProvidersRoutes(registry)
+  // 生产入口（index.ts）显式开启注册表落盘：重启恢复且 id 沿用（测试缺省隔离不落盘）。
+  // .temp 已在 .gitignore（apiKey 随配置落本地文件，仅重启恢复用）
+  let providersPersistPath: string | undefined
+  if (options.providersPersist) {
+    const dir = join(process.cwd(), '.temp')
+    mkdirSync(dir, { recursive: true })
+    providersPersistPath = join(dir, 'providers.json')
+  }
+  const providers = createProvidersRoutes(registry, {
+    persistPath: providersPersistPath,
+  })
+  if (providersPersistPath) await providers.restore()
 
   const { app } = await createMastraGateway({
     models: registry,

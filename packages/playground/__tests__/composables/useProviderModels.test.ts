@@ -346,3 +346,60 @@ describe('useProviderModels', () => {
     ).toEqual([saved[0]])
   })
 })
+
+describe('updateProvider', () => {
+  it('PUT 指定 id 并联动替换 localStorage 持久化条目', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'PUT')
+        return jsonResponse({
+          id: 'custom-1',
+          name: 'Renamed',
+          provider: 'openai-compat',
+          model: 'new-model',
+          baseURL: 'https://new.example/v1',
+        })
+      if (url.endsWith('/api/models')) return jsonResponse(MODELS_PAYLOAD)
+      if (url.endsWith('/api/providers')) return jsonResponse(PROVIDERS_PAYLOAD)
+      throw new Error(`unexpected fetch ${init?.method ?? 'GET'} ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const { storage } = memoryStorage()
+    storage.setItem(
+      'ai-chat-playground:saved-providers',
+      JSON.stringify([
+        {
+          name: 'DeepSeek',
+          provider: 'openai-compat',
+          baseURL: 'https://api.deepseek.com/v1',
+          apiKey: 'sk-old',
+          model: 'deepseek-chat',
+        },
+      ]),
+    )
+
+    const pm = useProviderModels({ storage })
+    await pm.refresh()
+    await pm.updateProvider('custom-1', {
+      name: 'Renamed',
+      provider: 'openai-compat',
+      baseURL: 'https://new.example/v1',
+      apiKey: 'sk-new',
+      model: 'new-model',
+      persist: true,
+    })
+
+    const put = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')
+    expect(put?.[0]).toBe('http://localhost:8787/api/providers/custom-1')
+    expect(
+      JSON.parse(storage.getItem('ai-chat-playground:saved-providers') ?? '[]'),
+    ).toEqual([
+      {
+        name: 'Renamed',
+        provider: 'openai-compat',
+        baseURL: 'https://new.example/v1',
+        apiKey: 'sk-new',
+        model: 'new-model',
+      },
+    ])
+  })
+})

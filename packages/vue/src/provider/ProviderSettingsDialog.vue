@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { aiChatI18n } from '../locales'
 import Button from '../shared/Button.vue'
 import ProviderSettingsForm from './ProviderSettingsForm.vue'
@@ -13,16 +13,34 @@ defineProps<{
 
 const emit = defineEmits<{
   create: [payload: ProviderFormPayload]
+  update: [id: string, payload: ProviderFormPayload]
   remove: [id: string]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
 
+/** 编辑目标（null = 新增模式）；提交或取消后复位 */
+const editing = ref<ProviderOption | null>(null)
+
 function onCreate(payload: ProviderFormPayload) {
   emit('create', payload)
 }
 
+function onUpdate(id: string, payload: ProviderFormPayload) {
+  editing.value = null
+  emit('update', id, payload)
+}
+
+function onCancelEdit() {
+  editing.value = null
+}
+
+function startEdit(item: ProviderOption) {
+  editing.value = item
+}
+
 function onRemove(id: string) {
+  if (editing.value?.id === id) editing.value = null
   emit('remove', id)
 }
 
@@ -76,7 +94,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         </header>
 
         <!-- 表单状态收进子组件：外层（含 Teleport）不随输入重渲染，避免整棵子树重建 -->
-        <ProviderSettingsForm @create="onCreate" />
+        <ProviderSettingsForm
+          :editing="editing"
+          @create="onCreate"
+          @update="onUpdate"
+          @cancel-edit="onCancelEdit"
+        />
 
         <section class="ai-chat-provider-dialog__list">
           <h3 class="ai-chat-provider-dialog__list-title">
@@ -103,14 +126,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
                   }}<template v-if="item.model"> · {{ item.model }}</template>
                 </span>
               </div>
-              <Button
-                class="ai-chat-provider-dialog__remove"
-                type="danger"
-                size="small"
-                @click="onRemove(item.id)"
-              >
-                {{ t('provider.remove') }}
-              </Button>
+              <div class="ai-chat-provider-dialog__item-actions">
+                <Button
+                  class="ai-chat-provider-dialog__edit"
+                  type="secondary"
+                  size="small"
+                  @click="startEdit(item)"
+                >
+                  {{ t('provider.edit') }}
+                </Button>
+                <Button
+                  class="ai-chat-provider-dialog__remove"
+                  type="danger"
+                  size="small"
+                  @click="onRemove(item.id)"
+                >
+                  {{ t('provider.remove') }}
+                </Button>
+              </div>
             </li>
           </ul>
         </section>
@@ -322,6 +355,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .ai-chat-provider-dialog__item-meta {
     font-size: 12px;
     color: var(--ai-chat-color-text-muted);
+  }
+
+  .ai-chat-provider-dialog__item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
   }
 }
 </style>

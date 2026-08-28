@@ -266,3 +266,66 @@ describe('ProviderSettingsDialog i18n', () => {
     expect(w.text()).toContain('No registered models yet')
   })
 })
+
+describe('ProviderSettingsDialog 编辑已注册 provider', () => {
+  const editTarget = {
+    id: 'custom-9',
+    name: 'My DeepSeek',
+    provider: 'openai-compat',
+    model: 'deepseek-chat',
+    baseURL: 'https://api.deepseek.com/v1',
+  }
+
+  it('列表项「编辑」进入编辑态：表单预填、apiKey 留空、按钮变保存修改', async () => {
+    const w = mountDialog({ providers: [editTarget] })
+    await w.get('.ai-chat-provider-dialog__edit').trigger('click')
+
+    expect((fieldInput(w, 'name').element as HTMLInputElement).value).toBe(
+      'My DeepSeek',
+    )
+    expect((fieldInput(w, 'apiKey').element as HTMLInputElement).value).toBe('')
+    expect(w.get('.ai-chat-provider-dialog__submit').text()).toContain(
+      '保存修改',
+    )
+    expect(w.find('.ai-chat-provider-dialog__cancel-edit').exists()).toBe(true)
+  })
+
+  it('编辑态填新 apiKey 提交：emit update 携带原 id 与完整载荷', async () => {
+    const w = mountDialog({ providers: [editTarget] })
+    await w.get('.ai-chat-provider-dialog__edit').trigger('click')
+    await fillField(w, 'apiKey', 'sk-new-456')
+
+    await w.get('.ai-chat-provider-dialog__submit').trigger('click')
+
+    const events = w.emitted('update')
+    expect(events).toHaveLength(1)
+    const [id, payload] = events![0] as [string, ProviderFormPayload]
+    expect(id).toBe('custom-9')
+    expect(payload).toEqual({
+      name: 'My DeepSeek',
+      provider: 'openai-compat',
+      baseURL: 'https://api.deepseek.com/v1',
+      apiKey: 'sk-new-456',
+      model: 'deepseek-chat',
+      persist: true,
+    })
+  })
+
+  it('取消编辑回到新增模式：表单清空且不再 emit update', async () => {
+    const w = mountDialog({ providers: [editTarget] })
+    await w.get('.ai-chat-provider-dialog__edit').trigger('click')
+    await w.get('.ai-chat-provider-dialog__cancel-edit').trigger('click')
+
+    expect((fieldInput(w, 'name').element as HTMLInputElement).value).toBe('')
+    expect(w.get('.ai-chat-provider-dialog__submit').text()).not.toContain(
+      '保存修改',
+    )
+    await fillField(w, 'name', 'X')
+    await fillField(w, 'apiKey', 'sk-x')
+    await fillField(w, 'model', 'm-x')
+    await w.get('.ai-chat-provider-dialog__preset--deepseek').trigger('click')
+    await w.get('.ai-chat-provider-dialog__submit').trigger('click')
+    expect(w.emitted('update')).toBeUndefined()
+    expect(w.emitted('create')).toHaveLength(1)
+  })
+})

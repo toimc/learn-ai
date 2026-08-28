@@ -4,12 +4,19 @@ import { aiChatI18n } from '../locales'
 import Button from '../shared/Button.vue'
 import Input from '../shared/Input.vue'
 import Radio from '../shared/Radio.vue'
-import type { ProviderFormPayload } from './types'
+import type { ProviderFormPayload, ProviderOption } from './types'
 
 const { t } = aiChatI18n.global
 
+const props = defineProps<{
+  /** 编辑目标（null/undefined = 新增模式）；进入即预填（apiKey 不回传须重填） */
+  editing?: ProviderOption | null
+}>()
+
 const emit = defineEmits<{
   create: [payload: ProviderFormPayload]
+  update: [id: string, payload: ProviderFormPayload]
+  'cancel-edit': []
 }>()
 
 type ProviderType = 'openai-compat' | 'anthropic'
@@ -88,6 +95,41 @@ function onProviderTypeChange() {
 // Radio 原语只更新 model 不抛 change，类型切换钩子改由 watch 承接
 watch(() => form.provider, onProviderTypeChange)
 
+/** 编辑目标 id（编辑模式的提交对账键）；由 props.editing 派生，null 即新增模式 */
+const editingId = computed(() => props.editing?.id ?? null)
+
+// 编辑目标切换：预填表单（apiKey 不在公开视图，留空必填重填）；退出编辑清回新增空白
+watch(
+  () => props.editing,
+  (target) => {
+    if (target) {
+      form.name = target.name
+      form.provider =
+        target.provider === 'anthropic' ? 'anthropic' : 'openai-compat'
+      form.baseURL = target.baseURL ?? ''
+      form.apiKey = ''
+      form.model = target.model ?? ''
+    } else {
+      form.name = ''
+      form.provider = 'openai-compat'
+      form.baseURL = ''
+      form.apiKey = ''
+      form.model = ''
+    }
+    Object.assign(touched, {
+      name: false,
+      baseURL: false,
+      apiKey: false,
+      model: false,
+    })
+  },
+  { immediate: true },
+)
+
+function cancelEdit() {
+  emit('cancel-edit')
+}
+
 function onPresetClick(preset: { url: string }, e: Event) {
   // Button 原语未设原生 type=button，阻止默认表单提交（等价旧 type="button"）
   e.preventDefault()
@@ -104,14 +146,16 @@ function onSubmit() {
   })
   if (!isValid.value) return
   const baseURL = form.baseURL.trim()
-  emit('create', {
+  const payload: ProviderFormPayload = {
     name: form.name.trim(),
     provider: form.provider,
     ...(baseURL ? { baseURL } : {}),
     apiKey: form.apiKey.trim(),
     model: form.model.trim(),
     persist: form.persist,
-  })
+  }
+  if (editingId.value) emit('update', editingId.value, payload)
+  else emit('create', payload)
 }
 </script>
 
@@ -257,11 +301,20 @@ function onSubmit() {
 
     <div class="ai-chat-provider-dialog__actions">
       <Button
+        v-if="editingId"
+        type="secondary"
+        size="small"
+        class="ai-chat-provider-dialog__cancel-edit"
+        @click="cancelEdit"
+      >
+        {{ t('provider.cancelEdit') }}
+      </Button>
+      <Button
         class="ai-chat-provider-dialog__submit"
         :disabled="!isValid"
         @click="onSubmit"
       >
-        {{ t('provider.submit') }}
+        {{ editingId ? t('provider.submitEdit') : t('provider.submit') }}
       </Button>
     </div>
   </form>

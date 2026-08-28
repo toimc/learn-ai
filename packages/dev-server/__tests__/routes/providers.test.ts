@@ -91,6 +91,7 @@ describe('POST /api/providers：正常注册', () => {
       name: 'DeepSeek',
       provider: 'openai-compat',
       model: 'deepseek-chat',
+      baseURL: 'https://api.deepseek.com/v1',
     })
     expect(vi.mocked(createMastraModel)).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -183,6 +184,7 @@ describe('GET /api/providers', () => {
           name: 'DeepSeek',
           provider: 'openai-compat',
           model: 'deepseek-chat',
+          baseURL: 'https://api.deepseek.com/v1',
         },
       ],
     })
@@ -337,5 +339,98 @@ describe('POST /api/providers：校验失败（400）', () => {
     expect(res.status).toBe(400)
     const body = (await res.json()) as { error?: unknown }
     expect(typeof body.error).toBe('string')
+  })
+})
+
+describe('PUT /api/providers/:id 与注册表落盘恢复', () => {
+  it('PUT 原位更新：id 不变、内容更新、baseURL 回传到公开视图', async () => {
+    const app = await createDevApp()
+    const created = (await (
+      await postProvider(app, {
+        name: 'Old',
+        provider: 'openai-compat',
+        baseURL: 'https://old.example/v1',
+        apiKey: 'sk-1',
+        model: 'm-old',
+      })
+    ).json()) as { id: string }
+
+    const res = await app.request(`/api/providers/${created.id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: 'New',
+        provider: 'openai-compat',
+        baseURL: 'https://new.example/v1',
+        apiKey: 'sk-2',
+        model: 'm-new',
+      }),
+    })
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({
+      id: created.id,
+      name: 'New',
+      provider: 'openai-compat',
+      model: 'm-new',
+      baseURL: 'https://new.example/v1',
+    })
+    const { providers } = (await (
+      await app.request('/api/providers')
+    ).json()) as { providers: { id: string; name: string }[] }
+    expect(providers.find((p) => p.id === created.id)?.name).toBe('New')
+    // PUT 收到的配置进 createMastraModel（更新后的）
+    expect(vi.mocked(createMastraModel)).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        id: created.id,
+        name: 'New',
+        model: expect.objectContaining({ apiKey: 'sk-2' }),
+      }),
+    )
+  })
+
+  it('落盘恢复：persistPath 下注册经重启（新建 registry+routes）后 restore 恢复且 id 沿用', async () => {
+    const { mkdirSync, rmSync, readFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { tmpdir } = await import('node:os')
+    const dir = join(tmpdir(), `providers-restore-${Date.now()}`)
+    mkdirSync(dir, { recursive: true })
+    const persistPath = join(dir, 'providers.json')
+
+    const { ModelRegistry } = await import('@toimc/agents')
+    const { createProvidersRoutes } = await import('../../src/routes/providers')
+
+    // 第一次「进程」：注册并落盘
+    const r1 = new ModelRegistry()
+    const s1 = createProvidersRoutes(r1, { persistPath })
+    const post1 = await s1.app.request('/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Persisted',
+        provider: 'openai-compat',
+        baseURL: 'https://p.example/v1',
+        apiKey: 'sk-p',
+        model: 'm-p',
+      }),
+    })
+    expect(post1.status).toBe(201)
+    expect(JSON.parse(readFileSync(persistPath, 'utf8'))).toEqual([
+      expect.objectContaining({ name: 'Persisted', apiKey: 'sk-p' }),
+    ])
+
+    // 第二次「进程」（同盘）：恢复后列表/registry 均在，id 沿用 custom-1
+    const r2 = new ModelRegistry()
+    const s2 = createProvidersRoutes(r2, { persistPath })
+    await s2.restore()
+    const list = (await (await s2.app.request('/')).json()) as {
+      providers: { id: string; name: string }[]
+    }
+    expect(list.providers).toEqual([
+      expect.objectContaining({ name: 'Persisted' }),
+    ])
+    expect(r2.get(list.providers[0].id)).toBeTruthy()
+
+    rmSync(dir, { recursive: true, force: true })
   })
 })
