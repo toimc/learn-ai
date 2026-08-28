@@ -17,6 +17,9 @@ export default defineConfig({
       '@toimc/agents': fileURLToPath(
         new URL('./packages/agents/src/index.ts', import.meta.url),
       ),
+      '@toimc/server/mastra': fileURLToPath(
+        new URL('./packages/server/src/mastra/index.ts', import.meta.url),
+      ),
       '@toimc/server': fileURLToPath(
         new URL('./packages/server/src/index.ts', import.meta.url),
       ),

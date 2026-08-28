@@ -308,6 +308,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@mastra/core':
+        specifier: ^1.60.0
+        version: 1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3)
       '@toimc/agents':
         specifier: workspace:*
         version: link:../agents
