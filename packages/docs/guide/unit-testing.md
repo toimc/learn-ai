@@ -14,7 +14,7 @@
 
 边界场景的重点是**分界值的两侧都要测**：ThinkingBlock 的时长格式化在 10 秒处切换规则（`9500ms → '9.5'`、`10500ms → '11'`），只测一侧发现不了 `Math.round` 与 `toFixed(1)` 的切换 bug。异常场景必须有显式断言，不允许只期望「不崩」——中断测试要断言状态回到 idle 且 `error` 为 null，剪贴板失败要断言按钮**没有**进入 `is-copied` 类。
 
-AAA 结构示例（`useScrollAnchor` 的阈值边界用例，`packages/vue/src/composables/useScrollAnchor.test.ts`）：
+AAA 结构示例（`useScrollAnchor` 的阈值边界用例，`packages/vue/__tests__/composables/useScrollAnchor.test.ts`）：
 
 ```ts
 it('边界：距底恰好等于阈值 50 判定为在底部（< 而非 <=）', () => {
@@ -38,7 +38,7 @@ it('边界：距底恰好等于阈值 50 判定为在底部（< 而非 <=）', (
 tool-call 目录的五个组件共享一个 inject 上下文（`ToolCall` 外壳 `provide('toolCallData', data)`，Header / Input / Output 消费）。测子组件不需要拼装真实外壳，直接在 `mount` 选项里 provide：
 
 ```ts
-// packages/vue/src/tool-call/ToolCall.test.ts
+// packages/vue/__tests__/tool-call/ToolCall.test.ts
 function mountInsideShell(component: typeof ToolCallHeader, data: ToolCallInfo) {
   return mount(component, {
     global: { provide: { toolCallData: data } },
@@ -63,7 +63,7 @@ it.each([
 `useScrollAnchor` 的核心逻辑读 `scrollTop / scrollHeight / clientHeight` 并依赖 `ResizeObserver` 与 `requestAnimationFrame`——jsdom 里前三个永远是 0，根级 `tests/setup.ts` 的 ResizeObserver polyfill 是空实现（驱动不了回调）。解法：`Object.defineProperty` 直接控滚动指标，用一个可手动 `trigger()` 的 mock 类替代 ResizeObserver：
 
 ```ts
-// packages/vue/src/composables/useScrollAnchor.test.ts
+// packages/vue/__tests__/composables/useScrollAnchor.test.ts
 function makeScrollEl(metrics: {
   scrollTop: number
   scrollHeight: number

@@ -28,15 +28,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    include: ['packages/*/src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['packages/*/__tests__/**/*.{test,spec}.{ts,tsx}'],
     setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['packages/markdown/src/**'],
-      exclude: [
-        'packages/markdown/src/**/*.test.ts',
-        'packages/markdown/src/types/**',
-      ],
+      exclude: ['packages/markdown/src/types/**'],
       thresholds: {
         statements: 80,
         branches: 75,

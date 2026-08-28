@@ -9,5 +9,5 @@
       "@toimc/markdown": ["../markdown/src"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "__tests__/**/*.ts"]
 }
