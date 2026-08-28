@@ -60,10 +60,13 @@ export async function createMastraGateway(
       registry.registerAdapter(def.id, created.adapter, created.info)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      throw new Error(
+      // base tsconfig target 为 ES2020，Error(msg, { cause }) 构造重载（ES2022）过不了
+      // vue-tsc；属性赋值保留 cause（满足 preserve-caught-error）且类型兼容
+      const wrapped = new Error(
         `mastra agent「${def.id}」注册失败：${message}（检查 @mastra/core 是否安装与模型配置）`,
-        { cause: error },
       )
+      ;(wrapped as Error & { cause?: unknown }).cause = error
+      throw wrapped
     }
   }
 
