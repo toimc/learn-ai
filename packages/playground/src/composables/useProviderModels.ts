@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { ProviderFormPayload, ProviderOption } from '@toimc/vue'
+import { httpErrorMessage } from '../mock/sse-adapter'
 
 /** GET /api/models 的公开视图（与 @toimc/agents ModelPublicInfo 对齐，脱敏无密钥） */
 export interface ProviderModelInfo {
@@ -53,7 +54,7 @@ function safeSet(
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(await httpErrorMessage(res))
   return (await res.json()) as T
 }
 
@@ -81,12 +82,20 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
       models.value = modelsRes.models
       providers.value = providersRes.providers
       status.value = 'online'
+      // 服务端 registry 是进程内存态（重启归零），浏览器持久化的选中 id 可能已成幽灵值；
+      // 失效即回退默认，避免把 unknown model 发给服务端换来 HTTP 400
+      if (
+        selectedModelId.value &&
+        !models.value.some((m) => m.id === selectedModelId.value)
+      ) {
+        selectModel(undefined)
+      }
     } catch {
       status.value = 'offline'
     }
   }
 
-  /** POST /api/providers 注册运行时模型，成功后刷新两份列表 */
+  /** POST /api/providers 注册运行时模型，成功后刷新两份列表并自动选中（添加即使用） */
   async function createProvider(
     payload: ProviderFormPayload,
   ): Promise<ProviderOption> {
@@ -95,9 +104,10 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
+    if (!res.ok) throw new Error(await httpErrorMessage(res))
     const option = (await res.json()) as ProviderOption
     await refresh()
+    selectModel(option.id)
     return option
   }
 
@@ -106,7 +116,7 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
     const res = await fetch(`${baseUrl}/api/providers/${id}`, {
       method: 'DELETE',
     })
-    if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
+    if (!res.ok) throw new Error(await httpErrorMessage(res))
     await refresh()
   }
 

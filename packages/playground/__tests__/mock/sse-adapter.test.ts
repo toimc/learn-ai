@@ -237,4 +237,26 @@ describe('createSseAdapter', () => {
         .next(),
     ).rejects.toThrow('HTTP 500')
   })
+
+  it('HTTP 4xx 带上服务端 error 详情（unknown model 可直接定位）', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: 'unknown model: custom-1' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    )
+    const adapter = createSseAdapter()
+    await expect(
+      adapter
+        .sendMessage({
+          messages: [
+            { id: 'a', role: 'user', content: 'x', createdAt: new Date() },
+          ],
+        })
+        .next(),
+    ).rejects.toThrow('HTTP 400: unknown model: custom-1')
+  })
 })

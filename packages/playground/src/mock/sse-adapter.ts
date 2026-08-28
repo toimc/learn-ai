@@ -15,6 +15,17 @@ export interface SseAdapterOptions {
 
 const DEFAULT_BASE_URL = 'http://localhost:8787'
 
+/** 非 2xx 时拼上服务端 {error} 详情（如 unknown model: custom-1），无详情则只报状态码 */
+export async function httpErrorMessage(res: Response): Promise<string> {
+  const detail = await res
+    .json()
+    .then((b) => (b && typeof b.error === 'string' ? b.error : ''))
+    .catch(() => '')
+  return detail
+    ? `dev-server HTTP ${res.status}: ${detail}`
+    : `dev-server HTTP ${res.status}`
+}
+
 /** 与 @toimc/dev-server 的线格式对应（Date 序列化为 ISO 字符串） */
 export interface ConversationSummary {
   id: string
@@ -35,7 +46,7 @@ export interface ConversationMessageDTO {
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(await httpErrorMessage(res))
   return (await res.json()) as T
 }
 
@@ -62,7 +73,7 @@ export async function createConversation(
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({}),
   })
-  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(await httpErrorMessage(res))
   return (await res.json()) as ConversationSummary
 }
 
@@ -111,7 +122,7 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
       }
 
       if (!response.ok) {
-        throw new Error(`dev-server HTTP ${response.status}`)
+        throw new Error(await httpErrorMessage(response))
       }
       if (!response.body) {
         throw new Error('dev-server response has no body')

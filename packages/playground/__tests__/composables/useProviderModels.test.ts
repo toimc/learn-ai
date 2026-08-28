@@ -109,6 +109,7 @@ describe('useProviderModels', () => {
 
     const pm = useProviderModels({ storage })
     await pm.refresh()
+    // createProvider 成功即自动选中 custom-2（写入一次），再手动切换到 custom-1
     await pm.createProvider(payload)
     pm.selectModel('custom-1')
 
@@ -117,7 +118,7 @@ describe('useProviderModels', () => {
     expect(writes.length).toBeGreaterThan(0)
     for (const w of writes) {
       expect(w.key).toBe(SELECTED_MODEL_STORAGE_KEY)
-      expect(w.value).toBe('custom-1')
+      expect(['custom-2', 'custom-1']).toContain(w.value)
     }
     expect(JSON.stringify(writes)).not.toContain('sk-test-secret')
 
@@ -219,5 +220,29 @@ describe('useProviderModels', () => {
 
     const pm = useProviderModels({ storage })
     await expect(pm.createProvider(payload)).rejects.toThrow('HTTP 400')
+  })
+
+  it('refresh 后发现选中 id 已失效（服务端重启/删除）时自动回退默认', async () => {
+    vi.stubGlobal('fetch', stubOnlineGets())
+    const { storage } = memoryStorage()
+    // 服务端 registry 是进程内存态：重启后 custom-1 消失，浏览器持久化的旧 id 成为幽灵值
+    storage.setItem(SELECTED_MODEL_STORAGE_KEY, 'ghost-9')
+
+    const pm = useProviderModels({ storage })
+    await pm.refresh()
+
+    expect(pm.selectedModelId.value).toBeUndefined()
+    expect(storage.getItem(SELECTED_MODEL_STORAGE_KEY)).toBeNull()
+  })
+
+  it('createProvider 成功后自动选中新注册的模型', async () => {
+    vi.stubGlobal('fetch', stubOnlineGets())
+    const { storage } = memoryStorage()
+
+    const pm = useProviderModels({ storage })
+    await pm.createProvider(payload)
+
+    expect(pm.selectedModelId.value).toBe('custom-2')
+    expect(storage.getItem(SELECTED_MODEL_STORAGE_KEY)).toBe('custom-2')
   })
 })
