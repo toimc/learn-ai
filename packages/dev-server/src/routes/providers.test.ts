@@ -1,12 +1,13 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { createMastraModel } from '@toimc/agents/mastra'
-import { createMockApp } from '../app'
-import { getTimeTool, getWeatherTool } from '../mastra/tools'
+import { createDevApp } from '../app'
+import { getTimeTool } from '../tools/get-time'
+import { getWeatherTool } from '../tools/get-weather'
 
 /**
  * 运行时 Provider 路由测试。
- * createMastraModel / LibSQLStore / Memory / Mastra 实例全部打桩
- * （对齐 mastra/register.test.ts 模式，避免真实构造 Agent 与 SQLite 落盘）。
+ * createMastraModel / LibSQLStore / Memory 全部打桩
+ * （避免真实构造 Agent 与 SQLite 落盘）。
  * 注意：custom-{n} 为模块级递增计数（进程语义），文件内按用例顺序锚定字面量。
  */
 const fakes = vi.hoisted(() => {
@@ -44,13 +45,7 @@ vi.mock('@mastra/memory', () => ({
   }),
 }))
 
-// app.ts 的 telemetry 接线目标；mock 以避免真实构造 Mastra（OpenTelemetry 全局副作用）
-vi.mock('../mastra/index', () => ({
-  mastraInstance: null,
-  attachMastraInstance: vi.fn(),
-}))
-
-type MockApp = Awaited<ReturnType<typeof createMockApp>>
+type MockApp = Awaited<ReturnType<typeof createDevApp>>
 
 function postProvider(app: MockApp, body: unknown) {
   return app.request('/api/providers', {
@@ -80,7 +75,7 @@ afterEach(() => {
 
 describe('POST /api/providers：正常注册', () => {
   it('openai-compat：201 返回 ProviderOption，createMastraModel 收到含 apiKey 的端点组装与工具/记忆，id 出现在 /api/models', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'DeepSeek',
@@ -115,7 +110,7 @@ describe('POST /api/providers：正常注册', () => {
   })
 
   it('anthropic：model 组装为 anthropic/ 前缀字符串，注册前注入 ANTHROPIC_API_KEY', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'Claude',
@@ -140,7 +135,7 @@ describe('POST /api/providers：正常注册', () => {
 
 describe('GET /api/providers', () => {
   it('仅返回运行时注册项，响应全文不含 apiKey 字样与密钥值', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
     const registered = await postProvider(app, {
       name: 'DeepSeek',
       provider: 'openai-compat',
@@ -169,7 +164,7 @@ describe('GET /api/providers', () => {
   })
 
   it('未注册任何 provider 时返回空列表', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
     const res = await app.request('/api/providers')
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ providers: [] })
@@ -178,7 +173,7 @@ describe('GET /api/providers', () => {
 
 describe('DELETE /api/providers/:id', () => {
   it('删除已注册项：200 { ok: true }，GET 列表与 /api/models 同步移除', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
     const registered = await postProvider(app, {
       name: 'DeepSeek',
       provider: 'openai-compat',
@@ -201,7 +196,7 @@ describe('DELETE /api/providers/:id', () => {
   })
 
   it('不存在的 id 返回 404 且带 error 字段', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
     const res = await app.request('/api/providers/custom-404', {
       method: 'DELETE',
     })
@@ -214,7 +209,7 @@ describe('DELETE /api/providers/:id', () => {
 
 describe('POST /api/providers：校验失败（400）', () => {
   it('缺 apiKey 返回 400 且不触发注册', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'DeepSeek',
@@ -230,7 +225,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('apiKey 为纯空白同样拒绝', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'DeepSeek',
@@ -245,7 +240,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('缺 model 返回 400', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'DeepSeek',
@@ -259,7 +254,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('openai-compat 缺 baseURL 返回 400', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'DeepSeek',
@@ -275,7 +270,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('name 为纯空白返回 400', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: '  ',
@@ -290,7 +285,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('未知 provider 返回 400（fail-closed，仅接受 openai-compat / anthropic）', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await postProvider(app, {
       name: 'X',
@@ -306,7 +301,7 @@ describe('POST /api/providers：校验失败（400）', () => {
   })
 
   it('body 非 JSON（解析失败）按缺字段处理返回 400', async () => {
-    const app = await createMockApp()
+    const app = await createDevApp()
 
     const res = await app.request('/api/providers', {
       method: 'POST',

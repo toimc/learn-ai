@@ -1,11 +1,14 @@
 {
-  "name": "@toimc/mock-server",
+  "name": "@toimc/dev-server",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "studio": "mastra studio",
+    "build": "mastra build",
+    "start:mastra": "mastra start",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "mastra": "^1.26.0",
     "tsx": "^4.20.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"

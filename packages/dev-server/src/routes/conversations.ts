@@ -1,11 +1,11 @@
 import { Hono } from 'hono'
-import { createConversationStore, nextId } from '../data/conversations'
+import { createConversationStore, nextId } from '../mock/data/conversations'
 import type {
   ChatMessageDTO,
   ConversationDetail,
   ConversationSummary,
   CreateConversationBody,
-} from '../types'
+} from '../mock/types'
 
 function toSummary(conv: ConversationDetail): ConversationSummary {
   const { messages, ...summary } = conv

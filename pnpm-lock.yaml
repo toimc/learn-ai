@@ -118,6 +118,52 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@25.9.1)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.23.12)(yaml@2.9.0))
 
+  packages/dev-server:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.17(hono@4.13.3)
+      '@mastra/core':
+        specifier: ^1.60.0
+        version: 1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3)
+      '@mastra/libsql':
+        specifier: ^1.21.0
+        version: 1.21.0(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))
+      '@mastra/memory':
+        specifier: ^1.27.0
+        version: 1.27.0(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))(supports-color@10.2.2)
+      '@toimc/agents':
+        specifier: workspace:*
+        version: link:../agents
+      '@toimc/core':
+        specifier: workspace:*
+        version: link:../core
+      '@toimc/server':
+        specifier: workspace:*
+        version: link:../server
+      hono:
+        specifier: ^4.10.0
+        version: 4.13.3
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.13.3
+      mastra:
+        specifier: ^1.26.0
+        version: 1.26.0(@hono/node-server@1.19.17(hono@4.13.3))(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))(rxjs@7.8.2)(supports-color@10.2.2)(typescript@6.0.3)(zod@4.4.3)
+      tsx:
+        specifier: ^4.20.0
+        version: 4.23.12
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.23.12)(yaml@2.9.0))
+
   packages/docs:
     dependencies:
       '@toimc/core':
@@ -238,49 +284,6 @@ importers:
       mastra:
         specifier: ^1.26.0
         version: 1.26.0(@hono/node-server@1.19.17(hono@4.13.3))(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))(rxjs@7.8.2)(supports-color@10.2.2)(typescript@6.0.3)(zod@4.4.3)
-      tsx:
-        specifier: ^4.20.0
-        version: 4.23.12
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.23.12)(yaml@2.9.0))
-
-  packages/mock-server:
-    dependencies:
-      '@hono/node-server':
-        specifier: ^1.19.5
-        version: 1.19.17(hono@4.13.3)
-      '@mastra/core':
-        specifier: ^1.60.0
-        version: 1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3)
-      '@mastra/libsql':
-        specifier: ^1.21.0
-        version: 1.21.0(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))
-      '@mastra/memory':
-        specifier: ^1.27.0
-        version: 1.27.0(@mastra/core@1.60.0(rxjs@7.8.2)(supports-color@10.2.2)(zod@4.4.3))(supports-color@10.2.2)
-      '@toimc/agents':
-        specifier: workspace:*
-        version: link:../agents
-      '@toimc/core':
-        specifier: workspace:*
-        version: link:../core
-      '@toimc/server':
-        specifier: workspace:*
-        version: link:../server
-      hono:
-        specifier: ^4.10.0
-        version: 4.13.3
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@types/node':
-        specifier: ^24.10.1
-        version: 24.13.3
       tsx:
         specifier: ^4.20.0
         version: 4.23.12

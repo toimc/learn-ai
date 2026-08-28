@@ -1,19 +1,18 @@
-import { createChatGateway } from '@toimc/server'
+import { createMastraGateway } from '@toimc/server/mastra'
 import { ModelRegistry } from '@toimc/agents'
-import type { Agent } from '@mastra/core/agent'
-import { createMockAdapter } from './mock-adapter'
+import { buildAgentDefinitions } from './agents'
+import { readDevServerEnv } from './env'
+import { createMockAdapter } from './mock/mock-adapter'
+import { openApiSpec } from './openapi'
 import { createConversationsRoutes } from './routes/conversations'
 import { createProvidersRoutes } from './routes/providers'
-import { openApiSpec } from './openapi'
-import { readMastraEnv, registerMastraAgent } from './mastra/register'
-import { attachMastraInstance } from './mastra/index'
 
 /**
- * 组装 mock 演示服务：@toimc/server 网关 + mock 剧本适配器 + 会话演示路由。
+ * 组装 dev 演示服务：@toimc/server/mastra 网关 + mock 剧本 + mastra agents（env 门控）。
  * 线协议与前端 sse-adapter 完全一致（导出供测试用 app.request() 直接调用，不监听端口）。
  * async：MASTRA_MODEL 存在时要等 createMastraModel（内部动态加载 @mastra/core）完成注册。
  */
-export async function createMockApp() {
+export async function createDevApp(env = readDevServerEnv()) {
   const conversations = createConversationsRoutes()
 
   const registry = new ModelRegistry()
@@ -30,18 +29,12 @@ export async function createMockApp() {
     description: '始终先输出思考过程',
   })
 
-  // MASTRA_MODEL 存在时注册 Mastra Agent；缺省则行为与纯 mock 完全一致
-  const mastraEnv = readMastraEnv(process.env)
-  let mastraAgent: Awaited<ReturnType<typeof registerMastraAgent>> | undefined
-  if (mastraEnv) {
-    mastraAgent = await registerMastraAgent(registry, mastraEnv)
-  }
-
-  // 运行时 Provider 注册路由：POST 注册的真实模型进入同一 registry（GET /api/models 可见）
   const providers = createProvidersRoutes(registry)
 
-  const app = createChatGateway({
+  const { app } = await createMastraGateway({
     models: registry,
+    agents: env.mastra ? buildAgentDefinitions(env.mastra) : [],
+    ...(env.token ? { auth: { tokens: [env.token] } } : {}),
     chat: {
       // 流结束后把这一轮对话写回服务端会话历史（切走再切回仍在）
       onComplete(result) {
@@ -60,13 +53,7 @@ export async function createMockApp() {
   app.route('/providers', providers.app)
   app.get('/openapi.json', (c) => c.json(openApiSpec))
 
-  // telemetry=true 时装配 Mastra 实例（npx mastra dev 起 Studio 的入口）
-  if (mastraAgent?.agent && process.env.MASTRA_TELEMETRY === 'true') {
-    // 上游 MastraModel.agent 类型声明为 unknown，实现固定为 new Agent(...)，收窄有依据
-    attachMastraInstance({ 'mastra-agent': mastraAgent.agent as Agent })
-  }
-
   return app
 }
 
-export type MockApp = Awaited<ReturnType<typeof createMockApp>>
+export type DevApp = Awaited<ReturnType<typeof createDevApp>>
