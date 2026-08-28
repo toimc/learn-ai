@@ -21,8 +21,8 @@ vi.mock('@toimc/agents/mastra', () => ({
   createMastraModel: fakes.created,
 }))
 
-import { createMastraGateway } from './index'
-import type { MastraAgentDefinition } from './index'
+import { createMastraGateway } from '../../src/mastra/index'
+import type { MastraAgentDefinition } from '../../src/mastra/index'
 
 const chatAgent: MastraAgentDefinition = {
   id: 'chat-agent',
