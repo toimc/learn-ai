@@ -119,9 +119,10 @@ onMounted(refresh)
 
 - **弹层经 `<Teleport to="body">` 渲染**，脱离宿主 DOM 层级；组件测试需要 `global: { stubs: { teleport: true } }` 让内容落回 wrapper 子树再断言
 - **`anthropic` 留空 baseURL 时，`create` 载荷省略 `baseURL` 键**（不是空字符串）——宿主/服务端无需处理空值归一化
+- **「记住此配置」勾选框**（默认勾选）：勾选状态以 `persist: boolean` 随 `create` 载荷上抛。组件自身仍不落任何存储——宿主据此决定是否把表单配置持久化（如存 localStorage，服务重启后重注册恢复）；取消勾选即一次性配置
 - 关闭方式有三种：Esc 键、点击遮罩空白处、右上角 ×，均通过 `update:open` 写回 `false`
 - 已注册列表每项展示 name / provider / model 与「删除」按钮，点击即发 `remove(id)` 事件（无二次确认弹层，按钮文案即确认语义）；组件不维护列表状态，增删后由宿主刷新 `providers`
-- 密钥安全：组件不持久化任何表单值（不写 storage、不发请求）；`create` 后表单不清空、弹层不自动关闭，关闭时机由宿主决定
+- 密钥安全：组件不持久化任何表单值（不写 storage、不发请求），`persist` 仅是勾选状态的透传；`create` 后表单不清空、弹层不自动关闭，关闭时机由宿主决定
 
 ## API
 
@@ -159,6 +160,8 @@ interface ProviderFormPayload {
   baseURL?: string
   apiKey: string
   model: string
+  /** 「记住配置」勾选状态：宿主据此决定是否持久化（组件自身不落任何存储） */
+  persist?: boolean
 }
 ```
 

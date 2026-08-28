@@ -14,4 +14,6 @@ export interface ProviderFormPayload {
   baseURL?: string
   apiKey: string
   model: string
+  /** 「记住配置」勾选状态：宿主据此决定是否持久化（组件自身不落任何存储） */
+  persist?: boolean
 }

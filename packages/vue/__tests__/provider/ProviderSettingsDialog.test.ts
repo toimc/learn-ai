@@ -122,7 +122,41 @@ describe('ProviderSettingsDialog 表单提交', () => {
       baseURL: 'https://api.deepseek.com/v1',
       apiKey: 'sk-test-123',
       model: 'deepseek-chat',
+      persist: true,
     })
+  })
+
+  it('默认勾选「记住配置」：载荷带 persist: true', async () => {
+    const w = mountDialog()
+    await w.get('.ai-chat-provider-dialog__preset--deepseek').trigger('click')
+    await fillField(w, 'name', 'My DeepSeek')
+    await fillField(w, 'apiKey', 'sk-test-123')
+    await fillField(w, 'model', 'deepseek-chat')
+    expect(
+      (
+        w.get('.ai-chat-provider-dialog__remember-input')
+          .element as HTMLInputElement
+      ).checked,
+    ).toBe(true)
+    await w.get('.ai-chat-provider-dialog__submit').trigger('click')
+
+    expect((w.emitted('create')![0][0] as ProviderFormPayload).persist).toBe(
+      true,
+    )
+  })
+
+  it('取消「记住配置」后提交：载荷 persist: false（宿主不落 localStorage）', async () => {
+    const w = mountDialog()
+    await w.get('.ai-chat-provider-dialog__preset--deepseek').trigger('click')
+    await fillField(w, 'name', 'My DeepSeek')
+    await fillField(w, 'apiKey', 'sk-test-123')
+    await fillField(w, 'model', 'deepseek-chat')
+    await w.get('.ai-chat-provider-dialog__remember-input').setValue(false)
+    await w.get('.ai-chat-provider-dialog__submit').trigger('click')
+
+    expect((w.emitted('create')![0][0] as ProviderFormPayload).persist).toBe(
+      false,
+    )
   })
 
   it('anthropic 且 baseURL 留空时载荷不含 baseURL', async () => {
@@ -139,6 +173,7 @@ describe('ProviderSettingsDialog 表单提交', () => {
       provider: 'anthropic',
       apiKey: 'sk-ant-1',
       model: 'claude-sonnet-4-5',
+      persist: true,
     })
     expect(payload.baseURL).toBeUndefined()
   })

@@ -72,6 +72,8 @@ export default {
     apiKeyPlaceholder: 'sk-...',
     modelLabel: 'Model',
     modelPlaceholder: 'e.g. deepseek-chat / claude-sonnet-4-5',
+    rememberLabel:
+      'Remember this provider (stored in browser, auto-restored after server restart)',
     submit: 'Register',
     remove: 'Delete',
     listTitle: 'Registered models',

@@ -249,6 +249,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     justify-content: flex-end;
   }
 
+  .ai-chat-provider-dialog__remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--ai-chat-color-text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .ai-chat-provider-dialog__remember-input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--ai-chat-color-accent);
+    cursor: pointer;
+  }
+
   .ai-chat-provider-dialog__list {
     display: flex;
     flex-direction: column;

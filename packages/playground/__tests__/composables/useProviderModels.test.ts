@@ -114,13 +114,16 @@ describe('useProviderModels', () => {
     pm.selectModel('custom-1')
 
     expect(storage.getItem(SELECTED_MODEL_STORAGE_KEY)).toBe('custom-1')
-    // 全部 storage 写入值均为纯模型 id，不包含任何密钥痕迹
-    expect(writes.length).toBeGreaterThan(0)
-    for (const w of writes) {
-      expect(w.key).toBe(SELECTED_MODEL_STORAGE_KEY)
+    // 模型选择的全部写入值均为纯模型 id，不包含任何密钥痕迹
+    // （saved-providers 键是「记住配置」功能的独立通道，密钥安全性由其专属用例覆盖）
+    const modelWrites = writes.filter(
+      (w) => w.key === SELECTED_MODEL_STORAGE_KEY,
+    )
+    expect(modelWrites.length).toBeGreaterThan(0)
+    for (const w of modelWrites) {
       expect(['custom-2', 'custom-1']).toContain(w.value)
     }
-    expect(JSON.stringify(writes)).not.toContain('sk-test-secret')
+    expect(JSON.stringify(modelWrites)).not.toContain('sk-test-secret')
 
     // 取消选择清除持久化
     pm.selectModel(undefined)
@@ -244,5 +247,102 @@ describe('useProviderModels', () => {
 
     expect(pm.selectedModelId.value).toBe('custom-2')
     expect(storage.getItem(SELECTED_MODEL_STORAGE_KEY)).toBe('custom-2')
+  })
+
+  it('persist 未显式为 false 时表单配置（含 apiKey）追加进 saved-providers 存储', async () => {
+    vi.stubGlobal('fetch', stubOnlineGets())
+    const { storage } = memoryStorage()
+
+    const pm = useProviderModels({ storage })
+    await pm.createProvider({ ...payload, persist: true })
+    await pm.createProvider({ ...payload, name: 'One-off', persist: false })
+
+    const saved = JSON.parse(
+      storage.getItem('ai-chat-playground:saved-providers') ?? '[]',
+    )
+    expect(saved).toEqual([
+      {
+        name: 'Kimi',
+        provider: 'openai-compat',
+        baseURL: 'https://api.moonshot.cn/v1',
+        apiKey: 'sk-test-secret',
+        model: 'moonshot-v1-8k',
+      },
+    ])
+  })
+
+  it('removeProvider 删除成功后按 name/provider/model 匹配移除存储条目', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'DELETE') return jsonResponse({ ok: true })
+      if (url.endsWith('/api/models')) return jsonResponse(MODELS_PAYLOAD)
+      if (url.endsWith('/api/providers')) return jsonResponse(PROVIDERS_PAYLOAD)
+      throw new Error(`unexpected fetch ${init?.method ?? 'GET'} ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const { storage } = memoryStorage()
+    // 预置条目与 PROVIDERS_PAYLOAD 的 custom-1（DeepSeek）三元组一致，删除即联动移除
+    storage.setItem(
+      'ai-chat-playground:saved-providers',
+      JSON.stringify([
+        {
+          name: 'DeepSeek',
+          provider: 'openai-compat',
+          baseURL: 'https://api.deepseek.com/v1',
+          apiKey: 'sk-test-secret',
+          model: 'deepseek-chat',
+        },
+      ]),
+    )
+
+    const pm = useProviderModels({ storage })
+    await pm.refresh()
+    await pm.removeProvider('custom-1')
+
+    expect(
+      JSON.parse(storage.getItem('ai-chat-playground:saved-providers') ?? '[]'),
+    ).toEqual([])
+  })
+
+  it('restoreSavedProviders 逐条静默重注册，失败条目剔除、成功条目保留', async () => {
+    const saved = [
+      {
+        name: 'Kimi',
+        provider: 'openai-compat',
+        baseURL: 'https://api.moonshot.cn/v1',
+        apiKey: 'sk-1',
+        model: 'moonshot-v1-8k',
+      },
+      {
+        name: 'Dead',
+        provider: 'openai-compat',
+        baseURL: 'https://dead.example/v1',
+        apiKey: 'sk-2',
+        model: 'gone',
+      },
+    ]
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.endsWith('/api/providers') && init?.method === 'POST') {
+        const body = JSON.parse(init.body as string)
+        // Dead 配置注册失败（服务端校验或上游异常的静默形态）
+        if (body.name === 'Dead') return jsonResponse({ error: 'nope' }, 400)
+        return jsonResponse(
+          { id: 'custom-9', name: body.name, provider: 'openai-compat' },
+          201,
+        )
+      }
+      if (url.endsWith('/api/models')) return jsonResponse(MODELS_PAYLOAD)
+      if (url.endsWith('/api/providers')) return jsonResponse(PROVIDERS_PAYLOAD)
+      throw new Error(`unexpected ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const { storage } = memoryStorage()
+    storage.setItem('ai-chat-playground:saved-providers', JSON.stringify(saved))
+
+    const pm = useProviderModels({ storage })
+    await pm.restoreSavedProviders()
+
+    expect(
+      JSON.parse(storage.getItem('ai-chat-playground:saved-providers') ?? '[]'),
+    ).toEqual([saved[0]])
   })
 })

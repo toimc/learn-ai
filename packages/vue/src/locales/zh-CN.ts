@@ -71,6 +71,7 @@ const zhCN = {
     apiKeyPlaceholder: 'sk-...',
     modelLabel: '模型名',
     modelPlaceholder: '如 deepseek-chat / claude-sonnet-4-5',
+    rememberLabel: '记住此配置（存入浏览器，服务重启后自动恢复）',
     submit: '注册',
     remove: '删除',
     listTitle: '已注册模型',

@@ -58,9 +58,9 @@ const {
   providers: providerList,
   status: providerStatus,
   selectedModelId,
-  refresh: refreshProviderModels,
   createProvider,
   removeProvider,
+  restoreSavedProviders,
   selectModel,
 } = useProviderModels()
 
@@ -523,7 +523,8 @@ watch(serverOnline, (online) => {
 })
 
 onMounted(() => {
-  void refreshProviderModels()
+  // 「记住配置」的 provider 恢复：重注册内部自带列表刷新，离线时静默跳过
+  void restoreSavedProviders().catch(() => {})
   void probeBackends()
   window.addEventListener('keydown', onShortcutKeydown, true)
   window.addEventListener('click', onDocClick)

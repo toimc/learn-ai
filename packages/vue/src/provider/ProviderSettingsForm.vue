@@ -20,6 +20,7 @@ const form = reactive({
   baseURL: '',
   apiKey: '',
   model: '',
+  persist: true,
 })
 
 // 字段 touched 后才显示行内错误，避免打开弹层即满屏红字
@@ -109,6 +110,7 @@ function onSubmit() {
     ...(baseURL ? { baseURL } : {}),
     apiKey: form.apiKey.trim(),
     model: form.model.trim(),
+    persist: form.persist,
   })
 }
 </script>
@@ -243,6 +245,15 @@ function onSubmit() {
         {{ errors.model }}
       </p>
     </div>
+
+    <label class="ai-chat-provider-dialog__remember">
+      <input
+        v-model="form.persist"
+        type="checkbox"
+        class="ai-chat-provider-dialog__remember-input"
+      />
+      <span>{{ t('provider.rememberLabel') }}</span>
+    </label>
 
     <div class="ai-chat-provider-dialog__actions">
       <Button

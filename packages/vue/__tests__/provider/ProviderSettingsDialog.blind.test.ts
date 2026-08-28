@@ -112,6 +112,7 @@ describe('ProviderSettingsDialog 盲测（spec §2.1）', () => {
         baseURL: 'https://api.deepseek.com/v1',
         apiKey: 'sk-blind-vue-key-001',
         model: 'deepseek-chat',
+        persist: true,
       },
     ])
   })
@@ -137,6 +138,7 @@ describe('ProviderSettingsDialog 盲测（spec §2.1）', () => {
       provider: 'anthropic',
       apiKey: 'sk-blind-vue-key-002',
       model: 'claude-sonnet-4-5',
+      persist: true,
     })
   })
 
