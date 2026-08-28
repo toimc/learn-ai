@@ -1,5 +1,5 @@
 /**
- * mock-server 的 OpenAPI 3.1 规范。
+ * dev-server 的 OpenAPI 3.1 规范。
  * 由 GET /api/openapi.json 输出，文档站 Scalar 页面加载渲染，
  * Test Request 直接打到 servers[0].url（CORS 已放开）。
  */

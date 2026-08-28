@@ -15,7 +15,7 @@ export interface SseAdapterOptions {
 
 const DEFAULT_BASE_URL = 'http://localhost:8787'
 
-/** 与 @toimc/mock-server 的线格式对应（Date 序列化为 ISO 字符串） */
+/** 与 @toimc/dev-server 的线格式对应（Date 序列化为 ISO 字符串） */
 export interface ConversationSummary {
   id: string
   title: string
@@ -35,7 +35,7 @@ export interface ConversationMessageDTO {
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`mock-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
   return (await res.json()) as T
 }
 
@@ -62,7 +62,7 @@ export async function createConversation(
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({}),
   })
-  if (!res.ok) throw new Error(`mock-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
   return (await res.json()) as ConversationSummary
 }
 
@@ -107,14 +107,14 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
       } catch (err) {
         // 中断不算错误，直接结束流
         if (signal?.aborted || isAbortError(err)) return
-        throw new Error(`mock-server unreachable (${baseUrl})`, { cause: err })
+        throw new Error(`dev-server unreachable (${baseUrl})`, { cause: err })
       }
 
       if (!response.ok) {
-        throw new Error(`mock-server HTTP ${response.status}`)
+        throw new Error(`dev-server HTTP ${response.status}`)
       }
       if (!response.body) {
-        throw new Error('mock-server response has no body')
+        throw new Error('dev-server response has no body')
       }
 
       yield* parseSseStream(response.body, signal)

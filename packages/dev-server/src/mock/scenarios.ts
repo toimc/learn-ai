@@ -139,7 +139,7 @@ const markdownScript: Script = [
 
 /** 问好演示 */
 const greetingScript: Script = [
-  ['text', '你好！我是运行在 **mock-server** 上的模拟助手。', 350],
+  ['text', '你好！我是运行在 **dev-server** 上的模拟助手。', 350],
   [
     'text',
     '\n\n发送包含「思考 / 工具 / 错误 / 慢速 / markdown」关键词的消息，可以触发不同的流式场景。',
@@ -154,12 +154,12 @@ function defaultScript(input: string): Script {
   return [
     [
       'text',
-      `关于「${brief || '你的问题'}」，这是来自 mock-server 的流式回复：\n\n`,
+      `关于「${brief || '你的问题'}」，这是来自 dev-server 的流式回复：\n\n`,
       450,
     ],
     [
       'text',
-      '```typescript\n// mock-server 用 Hono streamSSE 逐块输出 StreamChunk\nawait stream.writeSSE({ event: "chunk", data: JSON.stringify(chunk) })\nawait stream.sleep(delayMs)\n```\n\n',
+      '```typescript\n// dev-server 用 Hono streamSSE 逐块输出 StreamChunk\nawait stream.writeSSE({ event: "chunk", data: JSON.stringify(chunk) })\nawait stream.sleep(delayMs)\n```\n\n',
       140,
     ],
     [

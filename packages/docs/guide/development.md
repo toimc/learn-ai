@@ -18,7 +18,9 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 | `@toimc/vue` | UI 组件与依赖 Vue 的 composables | 依赖 `core`，peer 依赖 `vue ^3.5.0` |
 | `@toimc/markdown` | Markdown 流式渲染（markdown-it + DOMPurify，Shiki / KaTeX / Mermaid 按需懒加载） | 依赖 `vue` |
 | `playground` | 私有演示包，承载 Playground 页面与 mock 数据，每个功能一个独立 Demo 组件 | 依赖上述三个包 |
-| `mock-server` | 私有 Mock 服务（Hono），为 Mock 演示页提供流式 SSE API | 依赖 `core` |
+| `agents` | 服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径） | **零外部依赖**（原生 fetch） |
+| `server` | Hono 聊天网关（+ 可选 `/mastra` 子路径） | 依赖 `agents` |
+| `dev-server` | 私有 dev 服务：mock 剧本 + mastra agents（env 门控）+ Studio 宿主 | 依赖 `core` / `agents` / `server` |
 | `docs` | VitePress 文档站（本站） | 依赖上述三个包与 `playground` |
 
 ## 常用命令
@@ -27,8 +29,9 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 
 | 命令 | 作用 |
 |------|------|
-| `pnpm dev` | 同时启动文档站（VitePress）与 Mock 服务 |
-| `pnpm dev:docs` / `pnpm dev:mock` | 只启动文档站 / 只启动 Mock 服务 |
+| `pnpm dev` | 同时启动文档站（VitePress 5173）与 dev-server（8787） |
+| `pnpm dev:docs` / `pnpm dev:server` | 只启动文档站 / 只启动 dev-server |
+| `pnpm dev:studio` | 启动 Mastra Studio（4111，需 `packages/dev-server/.env` 配置 `MASTRA_MODEL`） |
 | `pnpm build` | 构建所有包 |
 | `pnpm test` | 运行全部测试（Vitest，从根目录覆盖所有包） |
 | `pnpm test:watch` | 测试监听模式 |
@@ -71,7 +74,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 
 文档站随 `master` 分支自动部署：<https://toimc.github.io/learn-ai/>（GitHub Actions `Deploy Docs` workflow，官方 `deploy-pages` 三件套，仅用内置 `GITHUB_TOKEN`，无需配置任何 secret）。
 
-**mock 页面开关**：`/mock-server-demo` 与 `/mock-api` 依赖本地 mock-server（`pnpm dev` 同时启动，端口 8787），静态站点不可用。发布构建通过 `DOCS_TARGET=pages` 环境变量在构建期剔除这两个页面（`srcExclude` + 导航过滤 + `ignoreDeadLinks` 精确豁免 + theme 条件注册避免 Scalar 进产物），并设置 `BASE_PATH=/learn-ai/` 资源前缀。
+**mock 页面开关**：`/mock-server-demo` 与 `/mock-api` 依赖本地 dev-server（`pnpm dev` 同时启动，端口 8787），静态站点不可用。发布构建通过 `DOCS_TARGET=pages` 环境变量在构建期剔除这两个页面（`srcExclude` + 导航过滤 + `ignoreDeadLinks` 精确豁免 + theme 条件注册避免 Scalar 进产物），并设置 `BASE_PATH=/learn-ai/` 资源前缀。
 
 本地开发不受影响：`pnpm dev` 与普通 `pnpm -C packages/docs build` 不设这两个变量，mock 页面照常可用。需要本地预览发布版效果时：
 

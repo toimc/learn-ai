@@ -45,7 +45,7 @@ title: Playground
 
 三条路径发送的均为「窗口内完整历史」（一次性发送，非增量）。
 
-**上下文窗口截断**：模型下拉中每个模型项右侧的齿轮可配置 `maxContextTokens`（token 数，0 = 不限制）。超出窗口时发送请求自动省略最旧消息——仅影响发送内容，聊天记录完整保留，消息列表顶部会出现省略提示。token 计量以 done 帧回传的真实 `usage` 优先（mock-server 与 Mastra 链路均回传），无 usage 时前端估算兜底。
+**上下文窗口截断**：模型下拉中每个模型项右侧的齿轮可配置 `maxContextTokens`（token 数，0 = 不限制）。超出窗口时发送请求自动省略最旧消息——仅影响发送内容，聊天记录完整保留，消息列表顶部会出现省略提示。token 计量以 done 帧回传的真实 `usage` 优先（mock 剧本与 Mastra 链路均回传），无 usage 时前端估算兜底。
 
 ```ts
 const chat = useChat(adapter, {
@@ -58,26 +58,25 @@ await chat.regenerate(assistantMsg.id)             // 任意位置重新生成
 
 ### 后端选择器（顶栏左侧下拉）
 
-顶栏左侧下拉选择**消息走哪条链路**（对新建会话生效，已有会话不受影响）：
+顶栏左侧下拉选择**消息走哪条链路**（对新建会话生效，已有会话不受影响；旧版三后端的历史选择会自动迁移到对应新选项）：
 
 | 后端 | 说明 | 模型怎么选 |
 |---|---|---|
 | 本地 Mock | 前端内置剧本，离线可用，零依赖 | 无模型概念（剧本固定） |
-| mock-server · 8787 | `@toimc/server` 网关 + SSE 线协议 | 顶栏模型下拉（`GET /api/models`） |
-| Mastra · 4111 | Mastra Agent：工具调用 + 会话记忆 | **注册即切换**（设置弹层，4111 只有一条全局运行时模型） |
+| dev-server · 8787 | `@toimc/server` 网关 + SSE 线协议（mock 剧本 + 可选 mastra agents + 运行时注册） | 顶栏模型下拉（`GET /api/models`） |
 
-**Mastra 后端的模型标签**：顶栏显示当前实际使用的模型（如 `debug-test · gpt-5.6-terra`）；未注册时显示 `chat-agent（服务端默认模型）`（走 `.env` 配置）。**点击标签直达设置弹层**注册/更换模型——4111 的运行时模型存在服务端内存，`tsx watch` 重启后会清空，重新注册即可。
+dev-server 配置 `MASTRA_MODEL` 环境变量后，模型下拉会出现 `chat-agent`（Mastra Agent：工具调用 + 会话记忆，配置方式见[智能体接入](/guide/mastra)）；未配置时是纯 mock 模式。
 
 ### 真实模型会话（Provider 设置）
 
-本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key，密钥只存服务端内存，浏览器不落任何密钥），整条链路需要 mock-server 在线（`pnpm dev` 同时启动两者）：
+本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key，密钥只存服务端内存，浏览器不落任何密钥），整条链路需要 dev-server 在线（`pnpm dev` 同时启动两者）：
 
 - **⚙ 设置按钮**：顶栏右侧 ⚙ 打开 [`ProviderSettingsDialog`](/components/provider-settings-dialog)，选择服务类型（OpenAI 兼容 / Anthropic）、填端点与 API Key、模型名，提交即注册（`POST /api/providers`，注册为带 get_time / get_weather 工具与会话记忆的 Agent 模型）；弹层底部的已注册列表可逐项删除（`DELETE /api/providers/:id`），删除当前选中的模型会自动回到默认行为。
-- **顶栏模型下拉**：mock-server 在线时下拉可用，数据源 `GET /api/models`（Mock 三模型 + 运行时注册的 `custom-*` 模型）；选中即对**新建会话**生效，选「默认（本地演示）」回到本地 mock 行为，已有会话不受影响。
+- **顶栏模型下拉**：dev-server 在线时下拉可用，数据源 `GET /api/models`（Mock 三模型 + env 注册的 `chat-agent` + 运行时注册的 `custom-*` 模型）；选中即对**新建会话**生效，选「默认（本地演示）」回到本地 mock 行为，已有会话不受影响。
 - **新建会话即真实模型**：选中模型后「新建会话」（含 ⌘K）会把模型 id 写进该会话，此后会话内发送的消息经 SSE 走真实模型；无模型的会话行为与现状完全一致。
 - **工具调用进思考面板**：真实模型会话里，模型调用工具的过程（调了什么工具、拿到什么结果）呈现在思考面板内部，随「正在思考… / 已思考 X 秒」折叠展开，下接整合后的 Markdown 回复——思考、工具、正文共享同一套 StreamChunk 流式协议，无需任何线协议改动。
 - **发送失败可见**：真实模型会话中上游报错（密钥错误、端点不通等）时，错误经服务端 `error` chunk 返回，顶部通知条展示「发送失败：<原因>」，下次发送自动清除——错误不写入消息气泡（`useChat` 的设计：`state.error` 与消息内容分离）。
-- **离线提示**：8787 端口的 mock-server 未启动时，点击 ⚙ 顶部出现通知条提示启动方式，模型下拉点击无效但保持装饰外观；服务恢复在线后提示自动消失，本地 mock 演示不受影响。
+- **离线提示**：8787 端口的 dev-server 未启动时，点击 ⚙ 顶部出现通知条提示启动方式，模型下拉点击无效但保持装饰外观；服务恢复在线后提示自动消失，本地 mock 演示不受影响。
 - **隐私边界**：localStorage 只持久化「上次选中的模型 id」（key `ai-chat-playground:selected-model`），**绝不写入 apiKey**——密钥只在提交注册的瞬间经请求体直达服务端内存。
 
 ### 主题定制

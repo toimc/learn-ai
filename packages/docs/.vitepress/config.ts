@@ -4,10 +4,10 @@ import { resolve } from 'path'
 
 const root = resolve(__dirname, '..')
 
-// GitHub Pages 发布构建开关：DOCS_TARGET=pages 时剔除依赖本地 mock-server 的页面（spec 08 FR-2）
+// GitHub Pages 发布构建开关：DOCS_TARGET=pages 时剔除依赖本地 dev-server 的页面（spec 08 FR-2）
 const isPages = process.env.DOCS_TARGET === 'pages'
 
-// 仅本地开发可用的导航项（依赖 pnpm dev 同时启动的 mock-server）
+// 仅本地开发可用的导航项（依赖 pnpm dev 同时启动的 dev-server）
 const mockOnlyNav: DefaultTheme.NavItem[] = [
   { text: 'Mock 演示', link: '/mock-server-demo' },
   { text: '接口文档', link: '/mock-api' },

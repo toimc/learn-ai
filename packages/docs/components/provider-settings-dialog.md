@@ -42,7 +42,7 @@ function onDemoRemove(id: string) {
   />
 </DemoContainer>
 
-在宿主应用中接后端 API 的最小接线（本仓库 mock-server 的 `/api/providers` 三端点即为这套契约的实现，见[接口文档](/mock-api)）：
+在宿主应用中接后端 API 的最小接线（本仓库 dev-server 的 `/api/providers` 三端点即为这套契约的实现，见[接口文档](/mock-api)）：
 
 ```vue
 <script setup lang="ts">

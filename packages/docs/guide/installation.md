@@ -8,7 +8,7 @@
 | `@toimc/vue` | 是 | Vue 3 UI 组件 |
 | `@toimc/markdown` | 否 | Markdown / 代码 / LaTeX 渲染 |
 | `@toimc/agents` | 否 | 服务端模型适配层（多模型协议适配 + 可选 mastra 子路径，主入口零外部依赖，可脱离网关单独使用） |
-| `@toimc/server` | 否 | Hono 聊天网关（接收与转发，配套 [服务端网关](/guide/server) 指南） |
+| `@toimc/server` | 否 | Hono 聊天网关（接收与转发 + 可选 `/mastra` 子路径做 agent 集成，配套 [服务端网关](/guide/server) 指南） |
 
 ## 包管理器
 
@@ -36,7 +36,7 @@ yarn add @toimc/core @toimc/vue @toimc/markdown
 pnpm add vue@^3.5.0
 ```
 
-`@toimc/agents` 的 mastra 子路径另有可选 peer 依赖 `@mastra/core`（配套 `@mastra/memory` / `@mastra/libsql` / `zod` 做会话记忆与工具 schema），仅在使用[智能体接入](/guide/mastra)时安装，不影响主入口：
+`@toimc/agents` 与 `@toimc/server` 的 `/mastra` 子路径另有可选 peer 依赖 `@mastra/core`（配套 `@mastra/memory` / `@mastra/libsql` / `zod` 做会话记忆与工具 schema），仅在使用[智能体接入](/guide/mastra)时安装，不影响两个包的主入口：
 
 ```bash
 pnpm add @mastra/core @mastra/memory @mastra/libsql zod

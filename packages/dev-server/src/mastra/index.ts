@@ -22,7 +22,7 @@ const chatAgent = new Agent({
   id: def.id,
   name: def.name ?? def.id,
   instructions: def.instructions ?? '',
-  // 定义层宽松 Record 在此收窄（对齐 mastra-app 先例：env 组装只产 string / { id, url } 两种形态）
+  // 定义层宽松 Record 在此收窄（对齐 dev-server 装配约定：env 组装只产 string / { id, url, apiKey? } 两种形态）
   model: def.model as ConstructorParameters<typeof Agent>[0]['model'],
   tools: def.tools as ConstructorParameters<typeof Agent>[0]['tools'],
   memory: def.memory
