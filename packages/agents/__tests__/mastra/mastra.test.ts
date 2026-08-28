@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type { Agent } from '@mastra/core/agent'
 import type { StreamChunk } from '@toimc/core'
-import type { ChatMessage, ChatRequest } from '../types'
-import { MastraAdapter, createMastraModel } from './index'
+import type { ChatMessage, ChatRequest } from '../../src/types'
+import { MastraAdapter, createMastraModel } from '../../src/mastra/index'
 
 /** agent.stream 第二参的最小形态（映射规格约定：abortSignal + memory + 可选 modelSettings） */
 interface StreamOpts {
@@ -595,7 +595,7 @@ describe('createMastraModel 依赖缺失友好错误', () => {
     vi.resetModules()
     try {
       const { createMastraModel: freshCreateMastraModel } =
-        await import('./index')
+        await import('../../src/mastra/index')
       await expect(
         freshCreateMastraModel({ id: 'demo', model: 'mock/mock-model' }),
       ).rejects.toThrow('pnpm add @mastra/core')
