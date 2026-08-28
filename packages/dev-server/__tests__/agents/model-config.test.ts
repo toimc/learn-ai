@@ -8,7 +8,7 @@ describe('resolveModelConfig', () => {
     )
   })
 
-  it('有 modelUrl：组装为 { id, url } 对象（url 规范化补全端点后缀）', () => {
+  it('有 modelUrl：组装为 { id, url } 对象（base 形态原样透传）', () => {
     expect(
       resolveModelConfig({
         model: 'glm-4-plus',
@@ -16,7 +16,7 @@ describe('resolveModelConfig', () => {
       }),
     ).toEqual({
       id: 'glm-4-plus',
-      url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+      url: 'https://open.bigmodel.cn/api/paas/v4',
     })
   })
 
@@ -24,12 +24,12 @@ describe('resolveModelConfig', () => {
     expect(
       resolveModelConfig({
         model: 'openai/gpt-5.6-terra',
-        modelUrl: 'https://2api.store/v1/chat/completions',
+        modelUrl: 'https://2api.store/v1',
         modelApiKey: 'sk-e2e',
       }),
     ).toEqual({
       id: 'openai/gpt-5.6-terra',
-      url: 'https://2api.store/v1/chat/completions',
+      url: 'https://2api.store/v1',
       apiKey: 'sk-e2e',
     })
   })
@@ -40,29 +40,29 @@ describe('resolveModelConfig', () => {
     )
   })
 
-  it('modelUrl 缺 /chat/completions 后缀时自动补全（AI SDK 把 url 当完整端点，裸 base 会打到中转站首页换 200 HTML 空流）', () => {
+  it('modelUrl 误带 /chat/completions 后缀时剥掉（AI SDK 是 baseURL 拼接模式，整段粘贴完整端点会拼出双重后缀 404）', () => {
     expect(
       resolveModelConfig({
         model: 'openai/gpt-5.6-terra',
-        modelUrl: 'https://2api.store/v1',
+        modelUrl: 'https://2api.store/v1/chat/completions',
         modelApiKey: 'sk-e2e',
       }),
     ).toEqual({
       id: 'openai/gpt-5.6-terra',
-      url: 'https://2api.store/v1/chat/completions',
+      url: 'https://2api.store/v1',
       apiKey: 'sk-e2e',
     })
   })
 
-  it('modelUrl 已带 /chat/completions 后缀时原样透传，不重复追加', () => {
+  it('modelUrl 尾部多余斜杠一并清理', () => {
     expect(
       resolveModelConfig({
         model: 'glm-4-plus',
-        modelUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+        modelUrl: 'https://open.bigmodel.cn/api/paas/v4/',
       }),
     ).toEqual({
       id: 'glm-4-plus',
-      url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+      url: 'https://open.bigmodel.cn/api/paas/v4',
     })
   })
 })
