@@ -78,17 +78,17 @@ const zhCN = {
   mockServer: {
     title: 'Mock 服务端演示',
     description:
-      '会话数据与流式回复均来自本地 mock-server（Hono + streamSSE）：切换会话从服务端拉取历史，发送消息经真实 HTTP/SSE 传输，DevTools Network 面板可见 text/event-stream 响应。',
+      '会话数据与流式回复均来自本地 dev-server（Hono + streamSSE）：切换会话从服务端拉取历史，发送消息经真实 HTTP/SSE 传输，DevTools Network 面板可见 text/event-stream 响应。',
     statusOnline: '已连接',
     statusConnecting: '连接中…',
     statusOffline: '未连接',
     retry: '重试',
     offlineHint:
-      '无法连接 mock-server（http://localhost:8787）。请在项目根目录运行 pnpm dev（同时启动文档站与 mock 服务）后重试。',
+      '无法连接 dev-server（http://localhost:8787）。请在项目根目录运行 pnpm dev（同时启动文档站与 mock 服务）后重试。',
     loadingMessages: '正在从服务端加载会话消息…',
     loadFailed: '会话消息加载失败',
     newChat: '新建会话',
-    inputPlaceholder: '连接 mock-server，发送消息体验真实 SSE 流式…',
+    inputPlaceholder: '连接 dev-server，发送消息体验真实 SSE 流式…',
     scenarioHint: '触发词：思考 / 工具 天气 / 错误 / 慢速 / markdown',
     triggerThinking: '发送「思考」触发思维链流式演示',
     triggerTool: '发送「工具 天气」触发工具调用演示',
@@ -99,10 +99,10 @@ const zhCN = {
     localConversation: '本地新建（未同步服务端列表）',
   },
   mockApi: {
-    bannerOnline: '接口文档已连接 mock-server，可直接执行 Test Request',
-    bannerConnecting: '正在连接 mock-server…',
+    bannerOnline: '接口文档已连接 dev-server，可直接执行 Test Request',
+    bannerConnecting: '正在连接 dev-server…',
     bannerOffline:
-      'mock-server 未启动（http://localhost:8787），请先运行 pnpm dev',
+      'dev-server 未启动（http://localhost:8787），请先运行 pnpm dev',
     goDemo: '去流式演示 →',
   },
   chat: {
@@ -112,7 +112,7 @@ const zhCN = {
   providerSettings: {
     open: '设置 Provider',
     offlineHint:
-      '无法连接 mock-server（http://localhost:8787），暂时无法配置 Provider。请在项目根目录运行 pnpm dev 后重试。',
+      '无法连接 dev-server（http://localhost:8787），暂时无法配置 Provider。请在项目根目录运行 pnpm dev 后重试。',
     actionFailed: '操作失败：{message}',
     dismiss: '知道了',
   },
@@ -128,14 +128,9 @@ const zhCN = {
     label: '后端（对新会话生效）',
     local: '本地 Mock',
     localDesc: '前端内置剧本，离线可用，零依赖',
-    mockServer: 'mock-server · 8787',
-    mockServerDesc: "{'@'}toimc/server 网关 + SSE 线协议（模型下拉选择）",
-    mastra: 'Mastra · 4111',
-    mastraDesc: 'Mastra Agent：工具调用 + 会话记忆（模型在设置弹层注册）',
+    devServer: 'dev-server · 8787',
+    devServerDesc: "{'@'}toimc/server 网关 + SSE 线协议（模型下拉选择）",
     offline: '（离线）',
-    agentTag: 'Mastra chat-agent',
-    agentTagDefault: 'chat-agent（服务端默认模型）',
-    agentTagManage: '点击注册 / 更换模型',
     offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
   },
 }
@@ -219,18 +214,18 @@ const enUS: typeof zhCN = {
   mockServer: {
     title: 'Mock Server Demo',
     description:
-      'Conversations and streaming replies come from the local mock-server (Hono + streamSSE): switching conversations fetches history from the server; sending messages goes over real HTTP/SSE — watch the text/event-stream response in DevTools Network panel.',
+      'Conversations and streaming replies come from the local dev-server (Hono + streamSSE): switching conversations fetches history from the server; sending messages goes over real HTTP/SSE — watch the text/event-stream response in DevTools Network panel.',
     statusOnline: 'Connected',
     statusConnecting: 'Connecting…',
     statusOffline: 'Offline',
     retry: 'Retry',
     offlineHint:
-      'Cannot reach mock-server (http://localhost:8787). Run pnpm dev at the project root (starts the docs site and the mock server together), then retry.',
+      'Cannot reach dev-server (http://localhost:8787). Run pnpm dev at the project root (starts the docs site and the mock server together), then retry.',
     loadingMessages: 'Loading conversation messages from server…',
     loadFailed: 'Failed to load messages',
     newChat: 'New conversation',
     inputPlaceholder:
-      'Connected to mock-server — send a message to see real SSE streaming…',
+      'Connected to dev-server — send a message to see real SSE streaming…',
     scenarioHint:
       'Trigger words: thinking / tool weather / error / slow / markdown',
     triggerThinking: 'Send “思考” to trigger streaming thinking',
@@ -242,10 +237,10 @@ const enUS: typeof zhCN = {
     localConversation: 'Created locally (not synced to server list)',
   },
   mockApi: {
-    bannerOnline: 'API docs connected to mock-server — Test Request is ready',
-    bannerConnecting: 'Connecting to mock-server…',
+    bannerOnline: 'API docs connected to dev-server — Test Request is ready',
+    bannerConnecting: 'Connecting to dev-server…',
     bannerOffline:
-      'mock-server is not running (http://localhost:8787). Run pnpm dev first',
+      'dev-server is not running (http://localhost:8787). Run pnpm dev first',
     goDemo: 'Streaming demo →',
   },
   chat: {
@@ -255,7 +250,7 @@ const enUS: typeof zhCN = {
   providerSettings: {
     open: 'Configure providers',
     offlineHint:
-      'Cannot reach mock-server (http://localhost:8787) — provider settings are unavailable. Run pnpm dev at the project root, then retry.',
+      'Cannot reach dev-server (http://localhost:8787) — provider settings are unavailable. Run pnpm dev at the project root, then retry.',
     actionFailed: 'Action failed: {message}',
     dismiss: 'Got it',
   },
@@ -272,15 +267,10 @@ const enUS: typeof zhCN = {
     label: 'Backend (applies to new chats)',
     local: 'Local mock',
     localDesc: 'Built-in frontend scripts, works offline, zero deps',
-    mockServer: 'mock-server · 8787',
-    mockServerDesc:
+    devServer: 'dev-server · 8787',
+    devServerDesc:
       "{'@'}toimc/server gateway + SSE protocol (pick model in dropdown)",
-    mastra: 'Mastra · 4111',
-    mastraDesc: 'Mastra Agent: tools + memory (register model in settings)',
     offline: ' (offline)',
-    agentTag: 'Mastra chat-agent',
-    agentTagDefault: 'chat-agent (server default model)',
-    agentTagManage: 'Click to register / change model',
     offlineHint: 'Cannot reach {url} — start the service first, then switch.',
   },
 }

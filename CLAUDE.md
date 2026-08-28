@@ -17,15 +17,19 @@ Provider 抽象层模式：组件与 AI 后端完全解耦，通过 `ChatAdapter
 - `core` — 无外部依赖，纯 TypeScript，定义所有核心类型和 composables
 - `vue` — 依赖 `core`，peer 依赖 `vue ^3.5.0`
 - `markdown` — 依赖 `vue`，使用 Shiki + KaTeX
-- `playground` — 私有演示包，承载 Playground 页面与 mock 数据，依赖上述三个包
-- `docs` — VitePress 文档站，依赖上述三个包与 `playground`
+- `agents` — 服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径），零外部依赖
+- `server` — Hono 聊天网关（+ 可选 `/mastra` 子路径：agent 定义驱动的 `createMastraGateway`），依赖 `agents`
+- `playground` — 私有演示包，承载 Playground 页面与 mock 数据，依赖上述组件包
+- `dev-server` — 私有 dev 服务（8787）：mock 剧本 + mastra agents（`MASTRA_MODEL` env 门控）+ Studio 宿主，依赖 `core`/`agents`/`server`
+- `docs` — VitePress 文档站，依赖上述组件包与 `playground`
 
 ## 常用命令
 
 ```bash
-pnpm dev          # 启动 docs + mock-server（VitePress 5173 + 8787）
-pnpm dev:mastra   # 单独启动 mastra-app（4111，需 packages/mastra-app/.env）
-pnpm dev:all      # 三服务全家桶：docs + mock-server + mastra-app
+pnpm dev          # 启动 docs + dev-server（VitePress 5173 + 8787）
+pnpm dev:docs     # 只启动文档站
+pnpm dev:server   # 只启动 dev-server（8787）
+pnpm dev:studio   # 启动 Mastra Studio（4111，需 packages/dev-server/.env 配置 MASTRA_MODEL）
 pnpm build        # 构建所有包
 pnpm test         # 运行全部测试
 pnpm test:watch   # 监听模式

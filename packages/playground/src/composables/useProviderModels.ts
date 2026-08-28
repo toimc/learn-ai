@@ -53,13 +53,13 @@ function safeSet(
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`mock-server HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
   return (await res.json()) as T
 }
 
 /**
  * 运行时模型与 Provider 状态：拉取 GET /api/models、/api/providers，
- * 探测 mock-server 在线态；选中模型 id 持久化到 localStorage（仅 id）。
+ * 探测 dev-server 在线态；选中模型 id 持久化到 localStorage（仅 id）。
  * 各状态为独立 ref，同一页面可多次调用共享同一 storage。
  */
 export function useProviderModels(options: UseProviderModelsOptions = {}) {
@@ -95,7 +95,7 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) throw new Error(`mock-server HTTP ${res.status}`)
+    if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
     const option = (await res.json()) as ProviderOption
     await refresh()
     return option
@@ -106,7 +106,7 @@ export function useProviderModels(options: UseProviderModelsOptions = {}) {
     const res = await fetch(`${baseUrl}/api/providers/${id}`, {
       method: 'DELETE',
     })
-    if (!res.ok) throw new Error(`mock-server HTTP ${res.status}`)
+    if (!res.ok) throw new Error(`dev-server HTTP ${res.status}`)
     await refresh()
   }
 

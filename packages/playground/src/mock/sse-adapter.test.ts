@@ -218,7 +218,7 @@ describe('createSseAdapter', () => {
           ],
         })
         .next(),
-    ).rejects.toThrow('mock-server unreachable')
+    ).rejects.toThrow('dev-server unreachable')
   })
 
   it('HTTP 非 2xx 抛出状态码错误', async () => {
