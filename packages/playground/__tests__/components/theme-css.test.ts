@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { buildThemeCss, buildOverridesFromCss } from './theme-css'
+import {
+  buildThemeCss,
+  buildOverridesFromCss,
+} from '../../src/components/theme-css'
 // 直接走源码相对路径：root vitest 配置未声明 @toimc/* 别名
 import { tokensMeta } from '../../../vue/src'
 import type { TokenMeta } from '../../../vue/src'

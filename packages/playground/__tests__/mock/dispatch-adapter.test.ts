@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { Message, StreamChunk } from '@toimc/core'
-import { createDispatchAdapter } from './dispatch-adapter'
+import { createDispatchAdapter } from '../../src/mock/dispatch-adapter'
 
 function userMessage(content: string): Message {
   return { id: `m_${content}`, role: 'user', content, createdAt: new Date() }

@@ -2,7 +2,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   useProviderModels,
   SELECTED_MODEL_STORAGE_KEY,
-} from './useProviderModels'
+} from '../../src/composables/useProviderModels'
 import type { ProviderFormPayload } from '@toimc/vue'
 
 /** 注入用内存 storage：记录写入便于断言“绝存 apiKey” */

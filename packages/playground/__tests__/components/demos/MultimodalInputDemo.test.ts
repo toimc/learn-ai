@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import MultimodalInputDemo from './MultimodalInputDemo.vue'
+import MultimodalInputDemo from '../../../src/components/demos/MultimodalInputDemo.vue'
 
 describe('MultimodalInputDemo', () => {
   it('渲染独立演示区：标题、两个上传按钮、payload 空态', () => {

@@ -1,5 +1,8 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { BACKEND_STORAGE_KEY, useBackendSelector } from './useBackendSelector'
+import {
+  BACKEND_STORAGE_KEY,
+  useBackendSelector,
+} from '../../src/composables/useBackendSelector'
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const store = new Map(Object.entries(initial))

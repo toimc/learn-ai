@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { StreamChunk } from '@toimc/core'
-import { createSseAdapter, parseSseStream } from './sse-adapter'
+import { createSseAdapter, parseSseStream } from '../../src/mock/sse-adapter'
 
 function sseBody(frames: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder()
