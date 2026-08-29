@@ -11,6 +11,7 @@ const isPages = process.env.DOCS_TARGET === 'pages'
 const mockOnlyNav: DefaultTheme.NavItem[] = [
   { text: 'Mock 演示', link: '/mock-server-demo' },
   { text: '多 Agent 演示', link: '/multi-agent-demo' },
+  { text: 'Workflow 演示', link: '/workflow-demo' },
   { text: '接口文档', link: '/mock-api' },
 ]
 
@@ -20,13 +21,27 @@ export default defineConfig({
   description: '后端无关的 AI 聊天界面组件库',
   base: process.env.BASE_PATH || '/',
   srcExclude: isPages
-    ? ['mock-server-demo.md', 'multi-agent-demo.md', 'mock-api.md']
+    ? [
+        'mock-server-demo.md',
+        'multi-agent-demo.md',
+        'workflow-demo.md',
+        'mock-api.md',
+      ]
     : [],
   // 死链检查是静态 AST 扫描，MockOnly 的运行时条件渲染豁免不了它；
-  // 仅 pages 模式精确放行被剔除页面的链接（playground.md 内 MockOnly 包裹的提示块）
-  ignoreDeadLinks: isPages
-    ? ['/mock-server-demo', '/multi-agent-demo', '/mock-api']
-    : false,
+  // 仅 pages 模式精确放行被剔除页面的链接（playground.md 内 MockOnly 包裹的提示块）。
+  // localhost 链接指向运行时服务（如 Studio 4111），静态构建无法验证，两模式均放行
+  ignoreDeadLinks: [
+    /^https?:\/\/localhost(?::\d+)?/,
+    ...(isPages
+      ? [
+          '/mock-server-demo',
+          '/multi-agent-demo',
+          '/workflow-demo',
+          '/mock-api',
+        ]
+      : []),
+  ],
 
   head: [
     // 首屏防闪：在 Vue 挂载前同步读取 localStorage 设 data-theme，避免亮暗闪屏

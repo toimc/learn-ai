@@ -4,6 +4,7 @@ export { default as ThemeBuilderPage } from './components/ThemeBuilderPage.vue'
 export { default as MultimodalDemoPage } from './components/MultimodalDemoPage.vue'
 export { default as MockServerDemoPage } from './components/MockServerDemoPage.vue'
 export { default as MultiAgentDemoPage } from './components/MultiAgentDemoPage.vue'
+export { default as WorkflowDemoPage } from './components/WorkflowDemoPage.vue'
 export { default as MockApiPage } from './components/MockApiPage.vue'
 export { default as MultimodalInputDemo } from './components/demos/MultimodalInputDemo.vue'
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'
@@ -27,3 +28,11 @@ export type {
 } from './mock/sse-adapter'
 export { createDispatchAdapter } from './mock/dispatch-adapter'
 export type { DispatchConversation } from './mock/dispatch-adapter'
+export {
+  createWorkflowSseAdapter,
+  fetchWorkflows,
+} from './mock/workflow-adapter'
+export type {
+  WorkflowSseAdapterOptions,
+  WorkflowSummary,
+} from './mock/workflow-adapter'

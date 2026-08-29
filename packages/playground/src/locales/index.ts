@@ -133,6 +133,34 @@ const zhCN = {
     offline: '（离线）',
     offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
   },
+  workflow: {
+    title: 'Workflow 编排演示',
+    description:
+      '三种原生 Mastra Workflow（流水线 / 并行 / 主管循环）：输入即 task，发送到 /api/workflows/:id/run，步骤执行经 tool_call / tool_result 帧实时呈现，最终报告流式渲染 Markdown。未配置 MASTRA_MODEL 时回退近似剧本。',
+    patternLabel: 'Workflow',
+    patternPipeline: '流水线',
+    patternCouncil: '并行',
+    patternSupervisor: '委托',
+    patternDescPipeline:
+      'retrieve → draft → review → 分支（verdict=revise 时 revise 重写）→ report，执行路径代码写死',
+    patternDescCouncil:
+      'retrieve_api / retrieve_theme / retrieve_data 三路并行检索（单路失败不影响其余路）→ synthesize 综合裁决',
+    patternDescSupervisor:
+      'delegate 决策循环：主管每轮结构化决策调检索员 / 起草员 / 完成（轮次上限 6）→ report，同一问题两次运行可能走出不同委派序列',
+    statusOnline: '已连接',
+    statusConnecting: '连接中…',
+    statusOffline: '未连接',
+    retry: '重试',
+    offlineHint:
+      '无法连接 dev-server（http://localhost:8787）。请在项目根目录运行 pnpm dev（同时启动文档站与 dev 服务）后重试。',
+    modeReal: '原生 Workflow 运行',
+    modeMock: 'mock 剧本近似',
+    mockNote:
+      '未配置 MASTRA_MODEL：当前回放近似剧本（supervisor 的真实决策循环需 MASTRA_MODEL），配置后刷新页面自动切换为原生 Workflow 运行。',
+    inputPlaceholder: '输入交给 Workflow 执行的任务…',
+    emptyHint:
+      '选择 Workflow、输入任务发送：步骤执行以工具卡片呈现，最终报告自动渲染 Markdown。',
+  },
   multiAgent: {
     title: '多 Agent 协作演示',
     description:
@@ -315,6 +343,34 @@ const enUS: typeof zhCN = {
       "{'@'}toimc/server gateway + SSE protocol (pick model in dropdown)",
     offline: ' (offline)',
     offlineHint: 'Cannot reach {url} — start the service first, then switch.',
+  },
+  workflow: {
+    title: 'Workflow Orchestration Demo',
+    description:
+      'Three native Mastra workflows (pipeline / council / supervisor loop): your input is the task, POSTed to /api/workflows/:id/run; steps stream as tool_call / tool_result frames and the final report renders as Markdown. Falls back to an approximate mock script without MASTRA_MODEL.',
+    patternLabel: 'Workflow',
+    patternPipeline: 'Pipeline',
+    patternCouncil: 'Council',
+    patternSupervisor: 'Supervisor',
+    patternDescPipeline:
+      'retrieve → draft → review → branch (revised when verdict=revise) → report, path fixed in code',
+    patternDescCouncil:
+      'retrieve_api / retrieve_theme / retrieve_data retrieve in parallel (one lane failing does not affect the others) → synthesize',
+    patternDescSupervisor:
+      'delegate decision loop: the supervisor decides each round (research / draft / done, max 6 rounds) → report — the same question may take different delegation sequences across runs',
+    statusOnline: 'Connected',
+    statusConnecting: 'Connecting…',
+    statusOffline: 'Offline',
+    retry: 'Retry',
+    offlineHint:
+      'Cannot reach dev-server (http://localhost:8787). Run pnpm dev at the project root (starts the docs site and the dev server together), then retry.',
+    modeReal: 'Native workflow run',
+    modeMock: 'Mock script approximation',
+    mockNote:
+      'MASTRA_MODEL not configured: replaying an approximate mock script (the supervisor real decision loop requires MASTRA_MODEL); configure it and refresh to switch to a native workflow run.',
+    inputPlaceholder: 'Type a task for the workflow to run…',
+    emptyHint:
+      'Pick a workflow, type a task and send: steps appear as tool cards and the final report renders as Markdown.',
   },
   multiAgent: {
     title: 'Multi-Agent Collaboration Demo',
