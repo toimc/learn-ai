@@ -11,6 +11,10 @@ import {
 
 export const DOCS_PIPELINE_WORKFLOW_ID = 'docs-pipeline-workflow'
 
+/** 注册表（registry.ts）与 createWorkflow 共用的描述常量（单一事实来源） */
+export const DOCS_PIPELINE_WORKFLOW_DESCRIPTION =
+  '文档流水线（检索→起草→审查→打回重写）：组件库文档问答的三段式质量门，researcher 检索 → writer 起草 → reviewer 审查，revise 打回重写一次（不再复审）。与聊天演示的 orchestrate 工具同源（手搓→原生教学阶梯）'
+
 /**
  * 流水线的原生 Workflow 版（spec 16 §10 原生层）：
  * 检索 → 起草 → 审查 →（revise 时）打回重写 → 汇报，图结构与
@@ -149,8 +153,7 @@ export function docsPipelineWorkflow(env: MastraEnv) {
 
   return createWorkflow({
     id: DOCS_PIPELINE_WORKFLOW_ID,
-    description:
-      '文档流水线（检索→起草→审查→打回重写）：组件库文档问答的三段式质量门，researcher 检索 → writer 起草 → reviewer 审查，revise 打回重写一次（不再复审）。与聊天演示的 orchestrate 工具同源（手搓→原生教学阶梯）',
+    description: DOCS_PIPELINE_WORKFLOW_DESCRIPTION,
     inputSchema: z.object({ task: z.string().describe('要回答的组件库问题') }),
     outputSchema: z.object({
       task: z.string(),
