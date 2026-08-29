@@ -2,7 +2,17 @@
  * 三种编排形态的纯函数实现（spec 16 §4/§5.1）：
  * 输入子 agent 调用接口 AgentCall，输出 OrchestrationResult——编排是代码不是提示词。
  * 本模块零 Mastra 依赖，唯一的副作用出口是 AgentCall.run。
+ * prompt 模板与 verdict 解析抽至 prompts.ts（与原生 Workflow 共用）。
  */
+import {
+  draftPrompt,
+  parallelPrompt,
+  parseVerdict,
+  reviewPrompt,
+  revisePrompt,
+} from './prompts'
+
+export { parseVerdict }
 
 export type OrchestrationPattern = 'delegate' | 'parallel' | 'pipeline'
 
@@ -73,20 +83,6 @@ async function runStage(
   }
 }
 
-/** reviewer 首行 verdict 宽容解析（spec 16 §4）：[pass]/[revise] 不区分大小写，无法解析默认 pass */
-export function parseVerdict(text: string): 'pass' | 'revise' {
-  const firstLine = (text.split('\n')[0] ?? '').trim().toLowerCase()
-  if (firstLine.startsWith('[revise]')) return 'revise'
-  if (firstLine.startsWith('[pass]')) return 'pass'
-  return 'pass'
-}
-
-const DRAFT_PROMPT_SUFFIX = '请基于以上检索结果起草回答。'
-
-function draftPrompt(task: string, researchOutput: string): string {
-  return `任务：${task}\n检索结果：\n${researchOutput}\n${DRAFT_PROMPT_SUFFIX}`
-}
-
 /** 委托：researcher 检索（收任务原文）→ writer 起草（任务+检索输出） */
 export async function runDelegate(
   task: string,
@@ -129,7 +125,7 @@ export async function runParallel(
 ): Promise<OrchestrationResult> {
   const settled = await Promise.allSettled(
     PARALLEL_ANGLES.map((angle) =>
-      runStage('researcher', researcher, `${task}\n检索角度：${angle}`),
+      runStage('researcher', researcher, parallelPrompt(task, angle)),
     ),
   )
   // runStage 自吞错误，rejected 分支理论不可达；兜底仍转 error stage，维持 allSettled 语义
@@ -176,7 +172,7 @@ export async function runPipeline(
   const reviewerStage = await runStage(
     'reviewer',
     agents.reviewer,
-    `任务：${task}\n检索结果：\n${researchOutput}\n草稿：\n${draft}\n审查以上草稿：首行输出 [pass] 或 [revise]，随后给出意见。`,
+    reviewPrompt(task, researchOutput, draft),
   )
   const reviewerWithVerdict =
     reviewerStage.status === 'ok'
@@ -197,7 +193,7 @@ export async function runPipeline(
     const retryStage = await runStage(
       'writer',
       agents.writer,
-      `任务：${task}\n检索结果：\n${researchOutput}\n上一版草稿：\n${draft}\n审查意见：\n${reviewerStage.output}\n请根据审查意见重写回答。`,
+      revisePrompt(task, researchOutput, draft, reviewerStage.output ?? ''),
     )
     stages.push({
       ...retryStage,

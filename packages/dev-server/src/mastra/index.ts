@@ -3,6 +3,8 @@ import { buildAgentDefinitions } from '../agents'
 import { readDevServerEnv } from '../env'
 import { createStorage } from '../memory'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
+import { docsCouncilWorkflow } from '../workflows/docs-council'
+import { docsPipelineWorkflow } from '../workflows/docs-pipeline'
 
 /**
  * Studio / mastra build / mastra start 的入口：必须是静态命名导出
@@ -12,6 +14,7 @@ import { instantiateAgent, teamDefinitions } from '../orchestration/children'
  * 服务入口 src/index.ts 不 import 本文件（纯 mock 模式零 mastra 依赖，spec 14 §5.2）。
  * agent 清单来自注册表 buildAgentDefinitions + teamDefinitions（spec 16 §2：
  * 子 agent 不进网关模型下拉，但进 Studio 便于单独调试提示词）。
+ * workflows 为编排形态的原生版（spec 16 §10）：/workflows 页可运行并看逐步 trace。
  */
 const env = readDevServerEnv()
 if (!env.mastra) {
@@ -28,6 +31,10 @@ const agents = Object.fromEntries(
 
 export const mastra = new Mastra({
   agents,
+  workflows: {
+    [docsPipelineWorkflow(env.mastra).id]: docsPipelineWorkflow(env.mastra),
+    [docsCouncilWorkflow(env.mastra).id]: docsCouncilWorkflow(env.mastra),
+  },
   storage: createStorage(),
   ...(env.telemetry ? { telemetry: { enabled: true } } : {}),
 })
