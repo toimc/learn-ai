@@ -37,4 +37,33 @@ describe('buildAgentDefinitions', () => {
       apiKey: 'sk-x',
     })
   })
+
+  it('context7 工具注入 docs-agent 且命名空间前缀生效，chat-agent 不受影响', () => {
+    const context7Tools = {
+      'context7__resolve-library-id': { id: 'context7__resolve-library-id' },
+    }
+    const defs = buildAgentDefinitions(
+      { model: 'deepseek/deepseek-chat' },
+      context7Tools,
+    )
+    const docs = defs.find((d) => d.id === DOCS_AGENT_ID)
+    const chat = defs.find((d) => d.id === CHAT_AGENT_ID)
+    expect(Object.keys(docs?.tools ?? {})).toContain(
+      'context7__resolve-library-id',
+    )
+    expect(Object.keys(docs?.tools ?? {})).toContain('searchDocsTool')
+    expect(Object.keys(chat?.tools ?? {})).toEqual([
+      'getTimeTool',
+      'getWeatherTool',
+    ])
+  })
+
+  it('context7 工具缺省时 docs-agent 工具集与原有行为一致', () => {
+    const defs = buildAgentDefinitions({ model: 'deepseek/deepseek-chat' })
+    const docs = defs.find((d) => d.id === DOCS_AGENT_ID)
+    expect(Object.keys(docs?.tools ?? {})).toEqual([
+      'searchDocsTool',
+      'listComponentsTool',
+    ])
+  })
 })

@@ -4,6 +4,7 @@ import { createMastraGateway } from '@toimc/server/mastra'
 import { ModelRegistry } from '@toimc/agents'
 import { buildAgentDefinitions } from './agents'
 import { readDevServerEnv } from './env'
+import { loadContext7Tools } from './mcp/context7'
 import { createMockAdapter } from './mock/mock-adapter'
 import { openApiSpec } from './openapi'
 import { createConversationsRoutes } from './routes/conversations'
@@ -49,7 +50,10 @@ export async function createDevApp(
 
   const { app } = await createMastraGateway({
     models: registry,
-    agents: env.mastra ? buildAgentDefinitions(env.mastra) : [],
+    // context7 工具（env 门控 + 失败降级）只挂 docs-agent：外部库文档查询
+    agents: env.mastra
+      ? buildAgentDefinitions(env.mastra, await loadContext7Tools(env))
+      : [],
     ...(env.token ? { auth: { tokens: [env.token] } } : {}),
     chat: {
       // 流结束后把这一轮对话写回服务端会话历史（切走再切回仍在）

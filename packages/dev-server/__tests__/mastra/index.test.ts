@@ -27,6 +27,7 @@ describe('src/mastra 静态导出（Studio 入口）', () => {
 
   it('配置 env 后导出含 chat-agent 的 Mastra 实例', async () => {
     vi.stubEnv('MASTRA_MODEL', 'deepseek/deepseek-chat')
+    vi.stubEnv('CONTEXT7_API_KEY', '')
     const mod = await import('../../src/mastra/index')
     // @mastra/core 1.60 无 getAgents()，用 getAgent 按名取实例并断言构造时的 name
     expect(mod.mastra.getAgent('chat-agent').name).toBe('Chat Agent')
@@ -34,12 +35,14 @@ describe('src/mastra 静态导出（Studio 入口）', () => {
 
   it('注册表 agent 全量挂载：docs-agent 也在 Studio 可见', async () => {
     vi.stubEnv('MASTRA_MODEL', 'deepseek/deepseek-chat')
+    vi.stubEnv('CONTEXT7_API_KEY', '')
     const mod = await import('../../src/mastra/index')
     expect(mod.mastra.getAgent('docs-agent').name).toBe('组件库助手')
   })
 
   it('实例级 storage 来自 createStorage 工厂（traces 落盘，mastra dev 不再警告）', async () => {
     vi.stubEnv('MASTRA_MODEL', 'deepseek/deepseek-chat')
+    vi.stubEnv('CONTEXT7_API_KEY', '')
     const mod = await import('../../src/mastra/index')
     expect(createStorage).toHaveBeenCalled()
     expect(mod.mastra.getStorage()).toMatchObject({
