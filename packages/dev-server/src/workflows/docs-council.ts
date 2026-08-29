@@ -7,6 +7,10 @@ import { parallelPrompt } from '../orchestration/prompts'
 
 export const DOCS_COUNCIL_WORKFLOW_ID = 'docs-council-workflow'
 
+/** 注册表（registry.ts）与 createWorkflow 共用的描述常量（单一事实来源） */
+export const DOCS_COUNCIL_WORKFLOW_DESCRIPTION =
+  '文档议会（三视角并行检索→综合）：同一问题从「组件用法/配置主题/集成数据」三个角度独立检索后综合裁决（Council 模式原生版）。与聊天演示的 orchestrate 工具同源'
+
 /**
  * 并行检索的原生 Workflow 版（spec 16 §10 原生层）：
  * 三路 researcher 独立检索（.parallel()）→ writer 综合裁决，
@@ -62,8 +66,7 @@ export function docsCouncilWorkflow(env: MastraEnv) {
 
   return createWorkflow({
     id: DOCS_COUNCIL_WORKFLOW_ID,
-    description:
-      '文档议会（三视角并行检索→综合）：同一问题从「组件用法/配置主题/集成数据」三个角度独立检索后综合裁决（Council 模式原生版）。与聊天演示的 orchestrate 工具同源',
+    description: DOCS_COUNCIL_WORKFLOW_DESCRIPTION,
     inputSchema: z.object({ task: z.string().describe('要检索的组件库问题') }),
     outputSchema: z.object({
       api: z.string(),

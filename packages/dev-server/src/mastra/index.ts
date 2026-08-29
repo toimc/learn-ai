@@ -4,9 +4,7 @@ import { readDevServerEnv } from '../env'
 import { createStorage } from '../memory'
 import { loadContext7Tools } from '../mcp/context7'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
-import { docsCouncilWorkflow } from '../workflows/docs-council'
-import { docsPipelineWorkflow } from '../workflows/docs-pipeline'
-import { docsSupervisorWorkflow } from '../workflows/docs-supervisor'
+import { buildWorkflowRegistry } from '../workflows/registry'
 
 /**
  * Studio / mastra build / mastra start 的入口：必须是静态命名导出
@@ -37,11 +35,13 @@ const agents = Object.fromEntries(
 
 export const mastra = new Mastra({
   agents,
-  workflows: {
-    [docsPipelineWorkflow(env.mastra).id]: docsPipelineWorkflow(env.mastra),
-    [docsCouncilWorkflow(env.mastra).id]: docsCouncilWorkflow(env.mastra),
-    [docsSupervisorWorkflow(env.mastra).id]: docsSupervisorWorkflow(env.mastra),
-  },
+  // workflow 清单来自注册表（与 /api/workflows 路由同源，消除重复装配）
+  workflows: Object.fromEntries(
+    buildWorkflowRegistry(env.mastra).map((entry) => [
+      entry.id,
+      entry.create(),
+    ]),
+  ),
   storage: createStorage(),
   ...(env.telemetry ? { telemetry: { enabled: true } } : {}),
 })

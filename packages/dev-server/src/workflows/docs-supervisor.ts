@@ -7,6 +7,10 @@ import { instantiateAgent, teamDefinitions } from '../orchestration/children'
 
 export const DOCS_SUPERVISOR_WORKFLOW_ID = 'docs-supervisor-workflow'
 
+/** 注册表（registry.ts）与 createWorkflow 共用的描述常量（单一事实来源） */
+export const DOCS_SUPERVISOR_WORKFLOW_DESCRIPTION =
+  '文档主管循环（supervisor 决定调谁/何时完成）：主 agent 每轮结构化决策委派检索员或起草员，dountil 循环至任务完成或轮次上限（Supervisor 模式原生版）。与聊天演示的 orchestrate 工具同源'
+
 /** 委派轮次上限（16-03：步数预算防无限循环，supervisor maxSteps 同思想） */
 export const SUPERVISOR_MAX_ROUNDS = 6
 
@@ -124,8 +128,7 @@ export function docsSupervisorWorkflow(env: MastraEnv) {
 
   return createWorkflow({
     id: DOCS_SUPERVISOR_WORKFLOW_ID,
-    description:
-      '文档主管循环（supervisor 决定调谁/何时完成）：主 agent 每轮结构化决策委派检索员或起草员，dountil 循环至任务完成或轮次上限（Supervisor 模式原生版）。与聊天演示的 orchestrate 工具同源',
+    description: DOCS_SUPERVISOR_WORKFLOW_DESCRIPTION,
     inputSchema: z.object({ task: z.string().describe('要完成的组件库问题') }),
     outputSchema: z.object({
       task: z.string(),
