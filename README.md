@@ -71,7 +71,7 @@ ai-chat-ui/
 │   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件 / mastra 子路径（createMastraGateway）
 │   │
 │   ├── dev-server/            # @toimc/dev-server — 私有 dev 服务（8787，pnpm dev 随文档站启动）
-│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ Studio 宿主（4111，pnpm dev:studio）
+│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent / docs-agent 组件库助手 + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ Studio 宿主（4111，pnpm dev:studio）
 │   │
 │   ├── playground/            # @toimc/playground — Playground 演示包（私有）
 │   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / sse-adapter 前端适配器
