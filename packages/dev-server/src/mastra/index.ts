@@ -2,6 +2,7 @@ import { Mastra } from '@mastra/core'
 import { Agent } from '@mastra/core/agent'
 import { buildAgentDefinitions } from '../agents'
 import { readDevServerEnv } from '../env'
+import { createStorage } from '../memory'
 
 /**
  * Studio / mastra build / mastra start 的入口：必须是静态命名导出
@@ -37,5 +38,6 @@ const agents = Object.fromEntries(
 
 export const mastra = new Mastra({
   agents,
+  storage: createStorage(),
   ...(env.telemetry ? { telemetry: { enabled: true } } : {}),
 })

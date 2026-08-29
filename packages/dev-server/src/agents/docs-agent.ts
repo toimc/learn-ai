@@ -1,5 +1,6 @@
 import type { MastraAgentDefinition } from '@toimc/server/mastra'
 import { resolveModelConfig } from './model-config'
+import { createMemory } from '../memory'
 import { searchDocsTool } from '../tools/search-docs'
 
 export const DOCS_AGENT_ID = 'docs-agent'
@@ -46,6 +47,8 @@ export function docsAgentDefinition(config: {
     model: resolveModelConfig(config),
     instructions: DOCS_AGENT_INSTRUCTIONS,
     tools: { searchDocsTool },
-    // 不配 memory：文档问答无跨会话记忆需求，会话内上下文由 thread 天然携带
+    // 最小 memory：只要 thread 持久化（Studio 调试对话可回看、threadId 可分享），
+    // 不开 semanticRecall/workingMemory，无跨会话语义记忆副作用
+    memory: createMemory,
   }
 }
