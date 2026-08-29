@@ -3,6 +3,7 @@ import { buildAgentDefinitions } from '../agents'
 import { readDevServerEnv } from '../env'
 import { createStorage } from '../memory'
 import { loadContext7Tools } from '../mcp/context7'
+import { WEATHER_MCP_SERVER_ID, weatherMcpServer } from '../mcp/weather-server'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
 import { buildWorkflowRegistry } from '../workflows/registry'
 
@@ -16,6 +17,7 @@ import { buildWorkflowRegistry } from '../workflows/registry'
  * 子 agent 不进网关模型下拉，但进 Studio 便于单独调试提示词）。
  * workflows 为编排形态的原生版（spec 16 §10）：/workflows 页可运行并看逐步 trace。
  * context7（env 门控 + 失败降级空工具集）用顶层 await 装配，只挂 docs-agent。
+ * mcpServers 为宿主侧：get_weather 经 /mcp 端点暴露给外部 MCP 客户端。
  */
 const env = readDevServerEnv()
 if (!env.mastra) {
@@ -43,5 +45,8 @@ export const mastra = new Mastra({
     ]),
   ),
   storage: createStorage(),
+  // 宿主侧 MCP：mastra dev（4111）自动暴露 /mcp 端点，Claude Code / Inspector 可连。
+  // 注册 key 与 server id 保持一致（listMCPServers 与端点路径引用同一名字）
+  mcpServers: { [WEATHER_MCP_SERVER_ID]: weatherMcpServer },
   ...(env.telemetry ? { telemetry: { enabled: true } } : {}),
 })

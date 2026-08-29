@@ -49,4 +49,13 @@ describe('src/mastra 静态导出（Studio 入口）', () => {
       marker: 'libsql-file-storage',
     })
   })
+
+  it('宿主侧 MCP server 注册进 Mastra 实例（mastra dev 起 /mcp 端点）', async () => {
+    vi.stubEnv('MASTRA_MODEL', 'deepseek/deepseek-chat')
+    vi.stubEnv('CONTEXT7_API_KEY', '')
+    const mod = await import('../../src/mastra/index')
+    expect(Object.keys(mod.mastra.listMCPServers() ?? {})).toContain(
+      'weather-mcp-server',
+    )
+  })
 })

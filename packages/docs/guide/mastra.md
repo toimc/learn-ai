@@ -135,6 +135,41 @@ model: myLanguageModel
 
 运行时注册（浏览器 `POST /api/providers` 即刻组装，`custom-{n}` 递增 id）与环境变量注册的差异见[服务端网关](/guide/server#运行时注册-vs-环境变量注册)。
 
+### 宿主侧：把工具暴露为 MCP server
+
+`CONTEXT7_API_KEY` 一节是**客户端方向**（我们连别人的 MCP server）；dev-server 同时内置了**宿主方向**——用 `@mastra/mcp` 的 `MCPServer` 把本地工具暴露给任意 MCP 客户端（Claude Code / MCP Inspector / 其他 agent 应用）：
+
+```ts
+// packages/dev-server/src/mcp/weather-server.ts
+import { MCPServer } from '@mastra/mcp'
+import { getWeatherTool } from '../tools/get-weather'
+
+export const weatherMcpServer = new MCPServer({
+  id: 'weather-mcp-server',
+  name: 'ai-chat-ui Weather Server',
+  version: '1.0.0',
+  tools: { get_weather: getWeatherTool }, // 本地 Mastra 工具直传，schema 自动转换
+})
+```
+
+两种消费形态：
+
+- **stdio**（本地客户端拉起，已真机验证）：入口 `src/mcp/weather-stdio.ts` 调 `weatherMcpServer.startStdio()`。Claude Code 项目级 `.mcp.json`：
+
+  ```json
+  {
+    "mcpServers": {
+      "weather": {
+        "command": "/bin/zsh",
+        "args": ["-lc", "cd <仓库绝对路径>/packages/dev-server && corepack pnpm exec tsx src/mcp/weather-stdio.ts"]
+      }
+    }
+  }
+  ```
+
+  连上后 `tools/list` 可见 `get_weather(city)`，调用走 wttr.in 真实返回。
+- **注册进 Mastra 实例**：`src/mastra/index.ts` 的 `new Mastra({ mcpServers: { [WEATHER_MCP_SERVER_ID]: weatherMcpServer } })`，`listMCPServers()` 可查。当前 `mastra` CLI 1.26 的 dev server 尚不自动暴露 HTTP 端点（其 `/mcp/v0/*` 路由是 MCP Registry 目录 API），升级 CLI 后此注册即自动获得端点——这也是把注册写进实例的理由。
+
 ## Studio 调试面板
 
 [Mastra Studio](https://mastra.ai) 提供 agent 对话试验、trace 查看等调试能力。已并入 `pnpm dev` 一键全家桶（docs + dev-server + Studio）；只想要 Studio 时单独启动：
