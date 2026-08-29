@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { docsAgentDefinition, DOCS_AGENT_ID } from '../../src/agents/docs-agent'
+import { createMemory } from '../../src/memory'
 
 describe('docsAgentDefinition', () => {
   it('id/name/description 符合 spec（网关模型列表与前端展示来源）', () => {
@@ -24,11 +25,11 @@ describe('docsAgentDefinition', () => {
     expect(instructions).toContain('300')
   })
 
-  it('工具仅挂 searchDocsTool，不配 memory（文档问答无跨会话记忆需求）', () => {
+  it('工具仅挂 searchDocsTool，配最小 memory 工厂（thread 持久化供 Studio 回看）', () => {
     const def = docsAgentDefinition({ model: 'deepseek/deepseek-chat' })
 
     expect(Object.keys(def.tools ?? {})).toEqual(['searchDocsTool'])
-    expect(def.memory).toBeUndefined()
+    expect(def.memory).toBe(createMemory)
   })
 
   it('路由串直传模型配置', () => {
