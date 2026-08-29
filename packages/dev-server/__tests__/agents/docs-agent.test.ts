@@ -25,11 +25,22 @@ describe('docsAgentDefinition', () => {
     expect(instructions).toContain('300')
   })
 
-  it('工具仅挂 searchDocsTool，配最小 memory 工厂（thread 持久化供 Studio 回看）', () => {
+  it('挂 searchDocsTool + listComponentsTool，配最小 memory 工厂（thread 持久化供 Studio 回看）', () => {
     const def = docsAgentDefinition({ model: 'deepseek/deepseek-chat' })
 
-    expect(Object.keys(def.tools ?? {})).toEqual(['searchDocsTool'])
+    expect(Object.keys(def.tools ?? {})).toEqual([
+      'searchDocsTool',
+      'listComponentsTool',
+    ])
     expect(def.memory).toBe(createMemory)
+  })
+
+  it('instructions 含清单类问题路由（list_components）与关键词规范', () => {
+    const def = docsAgentDefinition({ model: 'deepseek/deepseek-chat' })
+    const instructions = def.instructions ?? ''
+
+    expect(instructions).toContain('list_components')
+    expect(instructions).toContain('关键词')
   })
 
   it('路由串直传模型配置', () => {

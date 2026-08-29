@@ -1,6 +1,7 @@
 import type { MastraAgentDefinition } from '@toimc/server/mastra'
 import { resolveModelConfig } from './model-config'
 import { createMemory } from '../memory'
+import { listComponentsTool } from '../tools/list-components'
 import { searchDocsTool } from '../tools/search-docs'
 
 export const DOCS_AGENT_ID = 'docs-agent'
@@ -18,7 +19,9 @@ export const DOCS_AGENT_INSTRUCTIONS = `你是 ai-chat-ui 组件库（Vue 3 组�
 - 通用 Vue/TypeScript 问题，礼貌说明超出范围后可简要提示方向，不展开教学
 
 工具使用规范：
+- 清单类问题（有哪些组件/基础组件/组件列表）必须先调 list_components，再按需用 search_docs 查具体组件
 - 涉及组件用法、API、配置的问题，必须先调用 search_docs 检索文档，基于检索结果回答
+- search_docs 的 keywords 给 1-3 个独立关键词，优先组件英文名（如 MessageBubble）；检索无命中时换词重试，不要凭记忆回答
 - 回答组件 API 时给出处：组件名 + 文档章节
 - 检索结果不含相关信息时，明确说"文档中未找到相关内容"，不要凭记忆编造 API
 
@@ -46,7 +49,7 @@ export function docsAgentDefinition(config: {
     description: 'ai-chat-ui 组件库的技术支持：组件用法、API 查询、问题排查',
     model: resolveModelConfig(config),
     instructions: DOCS_AGENT_INSTRUCTIONS,
-    tools: { searchDocsTool },
+    tools: { searchDocsTool, listComponentsTool },
     // 最小 memory：只要 thread 持久化（Studio 调试对话可回看、threadId 可分享），
     // 不开 semanticRecall/workingMemory，无跨会话语义记忆副作用
     memory: createMemory,
