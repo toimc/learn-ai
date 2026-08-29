@@ -8,6 +8,8 @@ export interface MastraEnv {
   modelApiKey?: string
   /** 展示名（可选） */
   modelName?: string
+  /** 检索等高频轻活用的次级模型（可选；配置则 researcher 用它，演示按角色选模型） */
+  subModel?: string
 }
 
 export interface DevServerEnv {
@@ -39,6 +41,7 @@ export function readDevServerEnv(
           ...(env.MASTRA_MODEL_NAME
             ? { modelName: env.MASTRA_MODEL_NAME }
             : {}),
+          ...(env.MASTRA_SUB_MODEL ? { subModel: env.MASTRA_SUB_MODEL } : {}),
         }
       : null,
     telemetry: env.MASTRA_TELEMETRY === 'true',
