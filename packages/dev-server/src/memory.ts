@@ -14,8 +14,13 @@ const PKG_TEMP_DIR = join(dirname(fileURLToPath(import.meta.url)), '../.temp')
 /** 会话记忆落盘位置（包内 .temp/dev-server.db；tsx / vitest / mastra dev 位置一致） */
 const MEMORY_DB_URL = `file:${join(PKG_TEMP_DIR, 'dev-server.db')}`
 
-/** Mastra 实例级存储落盘位置（traces / workflow 状态，与 memory 库分开） */
-const STORAGE_DB_URL = `file:${join(PKG_TEMP_DIR, 'mastra.db')}`
+/**
+ * Mastra 实例级存储与 memory 同库：1.60 的 memory REST API（Studio 线程列表/
+ * 历史消息的数据源）从实例 storage 读线程，分库会造成写(dev-server.db)读
+ * (mastra.db) split-brain——Studio 对话落地却查不到历史。traces / workflow
+ * 状态与记忆表同文件共存，本地 dev 便利优先于文件级分离。
+ */
+const STORAGE_DB_URL = MEMORY_DB_URL
 
 /** libsql 本地文件模式不自动建父目录，目录缺失时 SQLITE_CANTOPEN 直接崩启动 */
 export function ensureDbDir(url: string): void {
