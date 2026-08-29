@@ -2,6 +2,7 @@ import { Mastra } from '@mastra/core'
 import { buildAgentDefinitions } from '../agents'
 import { readDevServerEnv } from '../env'
 import { createStorage } from '../memory'
+import { loadContext7Tools } from '../mcp/context7'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
 import { docsCouncilWorkflow } from '../workflows/docs-council'
 import { docsPipelineWorkflow } from '../workflows/docs-pipeline'
@@ -15,6 +16,7 @@ import { docsPipelineWorkflow } from '../workflows/docs-pipeline'
  * agent 清单来自注册表 buildAgentDefinitions + teamDefinitions（spec 16 §2：
  * 子 agent 不进网关模型下拉，但进 Studio 便于单独调试提示词）。
  * workflows 为编排形态的原生版（spec 16 §10）：/workflows 页可运行并看逐步 trace。
+ * context7（env 门控 + 失败降级空工具集）用顶层 await 装配，只挂 docs-agent。
  */
 const env = readDevServerEnv()
 if (!env.mastra) {
@@ -23,10 +25,13 @@ if (!env.mastra) {
   )
 }
 
+const context7Tools = await loadContext7Tools(env)
+
 const agents = Object.fromEntries(
-  [...buildAgentDefinitions(env.mastra), ...teamDefinitions(env.mastra)].map(
-    (def) => [def.id, instantiateAgent(def)] as const,
-  ),
+  [
+    ...buildAgentDefinitions(env.mastra, context7Tools),
+    ...teamDefinitions(env.mastra),
+  ].map((def) => [def.id, instantiateAgent(def)] as const),
 )
 
 export const mastra = new Mastra({

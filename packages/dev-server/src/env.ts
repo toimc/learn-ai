@@ -21,6 +21,8 @@ export interface DevServerEnv {
   telemetry: boolean
   /** 网关 Bearer（可选；/health 保持公开） */
   token?: string
+  /** context7 MCP 的 API key（可选；docs-agent 外部库文档工具，src/mcp/context7.ts 消费） */
+  context7ApiKey?: string
 }
 
 export function readDevServerEnv(
@@ -46,5 +48,6 @@ export function readDevServerEnv(
       : null,
     telemetry: env.MASTRA_TELEMETRY === 'true',
     ...(env.MASTRA_TOKEN ? { token: env.MASTRA_TOKEN } : {}),
+    ...(env.CONTEXT7_API_KEY ? { context7ApiKey: env.CONTEXT7_API_KEY } : {}),
   }
 }

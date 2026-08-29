@@ -118,7 +118,7 @@ model: myLanguageModel
 
 ## dev-server：本仓库的完整示例
 
-本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
+本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具；配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
 
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
@@ -128,6 +128,7 @@ model: myLanguageModel
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
 | `MASTRA_TOKEN`         | 可选；网关 Bearer，设置后 `/api/chat` 与 `/api/models` 需携带（`/health` 公开） | `s3cret`                              |
 | `MASTRA_TELEMETRY`     | 可选；Studio 遥测开关                                                  | `true`                               |
+| `CONTEXT7_API_KEY`     | 可选；docs-agent 的 context7 工具 key（stdio 启动 `npx @upstash/context7-mcp`，失败自动降级为不挂载） | `ctx7sk-xxx`                          |
 | `DEV_SERVER_PORT`      | 可选；服务端口，缺省 `8787`                                            | `8787`                               |
 
 模型 API Key 按 Mastra 路由约定的环境变量命名（如 `DEEPSEEK_API_KEY`），只放在 `packages/dev-server/.env`（不提交，参照 `.env.example`）。记忆落盘在 `file:.temp/dev-server.db`（相对 dev-server 包目录，启动时自动建目录），进程重启对话保留。API Key 缺失时 Mastra 直接抛明确错误（如 `Could not find API key process.env.DEEPSEEK_API_KEY`），以 `error` chunk 展示在前端，SSE 流仍完整可解析。

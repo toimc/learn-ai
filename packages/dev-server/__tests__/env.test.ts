@@ -34,4 +34,11 @@ describe('readDevServerEnv', () => {
     const env = readDevServerEnv({ MASTRA_MODEL: 'deepseek/deepseek-chat' })
     expect(env.mastra).toEqual({ model: 'deepseek/deepseek-chat' })
   })
+
+  it('CONTEXT7_API_KEY 存在时解析为 context7ApiKey，缺省不带该字段', () => {
+    expect(
+      readDevServerEnv({ CONTEXT7_API_KEY: 'ctx7sk-test' }).context7ApiKey,
+    ).toBe('ctx7sk-test')
+    expect('context7ApiKey' in readDevServerEnv({})).toBe(false)
+  })
 })
