@@ -4,26 +4,46 @@
 
 ## 测试覆盖范围
 
-### 基础功能测试 (`playground.spec.ts`)
-- ✅ 页面加载和渲染
-- ✅ 消息发送和接收
-- ✅ 会话管理和切换
-- ✅ 流式消息渲染
-- ✅ UI交互功能（侧边栏、主题切换）
-- ✅ 响应式设计（移动端适配）
-- ✅ 性能和稳定性
+### 核心功能测试 (`playground-core.spec.ts`) — 8 个用例
+专注 playground 的实际用户操作流程：
+- ✅ 消息发送与接收
+- ✅ 会话列表切换
+- ✅ 新建对话
+- ✅ 流式消息交互
+- ✅ 基本UI交互（侧边栏、主题切换）
+- ✅ 页面性能
+- ✅ 移动端视图适配
+- ✅ 桌面端视图
 
-### 高级功能测试 (`playground-advanced.spec.ts`)
-- ✅ Markdown渲染（代码块、列表、链接等）
-- ✅ 代码高亮（JavaScript、Vue等）
-- ✅ 思考过程显示
-- ✅ A/B回复对比
-- ✅ 消息操作（复制、重新生成）
-- ✅ 附件功能
-- ✅ 国际化切换
-- ✅ 主题定制
-- ✅ 键盘快捷键
-- ✅ 无障碍支持
+### 基础功能测试 (`playground-simple.spec.ts`) — 14 个用例
+- ✅ 页面加载和布局
+- ✅ 会话列表显示与切换
+- ✅ 新会话创建
+- ✅ 输入框基本功能（输入、清空）
+- ✅ 主题切换界面
+- ✅ 响应式布局
+- ✅ 快捷键功能（Ctrl+K）
+- ✅ 页面加载性能
+- ✅ 控制台错误检查
+- ✅ 可访问性与键盘导航
+- ✅ 基本语义化元素
+
+## 页面选择器约定
+
+测试选择器必须对齐 playground 页面的真实 DOM 结构（`.pg-*` 前缀），
+不要假设组件库内部类名（如 `.ai-chat-message[data-role="user"]`）：
+
+| 目标 | 选择器 |
+|---|---|
+| 主容器 | `.pg-app` |
+| 侧边栏 | `.pg-sidebar` |
+| 主区域 | `.pg-main` |
+| 会话项 | `.pg-conv-item`（激活态 `.pg-conv-item.active`） |
+| 输入框 | `textarea` |
+| 按钮 | `.pg-btn-*` |
+
+编写新测试时优先测**真实用户操作流程**（输入 → Enter → 验证输入框清空），
+而非内部实现细节（流式渲染、Markdown 解析的中间状态）。
 
 ## 运行测试
 
@@ -49,11 +69,11 @@ pnpm test:e2e:headed
 
 ### 运行特定测试
 ```bash
-# 只运行基础功能测试
-pnpm test:e2e playground.spec.ts
+# 只运行核心功能测试
+pnpm test:e2e playground-core.spec.ts
 
-# 只运行高级功能测试  
-pnpm test:e2e playground-advanced.spec.ts
+# 只运行基础功能测试
+pnpm test:e2e playground-simple.spec.ts
 
 # 运行特定测试用例
 pnpm test:e2e --grep "应该能够发送文本消息"
@@ -80,8 +100,8 @@ e2e/
 ├── global-teardown.ts                 # 全局清理
 ├── helpers/
 │   └── test-helpers.ts               # 测试辅助函数
-├── playground.spec.ts                 # 基础功能测试
-└── playground-advanced.spec.ts        # 高级功能测试
+├── playground-core.spec.ts            # 核心功能测试（8 个用例）
+└── playground-simple.spec.ts          # 基础功能测试（14 个用例）
 ```
 
 ## 编写测试指南
@@ -143,9 +163,9 @@ page.on('console', msg => console.log(msg.text()))
 ## 测试覆盖率
 
 当前覆盖率统计：
-- 基础功能: 15个测试用例
-- 高级功能: 20个测试用例
-- 总计: 35个测试用例
+- 核心功能: 8个测试用例
+- 基础功能: 14个测试用例
+- 总计: 22个测试用例，全部通过
 
 ## 维护指南
 

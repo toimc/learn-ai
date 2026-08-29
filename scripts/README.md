@@ -2,6 +2,14 @@
 
 本目录包含 AI Chat UI 组件库的发布相关脚本。
 
+## 📦 发布的包与顺序
+
+需要发布到 npm 的 3 个包（脚本已按依赖顺序发布，无需手动调整）：
+
+1. **`@toimc/core`** — 核心库（无依赖）
+2. **`@toimc/vue`** — Vue 组件库（依赖 core）
+3. **`@toimc/markdown`** — Markdown 渲染库（依赖 core + vue）
+
 ## 📁 脚本文件
 
 ### `publish.sh`
@@ -56,6 +64,8 @@ pnpm build
 # 运行测试
 pnpm test
 ```
+
+**获取 npm Token**：登录 [npmjs.com](https://www.npmjs.com/) → Access Tokens 页面 → 创建 **Automation Token** → 复制保存，不要泄露。
 
 ### 2. 选择发布模式
 
@@ -127,8 +137,9 @@ git reset --hard HEAD~1
 发布前：
 - [ ] Git 工作区干净
 - [ ] 所有测试通过
+- [ ] 类型检查通过（`pnpm type-check`）
 - [ ] 构建成功
-- [ ] 版本号正确
+- [ ] 版本号正确，CHANGELOG 已更新（changeset 模式）
 - [ ] npm token 有效
 
 发布后：
@@ -136,6 +147,12 @@ git reset --hard HEAD~1
 - [ ] git tag 已推送
 - [ ] GitHub Release 已创建
 - [ ] 文档已更新
+
+## 🔄 版本升级类型（SemVer）
+
+- **patch** (0.0.x)：Bug 修复，向后兼容
+- **minor** (0.x.0)：新功能，向后兼容
+- **major** (x.0.0)：破坏性变更，不向后兼容
 
 ## 🔄 CI/CD 集成
 
@@ -149,6 +166,6 @@ git reset --hard HEAD~1
 
 ## 📚 相关文档
 
-- [完整发布指南](../PUBLISH_GUIDE.md)
 - [Changeset 文档](https://github.com/changesets/changesets)
 - [npm 发布文档](https://docs.npmjs.com/cli/v8/commands/npm-publish)
+- [SemVer 规范](https://semver.org/lang/zh-CN/)
