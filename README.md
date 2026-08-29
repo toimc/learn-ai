@@ -152,6 +152,52 @@ flowchart LR
     UI -.->|"渲染 AI 回复"| MD
 ```
 
+### 运行时 Provider 注册链路（自定义模型接入）
+
+用户在设置对话框中填写 OpenAI 兼容 / Anthropic 端点即可注册自定义模型：注册即组装为带工具与会话记忆的 Mastra Agent 模型进入 `ModelRegistry`，当前会话立即可用；浏览器与服务端各有一层持久化，页面刷新与服务重启都不丢配置：
+
+```mermaid
+flowchart TB
+    subgraph browser["浏览器 · Playground"]
+        DIALOG["ProviderSettingsDialog<br/>@toimc/vue 发布组件 · 存储中立<br/>新增 / 编辑 / 删除 + 记住配置勾选"]
+        UPM["useProviderModels<br/>refresh · CRUD · 幽灵 id 校验回退"]
+        LS[("localStorage<br/>selected-model：仅模型 id<br/>saved-providers：完整配置")]
+        DISC{"dispatch-adapter<br/>按会话快照 conv.model 分发"}
+        MOCK["本地 mock 剧本"]
+        UI["@toimc/vue 对话界面 + useChat"]
+    end
+
+    subgraph server["dev-server :8787"]
+        API["/api/providers REST<br/>POST 注册 · PUT 原位更新（id 沿用）<br/>GET 脱敏列表 · DELETE 注销"]
+        MM["createMastraModel · @toimc/agents/mastra<br/>getTime / getWeather 工具 + LibSQL 会话记忆"]
+        REG["ModelRegistry<br/>mock-pro / mock-flash / mock-thinking<br/>+ custom-N 运行时注册项"]
+        CHAT["POST /api/chat<br/>按 model id 查表 → SSE 流式"]
+        DISK[(".temp/providers.json<br/>注册表落盘（git 忽略）")]
+    end
+
+    LLM[("上游 LLM<br/>OpenAI 兼容端点 / Anthropic")]
+
+    DIALOG -->|"emit create / update / remove + persist"| UPM
+    UPM <-->|"读写持久化"| LS
+    UPM -->|"REST 调用"| API
+    API -->|"注册 / 原位重注册"| MM
+    MM --> REG
+    API -.->|"每次变更落盘"| DISK
+    DISK -.->|"启动 restore：id 沿用 + 序号抬高"| API
+    LS -.->|"挂载时逐条静默重注册（失效剔除）"| API
+    UI -->|"chat.send()"| DISC
+    DISC -->|"快照有 model"| CHAT
+    DISC -->|"快照无 model"| MOCK
+    CHAT --> REG
+    MM -.->|"惰性首连（注册不校验连通）"| LLM
+    CHAT ==>|"for await StreamChunk 流式回填"| UI
+```
+
+- **apiKey 边界**：表单 `emit` 瞬间交给宿主；服务端只进内存 / env 注入 / `.temp` 本地落盘（git 忽略），`GET /api/providers` 只回脱敏视图（不含 key，`baseURL` 供编辑预填）
+- **双层持久化**：服务端 `.temp/providers.json` 应对 dev 期 watch 重启（id 沿用、自增序号抬高防撞）；浏览器 `saved-providers` 应对服务重启（挂载时逐条静默重注册，失效条目剔除）。发布组件自身存储中立，「记住配置」勾选经 `payload.persist` 交宿主决策
+- **会话级模型分发**：各会话自持 `model` 快照，`dispatch-adapter` 按快照分发——有值走 `POST /api/chat`（SSE 真实模型），无值回退本地 mock 剧本；顶部切换模型即时改写当前会话快照，编辑重发随新模型走
+- **输入归一化**：model id 自动补 `openai/` 前缀、端点 URL 统一剥除 `/chat/completions` 归一为 base 形态——裸模型名、base / 整段粘贴端点两种填写习惯均归一正确
+
 ## 快速开始
 
 ### 安装

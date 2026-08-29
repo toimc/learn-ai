@@ -16,7 +16,7 @@ title: Playground
   - 思考流式中显示「正在思考…」，图标呼吸动画、内容实时展开、细光标闪烁
   - 点击触发器展开，内容以左侧细线引用式排版展示完整思考步骤
 - **技术特点**：
-  - 流式更新思考内容，`useChat` 在 done 时自动计算耗时
+  - 流式更新思考内容，`useChat` 在首个正文/工具帧到达时收尾思考并计算耗时（不把正文流式时间计入「已思考 X 秒」）
   - 文案走 i18n（`thinking.thoughtFor` / `thinking.thinking`）
   - 动画尊重 `prefers-reduced-motion`
 
@@ -69,15 +69,16 @@ dev-server 配置 `MASTRA_MODEL` 环境变量后，模型下拉会出现 `chat-a
 
 ### 真实模型会话（Provider 设置）
 
-本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key，密钥只存服务端内存，浏览器不落任何密钥），整条链路需要 dev-server 在线（`pnpm dev` 同时启动两者）：
+本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key；密钥只在服务端内存与本地持久化文件间流转，见下方「隐私边界」），整条链路需要 dev-server 在线（`pnpm dev` 同时启动两者）：
 
-- **⚙ 设置按钮**：顶栏右侧 ⚙ 打开 [`ProviderSettingsDialog`](/components/provider-settings-dialog)，选择服务类型（OpenAI 兼容 / Anthropic）、填端点与 API Key、模型名，提交即注册（`POST /api/providers`，注册为带 get_time / get_weather 工具与会话记忆的 Agent 模型）；弹层底部的已注册列表可逐项删除（`DELETE /api/providers/:id`），删除当前选中的模型会自动回到默认行为。
-- **顶栏模型下拉**：dev-server 在线时下拉可用，数据源 `GET /api/models`（Mock 三模型 + env 注册的 `chat-agent` + 运行时注册的 `custom-*` 模型）；选中即对**新建会话**生效，选「默认（本地演示）」回到本地 mock 行为，已有会话不受影响。
+- **⚙ 设置按钮**：顶栏右侧 ⚙ 打开 [`ProviderSettingsDialog`](/components/provider-settings-dialog)，选择服务类型（OpenAI 兼容 / Anthropic）、填端点与 API Key、模型名，提交即注册（`POST /api/providers`，注册为带 get_time / get_weather 工具与会话记忆的 Agent 模型）；端点填 base 形态（如 `https://x.com/v1`）或整段粘贴均可，服务端统一归一化。弹层底部的已注册列表支持**编辑**（`PUT /api/providers/:id` 原位更新，id 沿用、 apiKey 留空需重填）与**逐项删除**（`DELETE /api/providers/:id`，删除当前选中的模型会自动回到默认行为）。
+- **「记住配置」**：表单内勾选（默认开）。勾选时配置持久化在浏览器（localStorage `ai-chat-playground:saved-providers`）与服务端（`.temp/providers.json`，git 忽略），页面刷新、dev 期 watch 重启、服务重启都不丢——服务端重启恢复沿用原 id，浏览器侧在页面挂载时逐条静默重注册并剔除失效条目；取消勾选则该条仅在本次服务进程内有效。
+- **顶栏模型下拉**：dev-server 在线时下拉可用，数据源 `GET /api/models`（Mock 三模型 + env 注册的 `chat-agent` + 运行时注册的 `custom-*` 模型）；切换**即时作用于当前会话**（含已存在的旧会话，编辑重发也走新模型；各会话各自持有模型快照，互不影响），选「默认（本地演示）」当前会话摘除模型、回到本地 mock 行为。服务重启后浏览器持久化的选中 id 若已失效，自动回退默认并清理存储，不会把 unknown model 发给服务端。
 - **新建会话即真实模型**：选中模型后「新建会话」（含 ⌘K）会把模型 id 写进该会话，此后会话内发送的消息经 SSE 走真实模型；无模型的会话行为与现状完全一致。
 - **工具调用进思考面板**：真实模型会话里，模型调用工具的过程（调了什么工具、拿到什么结果）呈现在思考面板内部，随「正在思考… / 已思考 X 秒」折叠展开，下接整合后的 Markdown 回复——思考、工具、正文共享同一套 StreamChunk 流式协议，无需任何线协议改动。
 - **发送失败可见**：真实模型会话中上游报错（密钥错误、端点不通等）时，错误经服务端 `error` chunk 返回，顶部通知条展示「发送失败：<原因>」，下次发送自动清除——错误不写入消息气泡（`useChat` 的设计：`state.error` 与消息内容分离）。
 - **离线提示**：8787 端口的 dev-server 未启动时，点击 ⚙ 顶部出现通知条提示启动方式，模型下拉点击无效但保持装饰外观；服务恢复在线后提示自动消失，本地 mock 演示不受影响。
-- **隐私边界**：localStorage 只持久化「上次选中的模型 id」（key `ai-chat-playground:selected-model`），**绝不写入 apiKey**——密钥只在提交注册的瞬间经请求体直达服务端内存。
+- **隐私边界**：localStorage 有两个 key——`ai-chat-playground:selected-model`（仅模型 id）与 `ai-chat-playground:saved-providers`（勾选「记住配置」时的完整配置，含 apiKey，属 Playground 私有演示包决策；发布组件 `ProviderSettingsDialog` 自身存储中立，不落任何存储，勾选状态经 `payload.persist` 交宿主）。apiKey 不进日志、不进任何 GET 响应（列表只回脱敏视图），服务端落盘文件 `.temp/providers.json` 已被 git 忽略。
 
 ### 主题定制
 想可视化调整令牌并导出 CSS？前往 [主题配置器](/theme-builder)；「原始·断点」组内置 Bootstrap 式 sm/md/lg/xl 四档矩形示意，数值跟随滑块实时变化。
