@@ -142,11 +142,9 @@ const zhCN = {
     patternParallel: '并行',
     patternPipeline: '流水线',
     patternDescDelegate:
-      'researcher 检索 → writer 起草，两步委托（Explorer/Executor）',
-    patternDescParallel:
-      'researcher ×3 从三个角度并行检索，结果并列呈现，综合汇报交给 orchestrator',
-    patternDescPipeline:
-      '检索 → 起草 → 审查；审查不过打回重写一次（重写后不再复审）',
+      'researcher 检索 → writer 起草，父 Agent 掌控（≈ Supervisor 模式）',
+    patternDescParallel: 'researcher ×3 三视角独立检索后综合（≈ Council 模式）',
+    patternDescPipeline: '检索 → 起草 → 审查，路径代码写死（≈ Workflow 模式）',
     presetLabel: '示例问题',
     statusOnline: '已连接',
     statusConnecting: '连接中…',
@@ -327,11 +325,11 @@ const enUS: typeof zhCN = {
     patternParallel: 'Parallel',
     patternPipeline: 'Pipeline',
     patternDescDelegate:
-      'researcher retrieves → writer drafts, two-step delegation (Explorer/Executor)',
+      'researcher retrieves → writer drafts, parent agent stays in control (≈ Supervisor pattern)',
     patternDescParallel:
-      '3 researchers retrieve in parallel from three angles; synthesis is left to the orchestrator',
+      '3 researchers retrieve independently from three angles, then synthesis (≈ Council pattern)',
     patternDescPipeline:
-      'retrieve → draft → review; a failed review triggers one rewrite (no re-review after)',
+      'retrieve → draft → review, path fixed in code (≈ Workflow pattern)',
     presetLabel: 'Sample questions',
     statusOnline: 'Connected',
     statusConnecting: 'Connecting…',

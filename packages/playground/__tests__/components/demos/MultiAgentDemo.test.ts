@@ -89,11 +89,13 @@ describe('MultiAgentDemo', () => {
     expect(w.find('.ma-demo__directive').exists()).toBe(false)
   })
 
-  it('形态切换更新当前形态说明', async () => {
+  it('形态切换更新当前形态说明（标注官方模式映射）', async () => {
     const w = await mountDemo()
-    expect(w.get('.ma-demo__pattern-desc').text()).toContain('researcher')
+    expect(w.get('.ma-demo__pattern-desc').text()).toContain('Supervisor')
     await w.findAll('.ma-demo__pattern-btn')[1].trigger('click')
-    expect(w.get('.ma-demo__pattern-desc').text()).toContain('并行')
+    expect(w.get('.ma-demo__pattern-desc').text()).toContain('Council')
+    await w.findAll('.ma-demo__pattern-btn')[2].trigger('click')
+    expect(w.get('.ma-demo__pattern-desc').text()).toContain('Workflow')
   })
 
   it('orchestrate 工具调用渲染 CollaborationCard，其他工具渲染 ToolCall', async () => {

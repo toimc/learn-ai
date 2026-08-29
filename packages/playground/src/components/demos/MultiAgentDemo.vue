@@ -114,6 +114,7 @@ const modeText = computed(() =>
 // 落 dev-server 默认 mock 模型，由【委托】/【并行】/【流水线】关键字分发剧本
 const chat = useChat(
   createSseAdapter({
+    baseUrl: BASE_URL,
     getModel: () => (hasOrchestrator.value ? ORCHESTRATOR_MODEL_ID : undefined),
   }),
 )
