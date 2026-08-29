@@ -133,6 +133,49 @@ const zhCN = {
     offline: '（离线）',
     offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
   },
+  multiAgent: {
+    title: '多 Agent 协作演示',
+    description:
+      '同一问题、三种编排形态（委托 / 并行 / 流水线）：发送前自动在消息最前注入形态指令 system 消息，orchestrate 工具的协作过程以卡片呈现，回复经 SSE 来自本地 dev-server。',
+    patternLabel: '编排形态',
+    patternDelegate: '委托',
+    patternParallel: '并行',
+    patternPipeline: '流水线',
+    patternDescDelegate:
+      'researcher 检索 → writer 起草，父 Agent 掌控（≈ Supervisor 模式）',
+    patternDescParallel: 'researcher ×3 三视角独立检索后综合（≈ Council 模式）',
+    patternDescPipeline: '检索 → 起草 → 审查，路径代码写死（≈ Workflow 模式）',
+    presetLabel: '示例问题',
+    statusOnline: '已连接',
+    statusConnecting: '连接中…',
+    statusOffline: '未连接',
+    retry: '重试',
+    offlineHint:
+      '无法连接 dev-server（http://localhost:8787）。请在项目根目录运行 pnpm dev（同时启动文档站与 dev 服务）后重试。',
+    modeMock: 'mock 剧本回放',
+    modeOrchestrator: 'orchestrator-agent 真实编排',
+    inputPlaceholder: '选择形态与示例问题，发送体验多 Agent 协作…',
+    emptyHint: '同一问题切换三种形态，对比编排行为与协作卡片。',
+    directiveBadge: '形态指令',
+    card: {
+      badgeDelegate: '委托',
+      badgeParallel: '并行',
+      badgePipeline: '流水线',
+      agentsCount: '{n} 个子 Agent',
+      totalDuration: '总耗时 {ms} ms',
+      roleResearcher: '检索员',
+      roleWriter: '起草员',
+      roleReviewer: '审查员',
+      retried: '已打回重写',
+      verdictPass: '审查通过',
+      verdictRevise: '需修订',
+      showOutput: '产出',
+      hideOutput: '收起',
+      parallelNote: '三路并行检索（单路失败不影响其余两路）',
+      invalidTitle: '协作结果结构异常，以下为原始 JSON：',
+      pending: '编排进行中…',
+    },
+  },
 }
 
 const enUS: typeof zhCN = {
@@ -272,6 +315,53 @@ const enUS: typeof zhCN = {
       "{'@'}toimc/server gateway + SSE protocol (pick model in dropdown)",
     offline: ' (offline)',
     offlineHint: 'Cannot reach {url} — start the service first, then switch.',
+  },
+  multiAgent: {
+    title: 'Multi-Agent Collaboration Demo',
+    description:
+      'One question, three orchestration patterns (delegate / parallel / pipeline): a pattern directive system message is injected at the front before sending; the orchestrate tool renders a collaboration card; replies stream from the local dev-server over SSE.',
+    patternLabel: 'Orchestration pattern',
+    patternDelegate: 'Delegate',
+    patternParallel: 'Parallel',
+    patternPipeline: 'Pipeline',
+    patternDescDelegate:
+      'researcher retrieves → writer drafts, parent agent stays in control (≈ Supervisor pattern)',
+    patternDescParallel:
+      '3 researchers retrieve independently from three angles, then synthesis (≈ Council pattern)',
+    patternDescPipeline:
+      'retrieve → draft → review, path fixed in code (≈ Workflow pattern)',
+    presetLabel: 'Sample questions',
+    statusOnline: 'Connected',
+    statusConnecting: 'Connecting…',
+    statusOffline: 'Offline',
+    retry: 'Retry',
+    offlineHint:
+      'Cannot reach dev-server (http://localhost:8787). Run pnpm dev at the project root (starts the docs site and the dev server together), then retry.',
+    modeMock: 'Mock script replay',
+    modeOrchestrator: 'orchestrator-agent live orchestration',
+    inputPlaceholder: 'Pick a pattern and a sample question, then send…',
+    emptyHint:
+      'Switch between the three patterns on the same question and compare behaviors and collaboration cards.',
+    directiveBadge: 'Pattern directive',
+    card: {
+      badgeDelegate: 'Delegate',
+      badgeParallel: 'Parallel',
+      badgePipeline: 'Pipeline',
+      agentsCount: '{n} sub-agents',
+      totalDuration: 'Total {ms} ms',
+      roleResearcher: 'Researcher',
+      roleWriter: 'Writer',
+      roleReviewer: 'Reviewer',
+      retried: 'Rewritten after review',
+      verdictPass: 'Review passed',
+      verdictRevise: 'Needs revision',
+      showOutput: 'Output',
+      hideOutput: 'Hide',
+      parallelNote:
+        'Three parallel retrievals (one lane failing does not affect the others)',
+      invalidTitle: 'Unexpected collaboration result — raw JSON below:',
+      pending: 'Orchestrating…',
+    },
   },
 }
 

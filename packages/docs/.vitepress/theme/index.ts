@@ -143,9 +143,10 @@ export default {
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
     if (!isPagesBuild) {
-      const { MockServerDemoPage, MockApiPage } =
+      const { MockServerDemoPage, MultiAgentDemoPage, MockApiPage } =
         await import('@toimc/playground')
       app.component('MockServerDemoPage', MockServerDemoPage)
+      app.component('MultiAgentDemoPage', MultiAgentDemoPage)
       app.component('MockApiPage', MockApiPage)
     }
     // 组件文档内嵌交互演示
