@@ -1,15 +1,43 @@
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { LibSQLStore } from '@mastra/libsql'
 import { Memory } from '@mastra/memory'
 
 /**
- * 落盘位置锚定模块自身而非 cwd：mastra CLI 内部会 chdir（实测 dev 模式下
- * cwd 漂到 src/mastra/public），相对路径 file:.temp/... 会让两个库散落不同目录。
- * 本文件位于 <pkg>/src/，上一级即包根；.temp/ 在 .gitignore（任意层级）。
+ * 从起始目录向上找本包（@toimc/dev-server）的 package.json 所在目录。
+ * 必要性：mastra dev 是 bundle 运行——本模块被内联进 .mastra/output/ 的产物里，
+ * ① 目录层级与 src/ 不同，模块锚定会漂移；② **rebuild 会清空 .mastra/ 整个目录**，
+ * 锚在其下的库随重启陪葬（Studio 历史反复丢失的根因）。
+ * 以包名做标记上溯：bundle 内层的 package.json（name "server"）会被跳过，
+ * 最终稳定命中包根，与 tsx / vitest 直跑（src/ 上一级）殊途同归。
  */
-const PKG_TEMP_DIR = join(dirname(fileURLToPath(import.meta.url)), '../.temp')
+function resolvePkgRoot(startDir: string): string {
+  let dir = startDir
+  for (;;) {
+    const pkgPath = join(dir, 'package.json')
+    if (existsSync(pkgPath)) {
+      try {
+        if (
+          JSON.parse(readFileSync(pkgPath, 'utf8')).name === '@toimc/dev-server'
+        ) {
+          return dir
+        }
+      } catch {
+        // 非法 JSON 视为非目标，继续上溯
+      }
+    }
+    const parent = dirname(dir)
+    if (parent === dir) return startDir // 到根仍未命中：兜底旧行为（模块目录）
+    dir = parent
+  }
+}
+
+/** 落盘位置：包根 .temp/（.gitignore 任意层级；网关与 Studio 殊途同归同一文件） */
+const PKG_TEMP_DIR = join(
+  resolvePkgRoot(dirname(fileURLToPath(import.meta.url))),
+  '.temp',
+)
 
 /** 会话记忆落盘位置（包内 .temp/dev-server.db；tsx / vitest / mastra dev 位置一致） */
 const MEMORY_DB_URL = `file:${join(PKG_TEMP_DIR, 'dev-server.db')}`
