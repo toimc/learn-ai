@@ -33,8 +33,13 @@ export function docsPipelineWorkflow(env: MastraEnv) {
     id: 'retrieve',
     inputSchema: z.object({ task: z.string() }),
     outputSchema: z.object({ task: z.string(), research: z.string() }),
-    execute: async ({ inputData }) => {
+    execute: async ({ inputData, mastra }) => {
       const result = await researcher.generate(inputData.task)
+      // 埋点演示：mastra 由框架注入，结构化日志经 observability 转发进 Studio logs 视图并与本 step 的 trace 关联
+      mastra.getLogger().info('检索完成', {
+        task: inputData.task,
+        research_chars: result.text.length,
+      })
       return { task: inputData.task, research: result.text }
     },
   })
