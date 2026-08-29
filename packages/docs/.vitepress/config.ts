@@ -10,6 +10,7 @@ const isPages = process.env.DOCS_TARGET === 'pages'
 // 仅本地开发可用的导航项（依赖 pnpm dev 同时启动的 dev-server）
 const mockOnlyNav: DefaultTheme.NavItem[] = [
   { text: 'Mock 演示', link: '/mock-server-demo' },
+  { text: '多 Agent 演示', link: '/multi-agent-demo' },
   { text: '接口文档', link: '/mock-api' },
 ]
 
@@ -18,10 +19,14 @@ export default defineConfig({
   title: 'AI Chat UI',
   description: '后端无关的 AI 聊天界面组件库',
   base: process.env.BASE_PATH || '/',
-  srcExclude: isPages ? ['mock-server-demo.md', 'mock-api.md'] : [],
+  srcExclude: isPages
+    ? ['mock-server-demo.md', 'multi-agent-demo.md', 'mock-api.md']
+    : [],
   // 死链检查是静态 AST 扫描，MockOnly 的运行时条件渲染豁免不了它；
-  // 仅 pages 模式精确放行这两个被剔除页面的链接（playground.md 内 MockOnly 包裹的提示块）
-  ignoreDeadLinks: isPages ? ['/mock-server-demo', '/mock-api'] : false,
+  // 仅 pages 模式精确放行被剔除页面的链接（playground.md 内 MockOnly 包裹的提示块）
+  ignoreDeadLinks: isPages
+    ? ['/mock-server-demo', '/multi-agent-demo', '/mock-api']
+    : false,
 
   head: [
     // 首屏防闪：在 Vue 挂载前同步读取 localStorage 设 data-theme，避免亮暗闪屏
