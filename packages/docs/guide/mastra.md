@@ -127,11 +127,15 @@ model: myLanguageModel
 | `MASTRA_MODEL_API_KEY` | 可选；自定义端点的 key（**url 场景必传**：Mastra url 场景不自动读 provider env） | `sk-xxx`                              |
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
 | `MASTRA_TOKEN`         | 可选；网关 Bearer，设置后 `/api/chat` 与 `/api/models` 需携带（`/health` 公开） | `s3cret`                              |
-| `MASTRA_TELEMETRY`     | 可选；Studio 遥测开关                                                  | `true`                               |
+| `MASTRA_TELEMETRY`     | 可选；Studio 可观测性开关（traces/logs，默认开启，仅 `false` 显式关闭） | `false`                              |
 | `CONTEXT7_API_KEY`     | 可选；docs-agent 的 context7 工具 key（stdio 启动 `npx @upstash/context7-mcp`，失败自动降级为不挂载） | `ctx7sk-xxx`                          |
 | `DEV_SERVER_PORT`      | 可选；服务端口，缺省 `8787`                                            | `8787`                               |
 
 模型 API Key 按 Mastra 路由约定的环境变量命名（如 `DEEPSEEK_API_KEY`），只放在 `packages/dev-server/.env`（不提交，参照 `.env.example`）。记忆落盘在 `file:.temp/dev-server.db`（相对 dev-server 包目录，启动时自动建目录），进程重启对话保留。API Key 缺失时 Mastra 直接抛明确错误（如 `Could not find API key process.env.DEEPSEEK_API_KEY`），以 `error` chunk 展示在前端，SSE 流仍完整可解析。
+
+### 可观测性：traces 与 logs（Studio 线）
+
+Studio 线（`mastra dev`，4111）默认开启可观测性：agent 运行、工具调用、workflow step 自动产生 spans，`PinoLogger` 日志双写（控制台 + 观测库）并自动关联 trace/span ID，Studio 的 Observability 视图直接查看。存储为 composite 双域路由：会话域 LibSQL（`file:.temp/dev-server.db`，不动），观测域 DuckDB（`.temp/observability.duckdb`——LibSQL 观测域不支持日志落库，DuckDB 是官方本地推荐组合且提供 metrics 聚合，即 Studio 观测图表的数据源）。删掉 `.temp/observability.duckdb` 即可重置演示数据，不影响会话历史；span 输出经 `SensitiveDataFilter` 脱敏（passwords/tokens/keys）。`MASTRA_TELEMETRY=false` 显式关闭。注意：`@mastra/core` 锚 1.60，观测栈版本在 `pnpm-workspace.yaml` overrides 锁定（`@mastra/loggers@1.2.0`、`@mastra/observability@1.16.6`、`@mastra/duckdb@1.6.3`——更高版本依赖 core 1.63+ 的导出，会运行时崩溃）。
 
 运行时注册（浏览器 `POST /api/providers` 即刻组装，`custom-{n}` 递增 id）与环境变量注册的差异见[服务端网关](/guide/server#运行时注册-vs-环境变量注册)。
 

@@ -117,7 +117,7 @@ export const searchDocsTool = createTool({
     component: z.string().optional().describe('限定组件名时填写，提高命中率'),
   }),
   // @mastra/core 1.60 的 execute 签名是 (inputData, executionContext)
-  execute: async ({ keywords, component }) => {
+  execute: async ({ keywords, component }, context) => {
     const terms = expandKeywords(keywords ?? [], component)
     if (terms.length === 0) {
       return { results: [], hint: HINT_NO_HIT }
@@ -188,6 +188,13 @@ export const searchDocsTool = createTool({
     }
 
     const results = scored.sort((a, b) => b.score - a.score).slice(0, 5)
+
+    // 网关线裸 Agent 调用本工具时 context.mastra 不存在，须 optional chaining 不可崩
+    context?.mastra?.getLogger()?.info('检索文档', {
+      query: terms.join(' '),
+      hits: scored.length,
+    })
+
     return results.length === 0 ? { results, hint: HINT_NO_HIT } : { results }
   },
 })

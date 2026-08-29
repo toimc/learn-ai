@@ -148,7 +148,7 @@ describe('辅助路由', () => {
     const app = await createDevApp({
       port: 8787,
       mastra: null,
-      telemetry: false,
+      observability: false,
     })
     const { models } = (await (await app.request('/api/models')).json()) as {
       models: { id: string }[]

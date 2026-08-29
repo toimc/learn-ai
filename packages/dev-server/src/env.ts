@@ -17,8 +17,8 @@ export interface DevServerEnv {
   port: number
   /** 存在即启用 mastra agents；null = 纯 mock 模式 */
   mastra: MastraEnv | null
-  /** Studio 遥测开关（src/mastra/index.ts 消费） */
-  telemetry: boolean
+  /** Studio 可观测性开关（默认开启 opt-out，仅 MASTRA_TELEMETRY=false 显式关闭；src/mastra/index.ts 消费） */
+  observability: boolean
   /** 网关 Bearer（可选；/health 保持公开） */
   token?: string
   /** context7 MCP 的 API key（可选；docs-agent 外部库文档工具，src/mcp/context7.ts 消费） */
@@ -46,7 +46,7 @@ export function readDevServerEnv(
           ...(env.MASTRA_SUB_MODEL ? { subModel: env.MASTRA_SUB_MODEL } : {}),
         }
       : null,
-    telemetry: env.MASTRA_TELEMETRY === 'true',
+    observability: env.MASTRA_TELEMETRY !== 'false',
     ...(env.MASTRA_TOKEN ? { token: env.MASTRA_TOKEN } : {}),
     ...(env.CONTEXT7_API_KEY ? { context7ApiKey: env.CONTEXT7_API_KEY } : {}),
   }

@@ -10,9 +10,11 @@ import type { MastraEnv } from '../../src/env'
 vi.mock('../../src/memory', () => ({
   createMemory: () => undefined,
   // Mastra 构造时会调 storage.__setLogger 挂日志器，mock 对象需带上这个方法
-  createStorage: vi.fn(() => ({
-    marker: 'libsql-file-storage',
+  // createCompositeStorage 为 async（DuckDB 观测域），mock 返回 Promise
+  createCompositeStorage: vi.fn(async () => ({
+    marker: 'composite-file-storage',
     __setLogger: () => {},
+    getStore: async () => undefined,
   })),
 }))
 
