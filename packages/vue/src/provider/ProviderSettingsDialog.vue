@@ -280,6 +280,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .ai-chat-provider-dialog__actions {
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
   }
 
   .ai-chat-provider-dialog__remember {
