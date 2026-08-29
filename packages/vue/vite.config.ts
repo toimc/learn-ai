@@ -3,7 +3,11 @@ import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
-  plugins: [vue(), dts({ rollupTypes: true })],
+  plugins: [
+    // entryRoot/exclude 与 core 同款：测试迁出 src 后不补会导致 dts 落到 dist/src/**，types 入口断裂
+    vue(),
+    dts({ rollupTypes: true, entryRoot: 'src', exclude: ['__tests__'] }),
+  ],
   build: {
     lib: {
       entry: 'src/index.ts',

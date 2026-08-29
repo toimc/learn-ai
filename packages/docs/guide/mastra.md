@@ -118,11 +118,11 @@ model: myLanguageModel
 
 ## dev-server：本仓库的完整示例
 
-本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent`，缺省时是纯 mock 模式（零 mastra 依赖启动）。
+本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
 
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
-| `MASTRA_MODEL`         | 存在才注册 `chat-agent`；缺省时行为与纯 mock 完全一致                  | `deepseek/deepseek-chat`              |
+| `MASTRA_MODEL`         | 存在才注册 `chat-agent` 与 `docs-agent`；缺省时行为与纯 mock 完全一致  | `deepseek/deepseek-chat`              |
 | `MASTRA_MODEL_URL`     | 可选；OpenAI 兼容自定义端点，传入后 `model` 走 `{ id, url }` 对象形态  | `https://your-gateway.example.com/v1` |
 | `MASTRA_MODEL_API_KEY` | 可选；自定义端点的 key（**url 场景必传**：Mastra url 场景不自动读 provider env） | `sk-xxx`                              |
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
