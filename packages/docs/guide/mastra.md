@@ -137,7 +137,7 @@ model: myLanguageModel
 
 ## Studio 调试面板
 
-[Mastra Studio](https://mastra.ai) 提供 agent 对话试验、trace 查看等调试能力，按需启动：
+[Mastra Studio](https://mastra.ai) 提供 agent 对话试验、trace 查看等调试能力。已并入 `pnpm dev` 一键全家桶（docs + dev-server + Studio）；只想要 Studio 时单独启动：
 
 ```bash
 # 仓库根目录（需 packages/dev-server/.env 配置 MASTRA_MODEL，Studio 需要真实模型）

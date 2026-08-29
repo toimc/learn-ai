@@ -29,9 +29,9 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 
 | 命令 | 作用 |
 |------|------|
-| `pnpm dev` | 同时启动文档站（VitePress 5173）与 dev-server（8787） |
+| `pnpm dev` | 一键全家桶：文档站（VitePress 5173）+ dev-server（8787）+ Mastra Studio（4111） |
 | `pnpm dev:docs` / `pnpm dev:server` | 只启动文档站 / 只启动 dev-server |
-| `pnpm dev:studio` | 启动 Mastra Studio（4111，需 `packages/dev-server/.env` 配置 `MASTRA_MODEL`） |
+| `pnpm dev:studio` | 只启动 Mastra Studio（4111，需 `packages/dev-server/.env` 配置 `MASTRA_MODEL`；缺配置时该进程报错退出，不影响 `pnpm dev` 其余成员） |
 | `pnpm build` | 构建所有包 |
 | `pnpm test` | 运行全部测试（Vitest，从根目录覆盖所有包） |
 | `pnpm test:watch` | 测试监听模式 |

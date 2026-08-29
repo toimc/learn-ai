@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n docs,server -c blue,green \"pnpm -C packages/docs dev\" \"pnpm -C packages/dev-server dev\"",
+    "dev": "concurrently -n docs,server,studio -c blue,green,magenta \"pnpm -C packages/docs dev\" \"pnpm -C packages/dev-server dev\" \"pnpm -C packages/dev-server studio\"",
     "dev:docs": "pnpm -C packages/docs dev",
     "dev:server": "pnpm -C packages/dev-server dev",
     "dev:studio": "pnpm -C packages/dev-server studio",
