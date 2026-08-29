@@ -6,7 +6,6 @@ describe('readDevServerEnv', () => {
     const env = readDevServerEnv({})
     expect(env.mastra).toBeNull()
     expect(env.port).toBe(8787)
-    expect(env.telemetry).toBe(false)
   })
 
   it('MASTRA_MODEL 存在即启用 mastra agents，可选字段按需带入', () => {
@@ -15,7 +14,6 @@ describe('readDevServerEnv', () => {
       MASTRA_MODEL_URL: 'https://gw.example/v1',
       MASTRA_MODEL_API_KEY: 'sk-x',
       MASTRA_MODEL_NAME: 'Chat Agent',
-      MASTRA_TELEMETRY: 'true',
       MASTRA_TOKEN: 't',
       DEV_SERVER_PORT: '9000',
     })
@@ -25,7 +23,6 @@ describe('readDevServerEnv', () => {
       modelApiKey: 'sk-x',
       modelName: 'Chat Agent',
     })
-    expect(env.telemetry).toBe(true)
     expect(env.token).toBe('t')
     expect(env.port).toBe(9000)
   })
@@ -40,5 +37,25 @@ describe('readDevServerEnv', () => {
       readDevServerEnv({ CONTEXT7_API_KEY: 'ctx7sk-test' }).context7ApiKey,
     ).toBe('ctx7sk-test')
     expect('context7ApiKey' in readDevServerEnv({})).toBe(false)
+  })
+
+  it('observability 默认开启（opt-out）：不设 MASTRA_TELEMETRY 为 true', () => {
+    expect(readDevServerEnv({}).observability).toBe(true)
+    expect(
+      readDevServerEnv({ MASTRA_MODEL: 'deepseek/deepseek-chat' })
+        .observability,
+    ).toBe(true)
+  })
+
+  it('MASTRA_TELEMETRY 显式 false 才关闭 observability', () => {
+    expect(readDevServerEnv({ MASTRA_TELEMETRY: 'false' }).observability).toBe(
+      false,
+    )
+  })
+
+  it('MASTRA_TELEMETRY=true 时 observability 为 true', () => {
+    expect(readDevServerEnv({ MASTRA_TELEMETRY: 'true' }).observability).toBe(
+      true,
+    )
   })
 })

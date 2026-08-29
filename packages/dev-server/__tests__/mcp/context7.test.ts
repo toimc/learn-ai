@@ -4,7 +4,11 @@ import { loadContext7Tools } from '../../src/mcp/context7'
 describe('loadContext7Tools 门控', () => {
   it('纯 mock 模式（无 mastra）返回空对象，不发起连接', async () => {
     expect(
-      await loadContext7Tools({ port: 8787, mastra: null, telemetry: false }),
+      await loadContext7Tools({
+        port: 8787,
+        mastra: null,
+        observability: false,
+      }),
     ).toEqual({})
   })
 
@@ -13,7 +17,7 @@ describe('loadContext7Tools 门控', () => {
       await loadContext7Tools({
         port: 8787,
         mastra: { model: 'deepseek/deepseek-chat' },
-        telemetry: false,
+        observability: false,
       }),
     ).toEqual({})
   })
