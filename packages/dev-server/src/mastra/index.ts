@@ -6,6 +6,7 @@ import { loadContext7Tools } from '../mcp/context7'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
 import { docsCouncilWorkflow } from '../workflows/docs-council'
 import { docsPipelineWorkflow } from '../workflows/docs-pipeline'
+import { docsSupervisorWorkflow } from '../workflows/docs-supervisor'
 
 /**
  * Studio / mastra build / mastra start 的入口：必须是静态命名导出
@@ -39,6 +40,7 @@ export const mastra = new Mastra({
   workflows: {
     [docsPipelineWorkflow(env.mastra).id]: docsPipelineWorkflow(env.mastra),
     [docsCouncilWorkflow(env.mastra).id]: docsCouncilWorkflow(env.mastra),
+    [docsSupervisorWorkflow(env.mastra).id]: docsSupervisorWorkflow(env.mastra),
   },
   storage: createStorage(),
   ...(env.telemetry ? { telemetry: { enabled: true } } : {}),

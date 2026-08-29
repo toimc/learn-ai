@@ -30,9 +30,12 @@ title: 多 Agent 协作演示
 |---|---|---|
 | `docs-pipeline-workflow` | retrieve → draft → review → **branch**（verdict=revise 时走 revise 重写）→ report | 流水线 ≈ Workflow 模式 |
 | `docs-council-workflow` | retrieve_api / retrieve_theme / retrieve_data **三路 parallel** → synthesize 综合 | 并行 ≈ Council 模式 |
+| `docs-supervisor-workflow` | delegate **dountil 循环**（主管每轮 structuredOutput 决策调检索员/起草员/完成，轮次上限 6）→ report | 委托 ≈ Supervisor 模式 |
 
 两层的关系正是 16-03「手搓 → 原生」教学阶梯的落地：手搓版钉死「委派的本质是工具调用」；原生版把执行图交给框架，换来 Studio 的图渲染与逐步 trace。prompt 模板与 verdict 解析抽在 `orchestration/prompts.ts` 共用——两层行为同源，13 条契约测试钉住模板不漂移。
 
-> 1.60 版本备注：`branch` 元组第二元素是单个 Step（非数组）；branch 后续步骤的输入是按 step id 键控的可选对象，跨步骤取数走 execute 参数里的 `getStepResult`。
+**supervisor workflow 是三种形态里唯一「控制权交给 LLM」的原生版**：pipeline/council 的执行路径代码写死，而 supervisor 每轮由主 agent 结构化决策（`research` / `draft` / `done`）决定委派谁——同一问题两次运行可能走出不同的委派序列，dountil 循环与 6 轮上限（16-03 的步数预算思想）兜住不确定性。每轮决策与子 agent 产出都在 trace 里逐轮可见。
+
+> 1.60 版本备注：`branch` 元组第二元素是单个 Step（非数组）；branch 后续步骤的输入是按 step id 键控的可选对象，跨步骤取数走 execute 参数里的 `getStepResult`；`dountil` 条件参数自带 `iterationCount`，配合轮次上限防死循环；`generate({ structuredOutput: { schema } })` 取结构化结果。
 
 相关背景见 16 章笔记：单 Agent 三种失败模式、多 Agent 四模式选型（三问决策树）、手搓 task 工具 vs 原生 Supervisor、按角色选模型（`MASTRA_SUB_MODEL` 让 researcher 用便宜模型）。
