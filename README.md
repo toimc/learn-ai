@@ -71,7 +71,7 @@ ai-chat-ui/
 │   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件 / mastra 子路径（createMastraGateway）
 │   │
 │   ├── dev-server/            # @toimc/dev-server — 私有 dev 服务（8787，pnpm dev 随文档站启动）
-│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent / docs-agent 组件库助手 + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ Studio 宿主（4111，pnpm dev:studio）
+│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent / docs-agent 组件库助手 + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ MCP 工具适配（context7 外部库文档，CONTEXT7_API_KEY 门控）/ Studio 宿主（4111，pnpm dev:studio）
 │   │
 │   ├── playground/            # @toimc/playground — Playground 演示包（私有）
 │   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / sse-adapter 前端适配器
@@ -416,6 +416,8 @@ pnpm lint           # 代码检查
 pnpm type-check     # 类型检查
 pnpm clean          # 清理构建产物
 ```
+
+**dev-server 的 context7 MCP（可选）**：docs-agent 除本库 `search_docs` 检索外，还可查外部库最新文档——在 `packages/dev-server/.env` 配置 `CONTEXT7_API_KEY`（参照 `.env.example`）后，启动时经 stdio 拉起 `npx -y @upstash/context7-mcp` 并动态发现工具（`context7__resolve-library-id` 等）；key 缺失或连接失败自动降级为不挂载，不影响启动。实现见 `packages/dev-server/src/mcp/`（`@modelcontextprotocol/sdk` 客户端适配层，随 `pnpm install` 安装，无需手动操作）。
 
 ### 端到端测试
 

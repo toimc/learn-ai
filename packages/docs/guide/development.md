@@ -20,7 +20,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 | `playground` | 私有演示包，承载 Playground 页面与 mock 数据，每个功能一个独立 Demo 组件 | 依赖上述三个包 |
 | `agents` | 服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径） | **零外部依赖**（原生 fetch） |
 | `server` | Hono 聊天网关（+ 可选 `/mastra` 子路径） | 依赖 `agents` |
-| `dev-server` | 私有 dev 服务：mock 剧本 + mastra agents（env 门控）+ Studio 宿主 | 依赖 `core` / `agents` / `server` |
+| `dev-server` | 私有 dev 服务：mock 剧本 + mastra agents（env 门控）+ MCP 工具适配（context7 外部库文档，`CONTEXT7_API_KEY` 门控）+ Studio 宿主 | 依赖 `core` / `agents` / `server` / `@modelcontextprotocol/sdk`（MCP 客户端） |
 | `docs` | VitePress 文档站（本站） | 依赖上述三个包与 `playground` |
 
 ## 常用命令
@@ -40,6 +40,8 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 | `pnpm clean` | 清理所有包的 dist |
 
 在 worktree 或全新环境中跑 `pnpm type-check` 前，需先 `pnpm build` 出 `core` 的 dist（类型检查消费构建产物）。
+
+dev-server 的全部环境变量（`MASTRA_MODEL` 模型门控、`CONTEXT7_API_KEY` 外部库文档工具等）见 [Mastra 集成](/guide/mastra#dev-server本仓库的完整示例) 的 env 表；context7 工具由 `src/mcp/` 的 stdio 适配层在启动时动态发现，key 缺失或连接失败自动降级，不影响启动。
 
 ## 编码规范
 
