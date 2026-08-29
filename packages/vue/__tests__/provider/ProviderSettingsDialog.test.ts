@@ -290,6 +290,18 @@ describe('ProviderSettingsDialog 编辑已注册 provider', () => {
     expect(w.find('.ai-chat-provider-dialog__cancel-edit').exists()).toBe(true)
   })
 
+  it('编辑态操作区按钮尺寸一致：取消编辑与保存修改同为 medium', async () => {
+    const w = mountDialog({ providers: [editTarget] })
+    await w.get('.ai-chat-provider-dialog__edit').trigger('click')
+
+    const cancel = w.get('.ai-chat-provider-dialog__cancel-edit')
+    const submit = w.get('.ai-chat-provider-dialog__submit')
+    // 同一操作区高度必须一致（CLAUDE.md 固定高度条款），主次层级靠 secondary/primary 区分
+    expect(cancel.classes()).toContain('ai-chat-btn--medium')
+    expect(cancel.classes()).not.toContain('ai-chat-btn--small')
+    expect(submit.classes()).toContain('ai-chat-btn--medium')
+  })
+
   it('编辑态填新 apiKey 提交：emit update 携带原 id 与完整载荷', async () => {
     const w = mountDialog({ providers: [editTarget] })
     await w.get('.ai-chat-provider-dialog__edit').trigger('click')

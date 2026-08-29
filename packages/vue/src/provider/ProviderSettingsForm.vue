@@ -303,7 +303,6 @@ function onSubmit() {
       <Button
         v-if="editingId"
         type="secondary"
-        size="small"
         class="ai-chat-provider-dialog__cancel-edit"
         @click="cancelEdit"
       >
