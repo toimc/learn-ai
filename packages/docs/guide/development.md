@@ -20,7 +20,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 | `playground` | 私有演示包，承载 Playground 页面与 mock 数据，每个功能一个独立 Demo 组件 | 依赖上述三个包 |
 | `agents` | 服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径） | **零外部依赖**（原生 fetch） |
 | `server` | Hono 聊天网关（+ 可选 `/mastra` 子路径） | 依赖 `agents` |
-| `dev-server` | 私有 dev 服务：mock 剧本 + mastra agents（env 门控）+ MCP 工具适配（context7 外部库文档，`CONTEXT7_API_KEY` 门控）+ Studio 宿主 | 依赖 `core` / `agents` / `server` / `@modelcontextprotocol/sdk`（MCP 客户端） |
+| `dev-server` | 私有 dev 服务：mock 剧本 + mastra agents（env 门控）+ MCP 客户端适配（context7 外部库文档，`CONTEXT7_API_KEY` 门控）+ MCP 宿主（`get_weather` 经 stdio 暴露）+ Studio 宿主 | 依赖 `core` / `agents` / `server` / `@modelcontextprotocol/sdk`（MCP 客户端）/ `@mastra/mcp`（MCP 宿主） |
 | `docs` | VitePress 文档站（本站） | 依赖上述三个包与 `playground` |
 
 ## 常用命令

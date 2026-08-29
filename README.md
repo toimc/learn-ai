@@ -419,6 +419,8 @@ pnpm clean          # 清理构建产物
 
 **dev-server 的 context7 MCP（可选）**：docs-agent 除本库 `search_docs` 检索外，还可查外部库最新文档——在 `packages/dev-server/.env` 配置 `CONTEXT7_API_KEY`（参照 `.env.example`）后，启动时经 stdio 拉起 `npx -y @upstash/context7-mcp` 并动态发现工具（`context7__resolve-library-id` 等）；key 缺失或连接失败自动降级为不挂载，不影响启动。实现见 `packages/dev-server/src/mcp/`（`@modelcontextprotocol/sdk` 客户端适配层，随 `pnpm install` 安装，无需手动操作）。
 
+**宿主方向**（把本地工具暴露给 MCP 客户端）：`@mastra/mcp` 的 `MCPServer` 把 `get_weather` 挂为 MCP 工具，stdio 入口 `packages/dev-server/src/mcp/weather-stdio.ts` 供 Claude Code / MCP Inspector 以 command 形式直连，用法见[智能体接入](/guide/mastra#宿主侧-把工具暴露为-mcp-server)。
+
 ### 端到端测试
 
 项目使用 Playwright 进行端到端测试，覆盖 Playground 的核心功能：
