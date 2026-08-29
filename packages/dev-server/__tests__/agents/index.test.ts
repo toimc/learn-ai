@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { buildAgentDefinitions } from '../../src/agents/index'
 import { CHAT_AGENT_ID } from '../../src/agents/chat-agent'
+import { DOCS_AGENT_ID } from '../../src/agents/docs-agent'
 
 describe('buildAgentDefinitions', () => {
+  it('注册表含 chat-agent 与 docs-agent，顺序稳定', () => {
+    const defs = buildAgentDefinitions({ model: 'deepseek/deepseek-chat' })
+    expect(defs.map((d) => d.id)).toEqual([CHAT_AGENT_ID, DOCS_AGENT_ID])
+  })
+
   it('产出 chat-agent 定义：路由串直传 + 双工具 + memory 工厂', () => {
     const [def] = buildAgentDefinitions({ model: 'deepseek/deepseek-chat' })
     expect(def.id).toBe(CHAT_AGENT_ID)

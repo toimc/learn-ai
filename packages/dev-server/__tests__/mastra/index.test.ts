@@ -19,4 +19,10 @@ describe('src/mastra 静态导出（Studio 入口）', () => {
     // @mastra/core 1.60 无 getAgents()，用 getAgent 按名取实例并断言构造时的 name
     expect(mod.mastra.getAgent('chat-agent').name).toBe('Chat Agent')
   })
+
+  it('注册表 agent 全量挂载：docs-agent 也在 Studio 可见', async () => {
+    vi.stubEnv('MASTRA_MODEL', 'deepseek/deepseek-chat')
+    const mod = await import('../../src/mastra/index')
+    expect(mod.mastra.getAgent('docs-agent').name).toBe('组件库助手')
+  })
 })
