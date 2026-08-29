@@ -144,7 +144,7 @@ model: myLanguageModel
 corepack pnpm dev:studio
 ```
 
-Studio 读 `packages/dev-server/src/mastra/index.ts` 的**静态命名导出** `export const mastra`（mastra CLI 只认模块级静态导出，工厂函数或运行时赋值拿不到），从中加载全部 agent 定义。UI 默认 **4111 端口，由 mastra CLI 自管**，与网关 8787 互不冲突；缺 `MASTRA_MODEL` 时启动抛可读错误。同款 CLI 还有 `mastra build` / `mastra start`（dev-server 包内 `pnpm build` / `pnpm start:mastra`），可把 agents 构建为独立部署产物。
+Studio 读 `packages/dev-server/src/mastra/index.ts` 的**静态命名导出** `export const mastra`（mastra CLI 只认模块级静态导出，工厂函数或运行时赋值拿不到），从中加载全部 agent 定义。脚本内部是 `mastra dev -e .env`——**Studio UI 与 Mastra API 一体**，UI 默认 **4111 端口**、带 watch 热更新，与网关 8787 互不冲突；缺 `MASTRA_MODEL` 时启动抛可读错误。同款 CLI 还有 `mastra build` / `mastra start`（dev-server 包内 `pnpm build` / `pnpm start:mastra`），可把 agents 构建为独立部署产物。
 
 Studio 只是**按需调试工具**（查看 agent 定义 / trace / playground 试验），不参与任何 dev 编排，日常开发不需要它。
 
