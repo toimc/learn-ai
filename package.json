@@ -30,7 +30,7 @@
   },
   "packageManager": "pnpm@11.21.0",
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
+    "pre-commit": "npx lint-staged && python3 .codex/hooks/documentation_sync.py staged",
     "commit-msg": "npx --no -- commitlint --edit $1"
   },
   "lint-staged": {

@@ -279,6 +279,29 @@ def expected_documentation(path):
             "docs": {"packages/docs/playground.md"},
         }
 
+    # dev-server：公开 REST 端点与 agent 行为的文档面（按目录分流；
+    # 演示组件归 playground 规则，这里只管服务端源码）
+    if path.startswith("packages/dev-server/src/"):
+        if "/routes/" in path or path.endswith("openapi.ts"):
+            return {
+                "label": "dev-server 接口清单",
+                "docs": {"packages/docs/mock-api.md"},
+            }
+        if "/rag/" in path or "/tools/" in path:
+            return {
+                "label": "语义检索与工具行为",
+                "docs": {"packages/docs/guide/rag.md", "packages/docs/vector-search-demo.md"},
+            }
+        if path.endswith("memory.ts") or path.endswith("paths.ts"):
+            return {
+                "label": "会话记忆落盘",
+                "docs": {"packages/docs/guide/memory.md"},
+            }
+        return {
+            "label": "dev-server 智能体装配与 env",
+            "docs": {"packages/docs/guide/mastra.md"},
+        }
+
     return None
 
 
@@ -475,6 +498,31 @@ def check():
     return 1
 
 
+def staged():
+    """git pre-commit 真门禁：对 staged 文件判定。
+
+    与 agent 侧 pre-commit 的三点差异：①只看本次 staged diff（不做会话累计，
+    防止"一次旧文档改动抵扣后续所有源码提交"）；②不读 acknowledge 状态文件
+    （防 default 陈旧 ack 长期放行）；③逃生口为环境变量 SKIP_DOCS_SYNC=1。
+    """
+    if os.environ.get("SKIP_DOCS_SYNC") == "1":
+        return
+    output = run_git("diff", "--cached", "--name-only")
+    staged_files = [line.strip() for line in output.splitlines() if line.strip()]
+    missing = missing_documentation(staged_files)
+    if not missing:
+        return
+    details = "\n".join(format_requirement(requirement) for requirement in missing)
+    print(
+        "⛔ 代码与文档同步门禁（git pre-commit，staged 模式）：\n"
+        f"{details}\n\n"
+        "同步对应文档页后重新暂存提交；确属无文档影响的内部改动可显式跳过：\n"
+        "  SKIP_DOCS_SYNC=1 git commit ...",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="ai-chat-ui 代码与文档同步 hook")
     subparsers = parser.add_subparsers(dest="action", required=True)
@@ -483,6 +531,7 @@ def main():
     subparsers.add_parser("post-edit")
     subparsers.add_parser("session-end")
     subparsers.add_parser("check")
+    subparsers.add_parser("staged")
     acknowledge_parser = subparsers.add_parser("acknowledge")
     acknowledge_parser.add_argument("--reason", required=True)
     args = parser.parse_args()
@@ -504,6 +553,8 @@ def main():
         acknowledge(args.reason)
     elif args.action == "check":
         raise SystemExit(check())
+    elif args.action == "staged":
+        staged()
 
 
 if __name__ == "__main__":

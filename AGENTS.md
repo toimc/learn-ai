@@ -95,6 +95,7 @@ pnpm type-check
 - 修改 `packages/markdown` 的渲染能力、组件 API 或导出时，同步 MarkdownRenderer、CodeBlock、LatexBlock 等对应文档和示例。
 - 修改安装包、peer dependency、Node/pnpm 要求或安装命令时，同步 README 和安装文档。
 - 修改 Playground 用户可见流程或示例时，同步 `packages/docs/playground.md`。
+- 修改 `packages/dev-server` 时按目录同步：`src/routes/**` 与 `openapi.ts` → `packages/docs/mock-api.md`；`src/rag/**`、`src/tools/**`（检索与工具行为）→ `packages/docs/guide/rag.md` 与 `packages/docs/vector-search-demo.md`；`src/memory.ts`、`src/paths.ts` → `packages/docs/guide/memory.md`；其余（agents/env/app/mastra 装配）→ `packages/docs/guide/mastra.md`。
 - 纯测试、内部重构或不改变用户可见行为的修复可以不改文档，但必须明确判断原因，不能默认跳过。
 - 项目通过 `.codex/hooks.json` 自动提示并检查文档同步。若确认无需更新，运行 `python3 .codex/hooks/documentation_sync.py acknowledge --reason "具体原因"` 记录本次判断。
 - 提交前可手动运行 `python3 .codex/hooks/documentation_sync.py check`；公开代码变化没有对应文档或豁免理由时，不得结束任务。

@@ -52,7 +52,7 @@ export async function ensureIndex(
   if (stats.dimension !== dimension) {
     throw new Error(
       `向量索引维度不匹配：现有 ${stats.dimension} 维，当前 embedding 模型输出 ${dimension} 维。` +
-        '换模型必须重建索引：pnpm index:docs --rebuild',
+        '换模型必须重建索引：重跑 pnpm index:docs（全量管线自动删旧建新）',
     )
   }
 }

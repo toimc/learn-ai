@@ -415,6 +415,11 @@ export const openApiSpec = {
                 example: {
                   enabled: true,
                   model: 'bge-m3',
+                  url: 'http://localhost:11434/v1',
+                  vector: {
+                    engine: 'LibSQLVector',
+                    location: 'docs-vector.db',
+                  },
                   indexExists: true,
                   chunks: 471,
                   dimension: 1024,
@@ -452,6 +457,67 @@ export const openApiSpec = {
             content: { 'application/json': { schema: { type: 'object' } } },
           },
           400: { description: 'query 缺失' },
+        },
+      },
+    },
+    '/vector/chunks': {
+      get: {
+        tags: ['向量检索'],
+        summary: '向量库浏览（分页）',
+        description:
+          'node:sqlite 直读 docs-vector.db 的 docs_chunks 表，分页列出全部语义块（MastraVector 接口无全量 list，本地文件直查）。source 按文档精确过滤，q 对块文本做 LIKE 过滤。',
+        operationId: 'vectorChunks',
+        parameters: [
+          {
+            name: 'page',
+            in: 'query',
+            schema: { type: 'integer', default: 1 },
+            description: '页码，从 1 起',
+          },
+          {
+            name: 'pageSize',
+            in: 'query',
+            schema: { type: 'integer', default: 20, maximum: 50 },
+            description: '每页块数（上限 50）',
+          },
+          {
+            name: 'source',
+            in: 'query',
+            schema: { type: 'string' },
+            example: 'guide/i18n.md',
+            description: '按文档相对路径精确过滤',
+          },
+          {
+            name: 'q',
+            in: 'query',
+            schema: { type: 'string' },
+            example: 'i18n',
+            description: '块文本 LIKE 过滤（%q%）',
+          },
+        ],
+        responses: {
+          200: {
+            description: '分页的语义块列表',
+            content: {
+              'application/json': {
+                schema: { type: 'object' },
+                example: {
+                  total: 473,
+                  page: 1,
+                  pageSize: 20,
+                  chunks: [
+                    {
+                      id: 1,
+                      source: 'components/attachments.md',
+                      title: 'Attachments 系列',
+                      text: '# Attachments 系列\n\n附件展示组件…',
+                      chars: 297,
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
       },
     },
