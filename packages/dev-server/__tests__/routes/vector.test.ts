@@ -102,6 +102,9 @@ describe('POST /search', () => {
       expect(body.keyword.results.length).toBeGreaterThan(0)
       expect(body.keyword.results[0].source).toContain('message-bubble')
       expect(body.mode).toBe('keyword')
+      // 链路耗时：未配置 embedding 时语义路 vectorMs=0（未尝试，非失败）
+      expect(body.timing.hybrid.vectorMs).toBe(0)
+      expect(body.timing.keyword.keywordMs).toBeGreaterThanOrEqual(0)
       // 两路一致：RRF 单路输入保序输出，source 序列相同
       expect(
         body.hybrid.results.map((r: { source: string }) => r.source),

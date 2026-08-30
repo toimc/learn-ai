@@ -79,6 +79,8 @@ export function createVectorRoutes(deps: VectorRoutesDeps = {}) {
       hybrid: { results: hybrid.results, mode: hybrid.mode },
       mode: hybrid.mode,
       degradedReason: hybrid.degradedReason ?? null,
+      // 链路演示：两路各自耗时（vectorMs=0 即未配置，非失败）
+      timing: { keyword: keyword.timing, hybrid: hybrid.timing },
     })
   })
 
@@ -120,6 +122,10 @@ export interface VectorSearchResponse {
   }
   mode: string
   degradedReason: string | null
+  timing: {
+    keyword: { keywordMs: number; vectorMs: number; totalMs: number }
+    hybrid: { keywordMs: number; vectorMs: number; totalMs: number }
+  }
 }
 
 export type { EmbeddingEnv }

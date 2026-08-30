@@ -145,6 +145,8 @@ export interface SearchOutcome {
   hint?: string
   mode: 'hybrid' | 'keyword'
   degradedReason?: string
+  /** 各路耗时（ms）；vectorMs=0 表示未配置未尝试（非失败） */
+  timing: { keywordMs: number; vectorMs: number; totalMs: number }
 }
 
 /**
@@ -159,10 +161,17 @@ export async function runSearch(
 ): Promise<SearchOutcome> {
   const terms = expandKeywords(keywords ?? [], component)
   if (terms.length === 0) {
-    return { results: [], hint: HINT_NO_HIT, mode: 'keyword' }
+    return {
+      results: [],
+      hint: HINT_NO_HIT,
+      mode: 'keyword',
+      timing: { keywordMs: 0, vectorMs: 0, totalMs: 0 },
+    }
   }
 
+  const start = Date.now()
   const keywordOutcome = keywordSearch(terms)
+  const keywordMs = Date.now() - start
   const embedding =
     options.embedding === undefined
       ? readDevServerEnv().embedding
@@ -170,12 +179,15 @@ export async function runSearch(
 
   let vectorHits: FusionCandidate[] = []
   let degradedReason: string | undefined
+  let vectorMs = 0
   if (embedding) {
+    const vectorStart = Date.now()
     try {
       vectorHits = await retrieveVectorHits(terms.join(' '), embedding)
     } catch (error) {
       degradedReason = error instanceof Error ? error.message : String(error)
     }
+    vectorMs = Date.now() - vectorStart
   }
   const results = rrfFuse(vectorHits, keywordOutcome, 5)
   return {
@@ -183,6 +195,11 @@ export async function runSearch(
     results,
     mode: vectorHits.length > 0 ? 'hybrid' : 'keyword',
     ...(degradedReason ? { degradedReason } : {}),
+    timing: {
+      keywordMs,
+      vectorMs,
+      totalMs: Date.now() - start,
+    },
   }
 }
 

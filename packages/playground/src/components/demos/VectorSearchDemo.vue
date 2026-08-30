@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { aiChatI18n, Button } from '@toimc/vue'
+import { aiChatI18n } from '@toimc/vue'
 import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
@@ -31,6 +31,10 @@ interface VectorSearchResponse {
   hybrid: { results: SearchResultItem[]; mode: string }
   mode: string
   degradedReason: string | null
+  timing: {
+    keyword: { keywordMs: number; vectorMs: number; totalMs: number }
+    hybrid: { keywordMs: number; vectorMs: number; totalMs: number }
+  }
 }
 
 /** 示例查询：演示内容（中文文档语料下中文 query 才有对比意义），非 UI 文案不进字典 */
@@ -151,13 +155,14 @@ onMounted(refreshStats)
         :disabled="status === 'offline'"
         @keydown.enter="search(query)"
       />
-      <Button
-        size="sm"
+      <button
+        type="button"
+        class="vsd-submit"
         :disabled="searching || status === 'offline'"
         @click="search(query)"
       >
         {{ searching ? t('pg.vector.searching') : t('pg.vector.search') }}
-      </Button>
+      </button>
     </div>
 
     <div class="vsd-examples">
@@ -178,6 +183,73 @@ onMounted(refreshStats)
     <p v-if="response?.degradedReason" class="vsd-degraded">
       {{ t('pg.vector.degraded', { reason: response.degradedReason }) }}
     </p>
+
+    <!-- 调用链路：查询后激活并显示各节点实时耗时 -->
+    <section class="vsd-chain" :class="{ 'is-active': !!response }">
+      <h3 class="vsd-chain-title">{{ t('pg.vector.chainTitle') }}</h3>
+      <p class="vsd-chain-desc">{{ t('pg.vector.chainDesc') }}</p>
+
+      <div class="vsd-chain-node vsd-chain-head">
+        <span class="vsd-node"
+          >🌐 {{ t('pg.vector.nodeBrowser')
+          }}<small>{{ t('pg.vector.nodeBrowserSub') }}</small></span
+        >
+        <span class="vsd-chain-arrow">→</span>
+        <span class="vsd-node"
+          >⚡ {{ t('pg.vector.nodeServer')
+          }}<small>{{ t('pg.vector.nodeServerSub') }}</small></span
+        >
+      </div>
+
+      <div class="vsd-chain-split">
+        <div class="vsd-chain-branch">
+          <span class="vsd-node">
+            📄 {{ t('pg.vector.nodeKeyword')
+            }}<small>{{ t('pg.vector.nodeKeywordSub') }}</small>
+          </span>
+          <span v-if="response" class="vsd-ms"
+            >{{ response.timing.keyword.keywordMs }}ms</span
+          >
+        </div>
+        <div
+          class="vsd-chain-branch"
+          :class="{
+            'is-degraded': !!response?.degradedReason,
+            'is-off': ready === false,
+          }"
+        >
+          <span class="vsd-node">
+            🧠 {{ t('pg.vector.nodeOllama') }}
+            <em class="vsd-node-badge">{{ t('pg.vector.chainLocal') }}</em>
+            <small
+              >{{ stats?.model || 'bge-m3' }} ·
+              {{ t('pg.vector.nodeOllamaSub') }}</small
+            >
+          </span>
+          <span class="vsd-chain-arrow">→</span>
+          <span class="vsd-node">
+            🗃️ {{ t('pg.vector.nodeVector')
+            }}<small>{{ t('pg.vector.nodeVectorSub') }}</small>
+          </span>
+          <span v-if="response" class="vsd-ms"
+            >{{ response.timing.hybrid.vectorMs }}ms</span
+          >
+        </div>
+      </div>
+
+      <div class="vsd-chain-node">
+        <span class="vsd-node">
+          ⚖️ {{ t('pg.vector.nodeFuse')
+          }}<small>{{ t('pg.vector.nodeFuseSub') }}</small>
+        </span>
+        <span v-if="response" class="vsd-ms"
+          >{{ response.timing.hybrid.totalMs }}ms</span
+        >
+        <span v-else class="vsd-chain-idle">{{
+          t('pg.vector.chainIdle')
+        }}</span>
+      </div>
+    </section>
 
     <!-- 两路对比 -->
     <div v-if="response" class="vsd-lanes">
@@ -340,26 +412,55 @@ onMounted(refreshStats)
 
 .vsd-search {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 .vsd-search.is-disabled {
   opacity: 0.5;
 }
 
+/* 输入框与按钮固定同高（38px），不依赖 padding 撑开 */
 .vsd-input {
   flex: 1;
-  height: 34px;
-  padding: 0 12px;
+  height: 38px;
+  padding: 0 14px;
   font-size: 14px;
   border-radius: var(--ai-chat-radius-md, 8px);
   border: 1px solid rgba(128, 128, 128, 0.35);
   background: transparent;
   color: inherit;
+  transition: border-color 0.15s;
 }
 .vsd-input:focus {
-  outline: 2px solid var(--ai-chat-color-accent-500, #6366f1);
-  outline-offset: -1px;
+  outline: none;
+  border-color: var(--ai-chat-color-accent-500, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.vsd-submit {
+  height: 38px;
+  padding: 0 22px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--ai-chat-radius-md, 8px);
+  background: var(--ai-chat-color-accent-500, #6366f1);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.vsd-submit:hover:not(:disabled) {
+  background: var(--ai-chat-color-accent-600, #4f46e5);
+}
+.vsd-submit:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.vsd-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .vsd-examples {
@@ -385,6 +486,118 @@ onMounted(refreshStats)
 }
 .vsd-example:hover {
   background: rgba(128, 128, 128, 0.15);
+}
+
+.vsd-chain {
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vsd-chain-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vsd-chain-desc {
+  margin: -6px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+
+.vsd-chain-node,
+.vsd-chain-split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.vsd-chain-split {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  border-left: 2px solid rgba(128, 128, 128, 0.3);
+  padding-left: 14px;
+  margin-left: 8px;
+}
+
+.vsd-chain-branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.vsd-node {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 12px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(128, 128, 128, 0.06);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.vsd-node small {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.65;
+}
+
+/* 查询后链路激活：节点亮 accent */
+.vsd-chain.is-active .vsd-node {
+  border-color: var(--ai-chat-color-accent-500, #6366f1);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* 降级/未启用：语义路弱化 */
+.vsd-chain-branch.is-degraded .vsd-node,
+.vsd-chain-branch.is-off .vsd-node {
+  border-color: rgba(234, 179, 8, 0.6);
+  background: rgba(234, 179, 8, 0.06);
+}
+
+.vsd-node-badge {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  align-self: center;
+}
+
+.vsd-chain-arrow {
+  font-size: 14px;
+  opacity: 0.45;
+}
+
+.vsd-ms {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--ai-chat-font-mono, monospace);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--ai-chat-color-accent-600, #4f46e5);
+}
+
+.vsd-chain-idle {
+  font-size: 12px;
+  opacity: 0.55;
 }
 
 .vsd-degraded {
