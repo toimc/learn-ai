@@ -7,6 +7,7 @@ import { createObservability } from '../observability'
 import { loadContext7Tools } from '../mcp/context7'
 import { WEATHER_MCP_SERVER_ID, weatherMcpServer } from '../mcp/weather-server'
 import { instantiateAgent, teamDefinitions } from '../orchestration/children'
+import { createDocsVectorStore } from '../rag/vector-store'
 import { buildWorkflowRegistry } from '../workflows/registry'
 
 /**
@@ -50,6 +51,9 @@ export const mastra = new Mastra({
     ]),
   ),
   storage: await createCompositeStorage(),
+  // 文档向量库挂进实例（key 'docs'）：Studio vectors 视图可见、Mastra vectors API
+  // 可查——search_docs 语义检索路的数据源不再是黑盒（pnpm index:docs 写入）
+  vectors: { docs: createDocsVectorStore() },
   // PinoLogger 双写：控制台输出 + 经 observability 落库（日志自动关联 trace/span）
   logger: new PinoLogger({ name: 'dev-server', level: 'info' }),
   // 宿主侧 MCP：mastra dev（4111）自动暴露 /mcp 端点，Claude Code / Inspector 可连。
