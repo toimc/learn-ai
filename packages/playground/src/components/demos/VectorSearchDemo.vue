@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { aiChatI18n } from '@toimc/vue'
 import '../../locales' // 副作用：合并 pg 字典
 
@@ -51,10 +51,16 @@ type ServerStatus = 'connecting' | 'online' | 'offline'
 const status = ref<ServerStatus>('connecting')
 const stats = ref<VectorStats | null>(null)
 
+/* ---------------- tab 切换 ---------------- */
+
+type Tab = 'search' | 'browse'
+const tab = ref<Tab>('search')
+
+/* ---------------- 检索 tab ---------------- */
+
 const query = ref('')
 const searching = ref(false)
 const response = ref<VectorSearchResponse | null>(null)
-const searchedQuery = ref('')
 
 /** 语义轨就绪：服务在线 + embedding 已配置 + 索引已建 */
 const ready = computed(
@@ -114,7 +120,6 @@ async function search(text: string): Promise<void> {
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     response.value = (await res.json()) as VectorSearchResponse
-    searchedQuery.value = q
   } catch {
     response.value = null
   } finally {
@@ -122,7 +127,8 @@ async function search(text: string): Promise<void> {
   }
 }
 
-/** 向量库浏览（/api/vector/chunks 分页直读库文件） */
+/* ---------------- 浏览 tab（分页直读库文件） ---------------- */
+
 interface VectorChunk {
   id: number
   source: string
@@ -132,18 +138,22 @@ interface VectorChunk {
   expanded?: boolean
 }
 
-const showChunks = ref(false)
 const chunksList = ref<VectorChunk[]>([])
 const chunksPage = ref(1)
 const chunksTotal = ref(0)
 const chunksSource = ref('')
+const chunksQuery = ref('')
 const loadingChunks = ref(false)
 
 const chunksPages = computed(() =>
   Math.max(1, Math.ceil(chunksTotal.value / 20)),
 )
 
-async function loadChunks(page = 1, source = ''): Promise<void> {
+async function loadChunks(
+  page = 1,
+  source = chunksSource.value,
+  q = chunksQuery.value,
+): Promise<void> {
   loadingChunks.value = true
   try {
     const params = new window.URLSearchParams({
@@ -151,6 +161,7 @@ async function loadChunks(page = 1, source = ''): Promise<void> {
       pageSize: '20',
     })
     if (source) params.set('source', source)
+    if (q) params.set('q', q)
     const res = await window.fetch(`${BASE_URL}/api/vector/chunks?${params}`)
     const body = (await res.json()) as {
       total: number
@@ -167,20 +178,34 @@ async function loadChunks(page = 1, source = ''): Promise<void> {
   }
 }
 
-function toggleBrowse(): void {
-  showChunks.value = !showChunks.value
-  if (showChunks.value && chunksList.value.length === 0) {
-    chunksSource.value = ''
-    loadChunks(1)
-  }
-}
-
 function filterBySource(source: string): void {
   chunksSource.value = source
   loadChunks(1, source)
 }
 
+/** 内容过滤防抖 300ms（高频输入先收敛再请求） */
+let filterTimer: ReturnType<typeof setTimeout> | undefined
+watch(chunksQuery, () => {
+  if (tab.value !== 'browse') return
+  if (filterTimer) clearTimeout(filterTimer)
+  filterTimer = setTimeout(() => loadChunks(1), 300)
+})
+
+function switchTab(next: Tab): void {
+  tab.value = next
+  if (
+    next === 'browse' &&
+    chunksList.value.length === 0 &&
+    !loadingChunks.value
+  ) {
+    loadChunks(1)
+  }
+}
+
 onMounted(refreshStats)
+onUnmounted(() => {
+  if (filterTimer) clearTimeout(filterTimer)
+})
 </script>
 
 <template>
@@ -221,282 +246,384 @@ onMounted(refreshStats)
       </div>
     </header>
 
-    <!-- 查询区（离线时禁用；未就绪仍可查，双路会一致展示关键词基线） -->
-    <div class="vsd-search" :class="{ 'is-disabled': status === 'offline' }">
-      <input
-        v-model="query"
-        class="vsd-input"
-        type="text"
-        :placeholder="t('pg.vector.inputPlaceholder')"
-        :disabled="status === 'offline'"
-        @keydown.enter="search(query)"
-      />
+    <!-- 页内 tab：检索对比 / 向量库浏览（SVG 图标，role 语义化） -->
+    <nav class="vsd-tabs" role="tablist" aria-label="demo sections">
       <button
         type="button"
-        class="vsd-submit"
-        :disabled="searching || status === 'offline'"
-        @click="search(query)"
+        role="tab"
+        class="vsd-tab"
+        :class="{ 'is-active': tab === 'search' }"
+        :aria-selected="tab === 'search'"
+        @click="switchTab('search')"
       >
-        {{ searching ? t('pg.vector.searching') : t('pg.vector.search') }}
+        <svg
+          class="vsd-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        {{ t('pg.vector.tabSearch') }}
       </button>
-    </div>
-
-    <div class="vsd-examples">
-      <span class="vsd-examples-label">{{ t('pg.vector.examples') }}</span>
       <button
-        v-for="ex in EXAMPLES"
-        :key="ex"
         type="button"
-        class="vsd-example"
-        :disabled="status === 'offline'"
-        @click="search(ex)"
+        role="tab"
+        class="vsd-tab"
+        :class="{ 'is-active': tab === 'browse' }"
+        :aria-selected="tab === 'browse'"
+        @click="switchTab('browse')"
       >
-        {{ ex }}
+        <svg
+          class="vsd-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <ellipse cx="12" cy="5" rx="8" ry="3" />
+          <path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+          <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3" />
+        </svg>
+        {{ t('pg.vector.tabBrowse') }}
+        <span v-if="stats?.chunks" class="vsd-tab-count">{{
+          stats.chunks
+        }}</span>
       </button>
-    </div>
+    </nav>
 
-    <!-- 降级提示条 -->
-    <p v-if="response?.degradedReason" class="vsd-degraded">
-      {{ t('pg.vector.degraded', { reason: response.degradedReason }) }}
-    </p>
-
-    <!-- 调用链路：查询后激活并显示各节点实时耗时 -->
-    <section class="vsd-chain" :class="{ 'is-active': !!response }">
-      <h3 class="vsd-chain-title">{{ t('pg.vector.chainTitle') }}</h3>
-      <p class="vsd-chain-desc">{{ t('pg.vector.chainDesc') }}</p>
-
-      <div class="vsd-chain-node vsd-chain-head">
-        <span class="vsd-node"
-          >🌐 {{ t('pg.vector.nodeBrowser')
-          }}<small>{{ t('pg.vector.nodeBrowserSub') }}</small></span
+    <!-- ========== tab 1：检索对比 ========== -->
+    <section v-if="tab === 'search'" class="vsd-panel">
+      <!-- 示例查询（置顶：先给可点的例子，再给输入框） -->
+      <div class="vsd-examples">
+        <span class="vsd-examples-label">{{ t('pg.vector.examples') }}</span>
+        <button
+          v-for="ex in EXAMPLES"
+          :key="ex"
+          type="button"
+          class="vsd-example"
+          :disabled="status === 'offline'"
+          @click="search(ex)"
         >
-        <span class="vsd-chain-arrow">→</span>
-        <span class="vsd-node"
-          >⚡ {{ t('pg.vector.nodeServer')
-          }}<small>{{ t('pg.vector.nodeServerSub') }}</small></span
-        >
+          {{ ex }}
+        </button>
       </div>
 
-      <div class="vsd-chain-split">
-        <div class="vsd-chain-branch">
-          <span class="vsd-node">
-            📄 {{ t('pg.vector.nodeKeyword')
-            }}<small>{{ t('pg.vector.nodeKeywordSub') }}</small>
-          </span>
-          <span v-if="response" class="vsd-ms"
-            >{{ response.timing.keyword.keywordMs }}ms</span
-          >
-        </div>
-        <div
-          class="vsd-chain-branch"
-          :class="{
-            'is-degraded': !!response?.degradedReason,
-            'is-off': ready === false,
-          }"
+      <!-- 查询区（离线时禁用；未就绪仍可查，双路会一致展示关键词基线） -->
+      <div class="vsd-search" :class="{ 'is-disabled': status === 'offline' }">
+        <input
+          v-model="query"
+          class="vsd-input"
+          type="text"
+          :placeholder="t('pg.vector.inputPlaceholder')"
+          :disabled="status === 'offline'"
+          @keydown.enter="search(query)"
+        />
+        <button
+          type="button"
+          class="vsd-submit"
+          :disabled="searching || status === 'offline'"
+          @click="search(query)"
         >
-          <span class="vsd-node">
-            {{ isLocalEmbedding ? '🧠' : '☁️' }} {{ embeddingHost }}
-            <em
-              class="vsd-node-badge"
-              :class="{ 'is-cloud': !isLocalEmbedding }"
-              >{{
-                isLocalEmbedding
-                  ? t('pg.vector.chainLocal')
-                  : t('pg.vector.chainCloud')
-              }}</em
-            >
-            <small
-              >{{ stats?.model || '—' }} ·
-              {{ t('pg.vector.nodeOllamaSub') }}</small
-            >
-          </span>
+          <svg
+            class="vsd-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          {{ searching ? t('pg.vector.searching') : t('pg.vector.search') }}
+        </button>
+      </div>
+
+      <!-- 降级提示条 -->
+      <p v-if="response?.degradedReason" class="vsd-degraded">
+        {{ t('pg.vector.degraded', { reason: response.degradedReason }) }}
+      </p>
+
+      <!-- 调用链路：查询后激活并显示各节点实时耗时 -->
+      <section class="vsd-chain" :class="{ 'is-active': !!response }">
+        <h3 class="vsd-chain-title">{{ t('pg.vector.chainTitle') }}</h3>
+
+        <div class="vsd-chain-node vsd-chain-head">
+          <span class="vsd-node"
+            >🌐 {{ t('pg.vector.nodeBrowser')
+            }}<small>{{ t('pg.vector.nodeBrowserSub') }}</small></span
+          >
           <span class="vsd-chain-arrow">→</span>
-          <span class="vsd-node">
-            🗃️ {{ stats?.vector?.engine || 'LibSQLVector'
-            }}<small
-              >{{ stats?.vector?.location || 'docs-vector.db' }} · top8</small
+          <span class="vsd-node"
+            >⚡ {{ t('pg.vector.nodeServer')
+            }}<small>{{ t('pg.vector.nodeServerSub') }}</small></span
+          >
+        </div>
+
+        <div class="vsd-chain-split">
+          <div class="vsd-chain-branch">
+            <span class="vsd-node">
+              📄 {{ t('pg.vector.nodeKeyword')
+              }}<small>{{ t('pg.vector.nodeKeywordSub') }}</small>
+            </span>
+            <span v-if="response" class="vsd-ms"
+              >{{ response.timing.keyword.keywordMs }}ms</span
             >
+          </div>
+          <div
+            class="vsd-chain-branch"
+            :class="{
+              'is-degraded': !!response?.degradedReason,
+              'is-off': ready === false,
+            }"
+          >
+            <span class="vsd-node">
+              {{ isLocalEmbedding ? '🧠' : '☁️' }} {{ embeddingHost }}
+              <em
+                class="vsd-node-badge"
+                :class="{ 'is-cloud': !isLocalEmbedding }"
+                >{{
+                  isLocalEmbedding
+                    ? t('pg.vector.chainLocal')
+                    : t('pg.vector.chainCloud')
+                }}</em
+              >
+              <small
+                >{{ stats?.model || '—' }} ·
+                {{ t('pg.vector.nodeOllamaSub') }}</small
+              >
+            </span>
+            <span class="vsd-chain-arrow">→</span>
+            <span class="vsd-node">
+              🗃️ {{ stats?.vector?.engine || 'LibSQLVector'
+              }}<small
+                >{{ stats?.vector?.location || 'docs-vector.db' }} · top8</small
+              >
+            </span>
+            <span v-if="response" class="vsd-ms"
+              >{{ response.timing.hybrid.vectorMs }}ms</span
+            >
+          </div>
+        </div>
+
+        <div class="vsd-chain-node">
+          <span class="vsd-node">
+            ⚖️ {{ t('pg.vector.nodeFuse')
+            }}<small>{{ t('pg.vector.nodeFuseSub') }}</small>
           </span>
           <span v-if="response" class="vsd-ms"
-            >{{ response.timing.hybrid.vectorMs }}ms</span
+            >{{ response.timing.hybrid.totalMs }}ms</span
           >
+          <span v-else class="vsd-chain-idle">{{
+            t('pg.vector.chainIdle')
+          }}</span>
         </div>
-      </div>
+      </section>
 
-      <div class="vsd-chain-node">
-        <span class="vsd-node">
-          ⚖️ {{ t('pg.vector.nodeFuse')
-          }}<small>{{ t('pg.vector.nodeFuseSub') }}</small>
-        </span>
-        <span v-if="response" class="vsd-ms"
-          >{{ response.timing.hybrid.totalMs }}ms</span
-        >
-        <span v-else class="vsd-chain-idle">{{
-          t('pg.vector.chainIdle')
-        }}</span>
-      </div>
-    </section>
+      <!-- 两路对比 -->
+      <div v-if="response" class="vsd-lanes">
+        <section class="vsd-lane">
+          <h3 class="vsd-lane-title">
+            {{ t('pg.vector.keywordLane') }}
+            <span class="vsd-lane-count">{{
+              response.keyword.results.length
+            }}</span>
+          </h3>
+          <p v-if="response.keyword.results.length === 0" class="vsd-no-hit">
+            {{ t('pg.vector.noHit') }}
+          </p>
+          <ul v-else class="vsd-results">
+            <li
+              v-for="r in response.keyword.results"
+              :key="`k-${r.source}`"
+              class="vsd-result"
+            >
+              <div class="vsd-result-head">
+                <span class="vsd-result-source">{{ r.source }}</span>
+                <span class="vsd-result-score">{{ r.score }}</span>
+              </div>
+              <div v-if="r.matchedTerms.length" class="vsd-result-terms">
+                <span
+                  v-for="term in r.matchedTerms"
+                  :key="term"
+                  class="vsd-term"
+                  >{{ term }}</span
+                >
+              </div>
+              <p class="vsd-result-snippet">{{ r.snippet.slice(0, 140) }}</p>
+            </li>
+          </ul>
+        </section>
 
-    <!-- 向量库浏览：分页直读库文件的全部语义块 -->
-    <section class="vsd-browse">
-      <button type="button" class="vsd-browse-toggle" @click="toggleBrowse">
-        📚 {{ t('pg.vector.browseTitle') }}
-        <span class="vsd-browse-hint">{{
-          showChunks
-            ? t('pg.vector.browseCollapse')
-            : t('pg.vector.browseToggle', { total: stats?.chunks ?? 0 })
-        }}</span>
-      </button>
-
-      <template v-if="showChunks">
-        <div class="vsd-browse-toolbar">
-          <button
-            v-if="chunksSource"
-            type="button"
-            class="vsd-browse-filter"
-            @click="filterBySource('')"
-          >
-            {{ chunksSource }} ✕ {{ t('pg.vector.browseFilterClear') }}
-          </button>
-          <span class="vsd-browse-page">
-            {{
-              t('pg.vector.browsePage', {
-                page: chunksPage,
-                pages: chunksPages,
-                total: chunksTotal,
-              })
-            }}
-          </span>
-          <span class="vsd-browse-spacer" />
-          <button
-            type="button"
-            class="vsd-browse-nav"
-            :disabled="chunksPage <= 1 || loadingChunks"
-            @click="loadChunks(chunksPage - 1, chunksSource)"
-          >
-            ‹ {{ t('pg.vector.browsePrev') }}
-          </button>
-          <button
-            type="button"
-            class="vsd-browse-nav"
-            :disabled="chunksPage >= chunksPages || loadingChunks"
-            @click="loadChunks(chunksPage + 1, chunksSource)"
-          >
-            {{ t('pg.vector.browseNext') }} ›
-          </button>
-        </div>
-
-        <p v-if="loadingChunks" class="vsd-browse-loading">…</p>
-        <p v-else-if="chunksList.length === 0" class="vsd-browse-loading">
-          {{ t('pg.vector.browseEmpty') }}
-        </p>
-        <ul v-else class="vsd-browse-list">
-          <li
-            v-for="ch in chunksList"
-            :key="ch.id"
-            class="vsd-chunk"
-            :class="{ 'is-open': ch.expanded }"
-            @click="ch.expanded = !ch.expanded"
-          >
-            <div class="vsd-chunk-head">
-              <button
-                type="button"
-                class="vsd-chunk-source"
-                @click.stop="filterBySource(ch.source)"
-              >
-                {{ ch.source }}
-              </button>
-              <span class="vsd-chunk-meta"
-                >#{{ ch.id }} · {{ ch.title }} · {{ ch.chars }} 字</span
-              >
-            </div>
-            <p class="vsd-chunk-text">
+        <section class="vsd-lane vsd-lane--hybrid">
+          <h3 class="vsd-lane-title">
+            {{ t('pg.vector.hybridLane') }}
+            <span class="vsd-lane-badge" :data-mode="response.mode">
               {{
-                ch.expanded
-                  ? ch.text
-                  : ch.text.slice(0, 110) + (ch.chars > 110 ? '…' : '')
+                response.mode === 'hybrid'
+                  ? t('pg.vector.modeHybrid')
+                  : t('pg.vector.modeKeyword')
               }}
-            </p>
-          </li>
-        </ul>
-      </template>
+            </span>
+            <span class="vsd-lane-count">{{
+              response.hybrid.results.length
+            }}</span>
+          </h3>
+          <p v-if="response.hybrid.results.length === 0" class="vsd-no-hit">
+            {{ t('pg.vector.noHit') }}
+          </p>
+          <ul v-else class="vsd-results">
+            <li
+              v-for="r in response.hybrid.results"
+              :key="`h-${r.source}`"
+              class="vsd-result"
+            >
+              <div class="vsd-result-head">
+                <span class="vsd-result-source">{{ r.source }}</span>
+                <span class="vsd-result-score">{{ r.score }}</span>
+              </div>
+              <div v-if="r.matchedTerms.length" class="vsd-result-terms">
+                <span
+                  v-for="term in r.matchedTerms"
+                  :key="term"
+                  class="vsd-term"
+                  >{{ term }}</span
+                >
+              </div>
+              <p class="vsd-result-snippet">{{ r.snippet.slice(0, 140) }}</p>
+            </li>
+          </ul>
+        </section>
+      </div>
     </section>
 
-    <!-- 两路对比 -->
-    <div v-if="response" class="vsd-lanes">
-      <section class="vsd-lane">
-        <h3 class="vsd-lane-title">
-          {{ t('pg.vector.keywordLane') }}
-          <span class="vsd-lane-count">{{
-            response.keyword.results.length
-          }}</span>
-        </h3>
-        <p v-if="response.keyword.results.length === 0" class="vsd-no-hit">
-          {{ t('pg.vector.noHit') }}
-        </p>
-        <ul v-else class="vsd-results">
-          <li
-            v-for="r in response.keyword.results"
-            :key="`k-${r.source}`"
-            class="vsd-result"
+    <!-- ========== tab 2：向量库浏览 ========== -->
+    <section v-else class="vsd-panel">
+      <div class="vsd-browse-toolbar">
+        <input
+          v-model="chunksQuery"
+          class="vsd-browse-input"
+          type="text"
+          :placeholder="t('pg.vector.browseFilterPlaceholder')"
+        />
+        <button
+          v-if="chunksSource"
+          type="button"
+          class="vsd-browse-filter"
+          @click="filterBySource('')"
+        >
+          {{ chunksSource }} ✕
+        </button>
+        <span class="vsd-browse-page">
+          {{
+            t('pg.vector.browsePage', {
+              page: chunksPage,
+              pages: chunksPages,
+              total: chunksTotal,
+            })
+          }}
+        </span>
+        <span class="vsd-browse-spacer" />
+        <button
+          type="button"
+          class="vsd-browse-nav"
+          :disabled="chunksPage <= 1 || loadingChunks"
+          :aria-label="t('pg.vector.browsePrev')"
+          @click="loadChunks(chunksPage - 1)"
+        >
+          <svg
+            class="vsd-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            <div class="vsd-result-head">
-              <span class="vsd-result-source">{{ r.source }}</span>
-              <span class="vsd-result-score">{{ r.score }}</span>
-            </div>
-            <div v-if="r.matchedTerms.length" class="vsd-result-terms">
-              <span
-                v-for="term in r.matchedTerms"
-                :key="term"
-                class="vsd-term"
-                >{{ term }}</span
-              >
-            </div>
-            <p class="vsd-result-snippet">{{ r.snippet.slice(0, 140) }}</p>
-          </li>
-        </ul>
-      </section>
+            <path d="m14 6-6 6 6 6" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="vsd-browse-nav"
+          :disabled="chunksPage >= chunksPages || loadingChunks"
+          :aria-label="t('pg.vector.browseNext')"
+          @click="loadChunks(chunksPage + 1)"
+        >
+          <svg
+            class="vsd-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m10 6 6 6-6 6" />
+          </svg>
+        </button>
+      </div>
 
-      <section class="vsd-lane vsd-lane--hybrid">
-        <h3 class="vsd-lane-title">
-          {{ t('pg.vector.hybridLane') }}
-          <span class="vsd-lane-badge" :data-mode="response.mode">
+      <p v-if="loadingChunks" class="vsd-browse-loading">…</p>
+      <p v-else-if="chunksList.length === 0" class="vsd-browse-loading">
+        {{ t('pg.vector.browseEmpty') }}
+      </p>
+      <ul v-else class="vsd-browse-list">
+        <li
+          v-for="ch in chunksList"
+          :key="ch.id"
+          class="vsd-chunk"
+          :class="{ 'is-open': ch.expanded }"
+          @click="ch.expanded = !ch.expanded"
+        >
+          <div class="vsd-chunk-head">
+            <button
+              type="button"
+              class="vsd-chunk-source"
+              @click.stop="filterBySource(ch.source)"
+            >
+              {{ ch.source }}
+            </button>
+            <span class="vsd-chunk-meta"
+              >#{{ ch.id }} · {{ ch.title }} · {{ ch.chars }} 字</span
+            >
+            <svg
+              class="vsd-icon vsd-chunk-chevron"
+              :class="{ 'is-open': ch.expanded }"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+          <p class="vsd-chunk-text">
             {{
-              response.mode === 'hybrid'
-                ? t('pg.vector.modeHybrid')
-                : t('pg.vector.modeKeyword')
+              ch.expanded
+                ? ch.text
+                : ch.text.slice(0, 110) + (ch.chars > 110 ? '…' : '')
             }}
-          </span>
-          <span class="vsd-lane-count">{{
-            response.hybrid.results.length
-          }}</span>
-        </h3>
-        <p v-if="response.hybrid.results.length === 0" class="vsd-no-hit">
-          {{ t('pg.vector.noHit') }}
-        </p>
-        <ul v-else class="vsd-results">
-          <li
-            v-for="r in response.hybrid.results"
-            :key="`h-${r.source}`"
-            class="vsd-result"
-          >
-            <div class="vsd-result-head">
-              <span class="vsd-result-source">{{ r.source }}</span>
-              <span class="vsd-result-score">{{ r.score }}</span>
-            </div>
-            <div v-if="r.matchedTerms.length" class="vsd-result-terms">
-              <span
-                v-for="term in r.matchedTerms"
-                :key="term"
-                class="vsd-term"
-                >{{ term }}</span
-              >
-            </div>
-            <p class="vsd-result-snippet">{{ r.snippet.slice(0, 140) }}</p>
-          </li>
-        </ul>
-      </section>
-    </div>
+          </p>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>
 
@@ -581,6 +708,99 @@ onMounted(refreshStats)
   word-break: break-all;
 }
 
+/* ---------- tabs（分段控件） ---------- */
+
+.vsd-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(128, 128, 128, 0.12);
+  width: fit-content;
+}
+
+.vsd-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.vsd-tab:hover:not(.is-active) {
+  background: rgba(128, 128, 128, 0.15);
+}
+.vsd-tab.is-active {
+  background: var(--ai-chat-color-accent-500, #6366f1);
+  color: #fff;
+}
+
+.vsd-tab-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 7px;
+  height: 17px;
+  line-height: 17px;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.25);
+}
+.vsd-tab.is-active .vsd-tab-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.vsd-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.vsd-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- 检索 tab ---------- */
+
+.vsd-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsd-examples-label {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.vsd-example {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.vsd-example:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.15);
+}
+.vsd-example:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .vsd-search {
   display: flex;
   gap: 10px;
@@ -609,8 +829,11 @@ onMounted(refreshStats)
 }
 
 .vsd-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   height: 38px;
-  padding: 0 22px;
+  padding: 0 20px;
   font-size: 14px;
   font-weight: 500;
   border: none;
@@ -634,30 +857,16 @@ onMounted(refreshStats)
   cursor: not-allowed;
 }
 
-.vsd-examples {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+.vsd-degraded {
+  margin: 0;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(234, 179, 8, 0.12);
+  color: #b45309;
 }
 
-.vsd-examples-label {
-  font-size: 12px;
-  opacity: 0.6;
-}
-
-.vsd-example {
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(128, 128, 128, 0.35);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-.vsd-example:hover {
-  background: rgba(128, 128, 128, 0.15);
-}
+/* ---------- 调用链路 ---------- */
 
 .vsd-chain {
   border: 1px solid rgba(128, 128, 128, 0.25);
@@ -672,13 +881,6 @@ onMounted(refreshStats)
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-}
-
-.vsd-chain-desc {
-  margin: -6px 0 0;
-  font-size: 12px;
-  line-height: 1.7;
-  opacity: 0.7;
 }
 
 .vsd-chain-node,
@@ -776,152 +978,7 @@ onMounted(refreshStats)
   opacity: 0.55;
 }
 
-.vsd-degraded {
-  margin: 0;
-  font-size: 13px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(234, 179, 8, 0.12);
-  color: #b45309;
-}
-
-.vsd-browse {
-  border: 1px solid rgba(128, 128, 128, 0.25);
-  border-radius: 10px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.vsd-browse-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-
-.vsd-browse-hint {
-  font-size: 12px;
-  font-weight: 400;
-  opacity: 0.6;
-}
-
-.vsd-browse-toolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.vsd-browse-filter {
-  font-size: 12px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(99, 102, 241, 0.5);
-  background: rgba(99, 102, 241, 0.1);
-  color: inherit;
-  cursor: pointer;
-}
-
-.vsd-browse-page {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.vsd-browse-spacer {
-  flex: 1;
-}
-
-.vsd-browse-nav {
-  font-size: 12px;
-  height: 26px;
-  padding: 0 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(128, 128, 128, 0.35);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-.vsd-browse-nav:hover:not(:disabled) {
-  background: rgba(128, 128, 128, 0.15);
-}
-.vsd-browse-nav:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.vsd-browse-loading {
-  margin: 0;
-  font-size: 13px;
-  opacity: 0.6;
-}
-
-.vsd-browse-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.vsd-chunk {
-  border: 1px solid rgba(128, 128, 128, 0.2);
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-.vsd-chunk:hover {
-  border-color: rgba(128, 128, 128, 0.45);
-}
-.vsd-chunk.is-open {
-  border-color: var(--ai-chat-color-accent-500, #6366f1);
-  background: rgba(99, 102, 241, 0.05);
-}
-
-.vsd-chunk-head {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.vsd-chunk-source {
-  font-size: 12px;
-  font-family: var(--ai-chat-font-mono, monospace);
-  font-weight: 600;
-  border: none;
-  background: rgba(99, 102, 241, 0.12);
-  border-radius: 4px;
-  padding: 1px 8px;
-  color: inherit;
-  cursor: pointer;
-}
-.vsd-chunk-source:hover {
-  background: rgba(99, 102, 241, 0.25);
-}
-
-.vsd-chunk-meta {
-  opacity: 0.6;
-}
-
-.vsd-chunk-text {
-  margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.7;
-  opacity: 0.8;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
+/* ---------- 两路对比 ---------- */
 
 .vsd-lanes {
   display: grid;
@@ -1037,5 +1094,163 @@ onMounted(refreshStats)
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ---------- 浏览 tab ---------- */
+
+.vsd-browse-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vsd-browse-input {
+  height: 32px;
+  width: 200px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.vsd-browse-input:focus {
+  outline: none;
+  border-color: var(--ai-chat-color-accent-500, #6366f1);
+}
+
+.vsd-browse-filter {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.1);
+  color: inherit;
+  cursor: pointer;
+}
+.vsd-browse-filter:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.vsd-browse-page {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.vsd-browse-spacer {
+  flex: 1;
+}
+
+.vsd-browse-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vsd-browse-nav:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.15);
+}
+.vsd-browse-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.vsd-browse-loading {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.vsd-browse-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vsd-chunk {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.vsd-chunk:hover {
+  border-color: rgba(128, 128, 128, 0.45);
+}
+.vsd-chunk.is-open {
+  border-color: var(--ai-chat-color-accent-500, #6366f1);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.vsd-chunk-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.vsd-chunk-source {
+  font-size: 12px;
+  font-family: var(--ai-chat-font-mono, monospace);
+  font-weight: 600;
+  border: none;
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 4px;
+  padding: 1px 8px;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vsd-chunk-source:hover {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.vsd-chunk-meta {
+  opacity: 0.6;
+}
+
+.vsd-chunk-chevron {
+  margin-left: auto;
+  opacity: 0.45;
+  transition: transform 0.2s;
+}
+.vsd-chunk-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.vsd-chunk-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vsd-tab,
+  .vsd-submit,
+  .vsd-chunk,
+  .vsd-chunk-chevron,
+  .vsd-example,
+  .vsd-browse-nav {
+    transition: none;
+  }
+  .vsd-submit:active:not(:disabled) {
+    transform: none;
+  }
 }
 </style>

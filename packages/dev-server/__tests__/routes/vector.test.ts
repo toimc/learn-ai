@@ -195,4 +195,11 @@ describe('GET /chunks（向量库浏览）', () => {
     expect(body.chunks).toHaveLength(1)
     expect(body.chunks[0].source).toBe('a.md')
   })
+
+  it('q 内容过滤：LIKE 命中含关键词的块', async () => {
+    const res = await routes.request('/chunks?q=' + encodeURIComponent('甲甲'))
+    const body = await res.json()
+    expect(body.total).toBe(1)
+    expect(body.chunks[0].text).toContain('甲甲')
+  })
 })

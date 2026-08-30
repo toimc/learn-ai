@@ -108,6 +108,7 @@ export function createVectorRoutes(deps: VectorRoutesDeps = {}) {
       Math.max(1, Number(c.req.query('pageSize')) || 20),
     )
     const source = c.req.query('source')?.trim()
+    const q = c.req.query('q')?.trim()
 
     const dbPath = deps.chunksDbPath ?? tempFilePath('docs-vector.db')
     let db: DatabaseSync
@@ -123,21 +124,28 @@ export function createVectorRoutes(deps: VectorRoutesDeps = {}) {
       })
     }
     try {
-      const sourceCond = source
-        ? `AND json_extract(metadata,'$.source') = ?`
-        : ''
-      const bind = source ? [source] : []
+      const conds: string[] = []
+      const bind: Array<string | number> = []
+      if (source) {
+        conds.push(`json_extract(metadata,'$.source') = ?`)
+        bind.push(source)
+      }
+      if (q) {
+        conds.push(`json_extract(metadata,'$.text') LIKE ?`)
+        bind.push(`%${q}%`)
+      }
+      const condSql = conds.length > 0 ? `AND ${conds.join(' AND ')}` : ''
       const total = (
         db
           .prepare(
-            `SELECT COUNT(*) AS n FROM docs_chunks WHERE embedding IS NOT NULL ${sourceCond}`,
+            `SELECT COUNT(*) AS n FROM docs_chunks WHERE embedding IS NOT NULL ${condSql}`,
           )
           .get(...bind) as { n: number }
       ).n
       const rows = db
         .prepare(
           `SELECT rowid AS id, metadata FROM docs_chunks
-           WHERE embedding IS NOT NULL ${sourceCond}
+           WHERE embedding IS NOT NULL ${condSql}
            ORDER BY rowid LIMIT ? OFFSET ?`,
         )
         .all(...bind, pageSize, (page - 1) * pageSize) as Array<{
