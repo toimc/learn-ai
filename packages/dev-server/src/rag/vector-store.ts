@@ -1,5 +1,5 @@
 import { LibSQLVector } from '@mastra/libsql'
-import { ensureDbDir, tempDbUrl } from '../memory'
+import { ensureDbDir, tempDbUrl } from '../paths'
 
 /** 文档语义索引名（LibSQLVector 内建表名，命名规范：字母开头字母数字下划线） */
 export const DOCS_INDEX_NAME = 'docs_chunks'
