@@ -106,6 +106,8 @@ export default defineConfig({
             items: [
               { text: '服务端网关', link: '/guide/server' },
               { text: '智能体接入', link: '/guide/mastra' },
+              { text: '会话记忆', link: '/guide/memory' },
+              { text: '语义检索', link: '/guide/rag' },
             ],
           },
           {
@@ -152,6 +154,8 @@ export default defineConfig({
           items: [
             { text: '服务端网关', link: '/guide/server' },
             { text: '智能体接入', link: '/guide/mastra' },
+            { text: '会话记忆', link: '/guide/memory' },
+            { text: '语义检索', link: '/guide/rag' },
           ],
         },
         {

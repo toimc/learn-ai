@@ -126,6 +126,7 @@ model: myLanguageModel
 | `MASTRA_MODEL_URL`     | 可选；OpenAI 兼容自定义端点，传入后 `model` 走 `{ id, url }` 对象形态  | `https://your-gateway.example.com/v1` |
 | `MASTRA_MODEL_API_KEY` | 可选；自定义端点的 key（**url 场景必传**：Mastra url 场景不自动读 provider env） | `sk-xxx`                              |
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
+| `MASTRA_SUB_MODEL`     | 可选；检索等轻量角色的次级模型（researcher 子 agent 用它，演示"按角色选模型"） | `deepseek/deepseek-chat`              |
 | `EMBEDDING_MODEL`      | 可选；存在即启用 `search_docs` 语义检索路（裸模型名走本地 Ollama，含 `provider/` 前缀走云端端点） | `bge-m3`                              |
 | `EMBEDDING_MODEL_URL`  | 可选；embedding 的 OpenAI 兼容端点，缺省 `http://localhost:11434/v1`（本地 Ollama） | `http://localhost:11434/v1`           |
 | `EMBEDDING_MODEL_API_KEY` | 可选；embedding 端点 key，本地 Ollama 缺省占位 `ollama`             | `sk-xxx`                              |
@@ -138,14 +139,14 @@ model: myLanguageModel
 
 ### 语义检索：LibSQLVector + 本地 Ollama（RAG）
 
-`search_docs` 默认是关键词检索（同义词表 + TF-IDF 加权）；配置 `EMBEDDING_MODEL` 后升级为「语义 + 关键词」混合检索，口语化查询（"聊天气泡怎么改圆角"）不再依赖同义词表硬扛。链路：`@mastra/rag` 的 `MDocument` 按 markdown 结构切块（512 字符 / 50 重叠，frontmatter 与标题碎片不入库）→ `@mastra/core` 的 `ModelRouterEmbeddingModel` 走 OpenAI 兼容 `/embeddings` 协议调本地 Ollama（`bge-m3`，1024 维，中英多语言）→ `@mastra/libsql` 同包的 `LibSQLVector` 存入 `file:.temp/docs-vector.db`（与会话记忆分库——文档索引是可随时重建的派生数据）。
+`search_docs` 默认是关键词检索（同义词表 + TF-IDF 加权）；配置 `EMBEDDING_MODEL` 后升级为「语义 + 关键词」混合检索（向量召回 + RRF 融合），口语化查询不再依赖同义词表硬扛。语料经 `MDocument` 切块、本地 Ollama `bge-m3` 嵌入后存入 `LibSQLVector`（`.temp/docs-vector.db`，与记忆分库——可随时重建的派生数据）：
 
 ```bash
 # 一次性入库（文档变更或换 embedding 模型后重跑；查询时只 embed 查询文本）
 cd packages/dev-server && pnpm index:docs
 ```
 
-入库脚本用探针文本自动探测模型维度并建索引（`bge-m3`=1024、`text-embedding-3-small`=1536 无需配置），换模型重跑即自动重建。查询端两路召回（向量 top8 + 关键词 top5）经 RRF 融合排序；Ollama 未启动或索引缺失时自动降级回纯关键词检索，工具不崩。
+Ollama 未启动或索引缺失时自动降级回纯关键词检索，工具不崩。切块参数、探针定维、维度校验、混合融合与降级链的深读见[语义检索指南](/guide/rag)，可视化对比与向量库浏览见[向量检索演示](/vector-search-demo)。
 
 ### 可观测性：traces 与 logs（Studio 线）
 
@@ -222,3 +223,5 @@ Studio 只是**按需调试工具**（查看 agent 定义 / trace / playground �
 - 未传时每轮生成独立 thread（`mastra_thread_` 前缀），不跨轮记忆
 - `resource`（默认 `'ai-chat'`）是 Mastra 记忆的命名空间，多用户场景可按用户区分
 - 是否透传记忆由运行时探测（`agent.hasOwnMemory()`）：agent 定义未配置 `memory` 工厂时不会触发 Mastra 记忆装配
+
+记忆落盘、路径锚定与 composite 双域的深读见[会话记忆指南](/guide/memory)。

@@ -5,11 +5,21 @@ title: 接口文档
 
 接口文档由 [Scalar](https://scalar.com) 渲染，规范来自 dev-server 的 `GET /api/openapi.json`（OpenAPI 3.1）。dev-server 本身基于 `@toimc/server` 网关组装，线协议与[服务端网关](/guide/server)完全一致——想在自己的后端复刻这套接口，直接用 `createChatGateway` 即可。
 
-- **左侧**：全部 mock 接口，按「会话 / 对话 / Provider / 元信息」分组
+- **左侧**：全部 mock 接口，按「会话 / 对话 / Provider / 元信息 / 向量检索」分组
 - **右侧**：接口详情（参数、请求体、响应 schema 与示例）
 - **Test Request**：可直接在页面执行请求，响应实时展示（服务端已开 CORS）；`POST /api/chat` 会以 `text/event-stream` 返回，Scalar 展示累积后的完整 SSE 文本，想看逐块流式效果请前往 [Mock 服务端演示](/mock-server-demo)
 
 需要 dev-server 在线：项目根目录运行 `pnpm dev`（文档站与 dev 服务同时启动）。规范源码位于 `packages/dev-server/src/openapi.ts`，与路由实现同包维护。
+
+## 向量检索端点
+
+「向量检索」分组三个端点是 docs-agent 语义检索的运维与调试面，前端消费见[向量检索演示](/vector-search-demo)，原理深读见[语义检索指南](/guide/rag)：
+
+| 端点 | 用途 |
+|---|---|
+| `GET /vector/stats` | 索引状态：embedding 配置 / 引擎与库文件（`vector.engine/location`）/ 块数 / 维度 |
+| `POST /vector/search` | 同一查询双路对比（关键词基线 vs 混合实况），响应含 `timing`（keywordMs / vectorMs）与 `degradedReason` |
+| `GET /vector/chunks` | 向量库浏览：分页列出全部语义块，`source` 按文档过滤、`q` 对块文本 LIKE 过滤 |
 
 ## Provider 运行时注册
 
