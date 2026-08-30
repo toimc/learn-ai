@@ -69,7 +69,7 @@ const statusText = computed(() =>
 async function refreshStats(): Promise<void> {
   status.value = 'connecting'
   try {
-    const res = await window.fetch(`${BASE_URL}/vector/stats`)
+    const res = await window.fetch(`${BASE_URL}/api/vector/stats`)
     stats.value = (await res.json()) as VectorStats
     status.value = 'online'
   } catch {
@@ -85,7 +85,7 @@ async function search(text: string): Promise<void> {
   searching.value = true
   response.value = null
   try {
-    const res = await window.fetch(`${BASE_URL}/vector/search`, {
+    const res = await window.fetch(`${BASE_URL}/api/vector/search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: q }),
