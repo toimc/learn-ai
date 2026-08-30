@@ -31,6 +31,11 @@ export const openApiSpec = {
       name: 'Provider',
       description: '运行时注册真实模型：注册为带工具与会话记忆的 Mastra Agent',
     },
+    {
+      name: '向量检索',
+      description:
+        '文档语义索引统计与关键词/语义双路对比（vector-search-demo 数据源）',
+    },
   ],
   paths: {
     '/api/conversations': {
@@ -391,6 +396,62 @@ export const openApiSpec = {
               },
             },
           },
+        },
+      },
+    },
+    '/vector/stats': {
+      get: {
+        tags: ['向量检索'],
+        summary: '向量索引统计',
+        description:
+          '语义检索配置与索引状态。enabled=false 表示未配置 EMBEDDING_MODEL（纯关键词模式）；indexExists=false 表示已配置但索引未建（先跑 pnpm index:docs）。',
+        operationId: 'vectorStats',
+        responses: {
+          200: {
+            description: '索引统计',
+            content: {
+              'application/json': {
+                schema: { type: 'object' },
+                example: {
+                  enabled: true,
+                  model: 'bge-m3',
+                  indexExists: true,
+                  chunks: 471,
+                  dimension: 1024,
+                  metric: 'cosine',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/vector/search': {
+      post: {
+        tags: ['向量检索'],
+        summary: '双路对比检索',
+        description:
+          '同一查询跑两路：keyword（纯 TF-IDF 关键词基线）与 hybrid（语义向量 + 关键词 RRF 融合）。EMBEDDING_MODEL 未配置或向量路失败时 hybrid 降级为 keyword（degradedReason 带原因）。',
+        operationId: 'vectorSearch',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { query: { type: 'string' } },
+                required: ['query'],
+              },
+              example: { query: '怎么让组件库支持英文' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: '两路检索结果',
+            content: { 'application/json': { schema: { type: 'object' } } },
+          },
+          400: { description: 'query 缺失' },
         },
       },
     },

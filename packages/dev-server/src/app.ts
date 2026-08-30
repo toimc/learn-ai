@@ -10,6 +10,7 @@ import { openApiSpec } from './openapi'
 import { createConversationsRoutes } from './routes/conversations'
 import { createProvidersRoutes } from './routes/providers'
 import { createWorkflowsRoutes } from './routes/workflows'
+import { createVectorRoutes } from './routes/vector'
 
 /**
  * 组装 dev 演示服务：@toimc/server/mastra 网关 + mock 剧本 + mastra agents（env 门控）。
@@ -74,6 +75,8 @@ export async function createDevApp(
   app.route('/providers', providers.app)
   // workflow 列表/运行端点：纯 mock 模式（mastra null）下 GET 返回空列表
   app.route('/workflows', createWorkflowsRoutes(env))
+  // 向量检索演示端点：stats + 双路对比（docs 站 vector-search-demo 页数据源）
+  app.route('/vector', createVectorRoutes())
   app.get('/openapi.json', (c) => c.json(openApiSpec))
 
   return app
