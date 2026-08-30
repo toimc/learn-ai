@@ -7,12 +7,19 @@ const root = resolve(__dirname, '..')
 // GitHub Pages 发布构建开关：DOCS_TARGET=pages 时剔除依赖本地 dev-server 的页面（spec 08 FR-2）
 const isPages = process.env.DOCS_TARGET === 'pages'
 
-// 仅本地开发可用的导航项（依赖 pnpm dev 同时启动的 dev-server）
+// 仅本地开发可用的导航项（依赖 pnpm dev 同时启动的 dev-server）：
+// 关联演示合并为单一下拉，避免顶栏被演示入口挤占
 const mockOnlyNav: DefaultTheme.NavItem[] = [
-  { text: 'Mock 演示', link: '/mock-server-demo' },
-  { text: '多 Agent 演示', link: '/multi-agent-demo' },
-  { text: 'Workflow 演示', link: '/workflow-demo' },
-  { text: '接口文档', link: '/mock-api' },
+  {
+    text: '演示',
+    items: [
+      { text: '向量检索演示', link: '/vector-search-demo' },
+      { text: 'Mock 演示', link: '/mock-server-demo' },
+      { text: '多 Agent 演示', link: '/multi-agent-demo' },
+      { text: 'Workflow 演示', link: '/workflow-demo' },
+      { text: '接口文档', link: '/mock-api' },
+    ],
+  },
 ]
 
 export default defineConfig({
@@ -22,6 +29,7 @@ export default defineConfig({
   base: process.env.BASE_PATH || '/',
   srcExclude: isPages
     ? [
+        'vector-search-demo.md',
         'mock-server-demo.md',
         'multi-agent-demo.md',
         'workflow-demo.md',
@@ -35,6 +43,7 @@ export default defineConfig({
     /^https?:\/\/localhost(?::\d+)?/,
     ...(isPages
       ? [
+          '/vector-search-demo',
           '/mock-server-demo',
           '/multi-agent-demo',
           '/workflow-demo',

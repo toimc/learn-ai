@@ -7,7 +7,7 @@ title: Playground
 
 ## 功能演示
 
-> 💡 想体验**真实 HTTP + SSE 流式**（会话数据来自本地 mock 服务端，token 粒度逐字输出）？前往 [Mock 服务端演示](/mock-server-demo)（聊天区自适应占满视口剩余高度，场景触发词已做成输入区快捷 chip 按钮，发送按钮流式中自动切换为停止）；多 agent 委托/并行/流水线编排（分别对应 16-03 的 Supervisor/Council/Workflow 模式）与协作卡片见 [多 Agent 协作演示](/multi-agent-demo)；原生 Mastra Workflow（输入即 task，step 过程工具卡片呈现）见 [Workflow 演示](/workflow-demo)；接口清单与在线执行见 [接口文档](/mock-api)。
+> 💡 想体验**真实 HTTP + SSE 流式**（会话数据来自本地 mock 服务端，token 粒度逐字输出）？前往 [Mock 服务端演示](/mock-server-demo)（聊天区自适应占满视口剩余高度，场景触发词已做成输入区快捷 chip 按钮，发送按钮流式中自动切换为停止）；docs-agent 语义检索升级的双路对比（关键词 vs 向量混合，口语化查询立见高下）见 [向量检索演示](/vector-search-demo)；多 agent 委托/并行/流水线编排（分别对应 16-03 的 Supervisor/Council/Workflow 模式）与协作卡片见 [多 Agent 协作演示](/multi-agent-demo)；原生 Mastra Workflow（输入即 task，step 过程工具卡片呈现）见 [Workflow 演示](/workflow-demo)；接口清单与在线执行见 [接口文档](/mock-api)。以上演示入口已合并进顶栏「演示」下拉。
 
 ### 🧠 思考过程展示
 - **触发方式**：选择「✨ 思考过程演示」会话查看静态效果；发送包含"思考"、"thinking"关键词的消息体验流式思考
