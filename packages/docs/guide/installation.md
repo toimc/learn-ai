@@ -42,6 +42,12 @@ pnpm add vue@^3.5.0
 pnpm add @mastra/core @mastra/memory @mastra/libsql zod
 ```
 
+自建网关若还要做文档语义检索（RAG），加装 `@mastra/rag`（`MDocument` 切块）配合 `@mastra/libsql` 同包的 `LibSQLVector` 向量库即可，详见[智能体接入的语义检索一节](/guide/mastra#语义检索-libsqlvector-本地-ollama-rag)：
+
+```bash
+pnpm add @mastra/rag
+```
+
 ## 可选样式：KaTeX 公式
 
 `@toimc/markdown` 不再自动注入 KaTeX 样式。需要渲染 LaTeX 公式时，手动引入子路径样式（约 25KB CSS + 数学字体，不用公式的项目可省去）：

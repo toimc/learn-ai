@@ -118,7 +118,7 @@ model: myLanguageModel
 
 ## dev-server：本仓库的完整示例
 
-本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具；配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
+本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具；配置 `EMBEDDING_MODEL` 后检索升级为「语义 + 关键词」混合；配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
 
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
@@ -126,12 +126,26 @@ model: myLanguageModel
 | `MASTRA_MODEL_URL`     | 可选；OpenAI 兼容自定义端点，传入后 `model` 走 `{ id, url }` 对象形态  | `https://your-gateway.example.com/v1` |
 | `MASTRA_MODEL_API_KEY` | 可选；自定义端点的 key（**url 场景必传**：Mastra url 场景不自动读 provider env） | `sk-xxx`                              |
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
+| `EMBEDDING_MODEL`      | 可选；存在即启用 `search_docs` 语义检索路（裸模型名走本地 Ollama，含 `provider/` 前缀走云端端点） | `bge-m3`                              |
+| `EMBEDDING_MODEL_URL`  | 可选；embedding 的 OpenAI 兼容端点，缺省 `http://localhost:11434/v1`（本地 Ollama） | `http://localhost:11434/v1`           |
+| `EMBEDDING_MODEL_API_KEY` | 可选；embedding 端点 key，本地 Ollama 缺省占位 `ollama`             | `sk-xxx`                              |
 | `MASTRA_TOKEN`         | 可选；网关 Bearer，设置后 `/api/chat` 与 `/api/models` 需携带（`/health` 公开） | `s3cret`                              |
 | `MASTRA_TELEMETRY`     | 可选；Studio 可观测性开关（traces/logs，默认开启，仅 `false` 显式关闭） | `false`                              |
 | `CONTEXT7_API_KEY`     | 可选；docs-agent 的 context7 工具 key（stdio 启动 `npx @upstash/context7-mcp`，失败自动降级为不挂载） | `ctx7sk-xxx`                          |
 | `DEV_SERVER_PORT`      | 可选；服务端口，缺省 `8787`                                            | `8787`                               |
 
 模型 API Key 按 Mastra 路由约定的环境变量命名（如 `DEEPSEEK_API_KEY`），只放在 `packages/dev-server/.env`（不提交，参照 `.env.example`）。记忆落盘在 `file:.temp/dev-server.db`（相对 dev-server 包目录，启动时自动建目录），进程重启对话保留。API Key 缺失时 Mastra 直接抛明确错误（如 `Could not find API key process.env.DEEPSEEK_API_KEY`），以 `error` chunk 展示在前端，SSE 流仍完整可解析。
+
+### 语义检索：LibSQLVector + 本地 Ollama（RAG）
+
+`search_docs` 默认是关键词检索（同义词表 + TF-IDF 加权）；配置 `EMBEDDING_MODEL` 后升级为「语义 + 关键词」混合检索，口语化查询（"聊天气泡怎么改圆角"）不再依赖同义词表硬扛。链路：`@mastra/rag` 的 `MDocument` 按 markdown 结构切块（512 字符 / 50 重叠，frontmatter 与标题碎片不入库）→ `@mastra/core` 的 `ModelRouterEmbeddingModel` 走 OpenAI 兼容 `/embeddings` 协议调本地 Ollama（`bge-m3`，1024 维，中英多语言）→ `@mastra/libsql` 同包的 `LibSQLVector` 存入 `file:.temp/docs-vector.db`（与会话记忆分库——文档索引是可随时重建的派生数据）。
+
+```bash
+# 一次性入库（文档变更或换 embedding 模型后重跑；查询时只 embed 查询文本）
+cd packages/dev-server && pnpm index:docs
+```
+
+入库脚本用探针文本自动探测模型维度并建索引（`bge-m3`=1024、`text-embedding-3-small`=1536 无需配置），换模型重跑即自动重建。查询端两路召回（向量 top8 + 关键词 top5）经 RRF 融合排序；Ollama 未启动或索引缺失时自动降级回纯关键词检索，工具不崩。
 
 ### 可观测性：traces 与 logs（Studio 线）
 
