@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { z } from 'zod'
 import { searchDocsTool } from '../../src/tools/search-docs'
 
@@ -128,5 +128,25 @@ describe('search_docs 工具', () => {
     await expect(
       search({ keywords: ['props (v-model)'] }),
     ).resolves.toBeInstanceOf(Object)
+  })
+})
+
+describe('search_docs 语义检索路（EMBEDDING_MODEL 门控）', () => {
+  it('embedding 端点不可达时降级纯关键词：不抛错、关键词命中照常返回', async () => {
+    vi.stubEnv('EMBEDDING_MODEL', 'bge-m3')
+    // 无人监听的端口：doEmbed 连接被拒 → 向量路 catch 降级
+    vi.stubEnv('EMBEDDING_MODEL_URL', 'http://127.0.0.1:9/v1')
+    try {
+      const { results } = await search({ keywords: ['聊天气泡'] })
+      expect(results.length).toBeGreaterThan(0)
+      expect(results[0].source).toContain('message-bubble')
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  }, 20_000)
+
+  it('EMBEDDING_MODEL 未配置时不尝试向量路（纯关键词行为，回归保护）', async () => {
+    const { results } = await search({ keywords: ['ChatWindow'] })
+    expect(results[0].source).toBe('components/chat-window.md')
   })
 })

@@ -2,7 +2,12 @@ import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
+import { readDevServerEnv } from '../env'
 import { collectMdFiles, DOCS_ROOT } from '../rag/docs-corpus'
+import { createEmbedder } from '../rag/embedder'
+import type { FusionCandidate } from '../rag/fusion'
+import { rrfFuse } from '../rag/fusion'
+import { createDocsVectorStore, DOCS_INDEX_NAME } from '../rag/vector-store'
 
 /**
  * 领域同义词表：用户口语 → 文档词汇的映射层。
@@ -82,10 +87,52 @@ function buildIndex(): DocIndexEntry[] {
 const HINT_NO_HIT =
   '未命中任何文档。建议：1) 调 list_components 查看全部组件清单；2) 换组件英文名（如 MessageBubble）或常用术语（如 主题、暗色、i18n）重试'
 
+/** 向量路召回深度：融合前取 top8（同 source 多块取最高分），RRF 后再截 top5 */
+const VECTOR_TOP_K = 8
+/** cosine 相似度门槛：低于此分的无关块直接滤掉（bge-m3 实测无关块 < 0.3） */
+const VECTOR_MIN_SCORE = 0.35
+
+/**
+ * 语义检索路：查询文本 → embedding → LibSQLVector topK 召回。
+ * EMBEDDING_MODEL 未配置返回空；任何失败（端点不可达/索引未建/维度不符）
+ * 由调用方 catch 降级纯关键词——工具永不因向量路崩。
+ */
+async function retrieveVectorHits(
+  queryText: string,
+): Promise<FusionCandidate[]> {
+  const env = readDevServerEnv()
+  if (!env.embedding) return []
+
+  const embedder = createEmbedder(env.embedding)
+  const store = createDocsVectorStore()
+  const { embeddings } = await embedder.doEmbed({ values: [queryText] })
+  const hits = await store.query({
+    indexName: DOCS_INDEX_NAME,
+    queryVector: embeddings[0]!,
+    topK: VECTOR_TOP_K,
+    minScore: VECTOR_MIN_SCORE,
+  })
+
+  // query 已按相似度降序：同 source 首个命中即该文档最高分块
+  const best = new Map<string, (typeof hits)[number]>()
+  for (const hit of hits) {
+    const source = String(hit.metadata?.source ?? '')
+    if (!source || best.has(source)) continue
+    best.set(source, hit)
+  }
+  return [...best.values()].map((hit) => ({
+    source: String(hit.metadata?.source),
+    title: String(hit.metadata?.title ?? ''),
+    snippet: String(hit.metadata?.text ?? '').slice(0, 400),
+    score: hit.score,
+    matchedTerms: [],
+  }))
+}
+
 export const searchDocsTool = createTool({
   id: 'search_docs',
   description:
-    '检索 ai-chat-ui 组件库文档。适用于：组件用法、props/events/slots 查询、主题定制、集成配置、报错排查。keywords 给 1-3 个独立关键词（优先组件英文名如 MessageBubble），返回最相关的文档片段与出处。清单类问题（有哪些组件/基础组件）请改用 list_components。',
+    '检索 ai-chat-ui 组件库文档（语义+关键词混合）。适用于：组件用法、props/events/slots 查询、主题定制、集成配置、报错排查。keywords 给 1-3 个关键词（优先组件英文名如 MessageBubble；语义检索已支持自然短语，如「聊天气泡怎么改圆角」），返回最相关的文档片段与出处。清单类问题（有哪些组件/基础组件）请改用 list_components。',
   inputSchema: z.object({
     keywords: z
       .array(z.string().min(1))
@@ -164,12 +211,24 @@ export const searchDocsTool = createTool({
       })
     }
 
-    const results = scored.sort((a, b) => b.score - a.score).slice(0, 5)
+    const keywordResults = scored.sort((a, b) => b.score - a.score).slice(0, 5)
+
+    // 向量路：EMBEDDING_MODEL 配置时语义召回，失败降级纯关键词（不崩、不静默丢日志）
+    let vectorHits: FusionCandidate[] = []
+    try {
+      vectorHits = await retrieveVectorHits(terms.join(' '))
+    } catch (error) {
+      context?.mastra?.getLogger()?.warn('语义检索路失败，已降级纯关键词', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+    const results = rrfFuse(vectorHits, keywordResults, 5)
 
     // 网关线裸 Agent 调用本工具时 context.mastra 不存在，须 optional chaining 不可崩
     context?.mastra?.getLogger()?.info('检索文档', {
       query: terms.join(' '),
-      hits: scored.length,
+      mode: vectorHits.length > 0 ? 'hybrid' : 'keyword',
+      hits: results.length,
     })
 
     return results.length === 0 ? { results, hint: HINT_NO_HIT } : { results }
