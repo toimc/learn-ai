@@ -12,11 +12,22 @@ export interface MastraEnv {
   subModel?: string
 }
 
+/** 语义检索（RAG 向量路）配置：本地 Ollama 为缺省形态，云端端点只改 env */
+export interface EmbeddingEnv {
+  /** 模型名；裸名（bge-m3）走本地 Ollama，含 provider/ 前缀（openai/text-embedding-3-small）原样透传 */
+  model: string
+  /** OpenAI 兼容端点（/embeddings 协议） */
+  url: string
+  apiKey: string
+}
+
 export interface DevServerEnv {
   /** HTTP 端口，默认 8787 */
   port: number
   /** 存在即启用 mastra agents；null = 纯 mock 模式 */
   mastra: MastraEnv | null
+  /** 存在即启用 search_docs 的向量检索路；null = 纯关键词（src/rag 消费） */
+  embedding: EmbeddingEnv | null
   /** Studio 可观测性开关（默认开启 opt-out，仅 MASTRA_TELEMETRY=false 显式关闭；src/mastra/index.ts 消费） */
   observability: boolean
   /** 网关 Bearer（可选；/health 保持公开） */
@@ -31,6 +42,7 @@ export function readDevServerEnv(
   const parsedPort = Number(env.DEV_SERVER_PORT)
   const port = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 8787
   const model = env.MASTRA_MODEL
+  const embeddingModel = env.EMBEDDING_MODEL
   return {
     port,
     mastra: model
@@ -47,6 +59,13 @@ export function readDevServerEnv(
         }
       : null,
     observability: env.MASTRA_TELEMETRY !== 'false',
+    embedding: embeddingModel
+      ? {
+          model: embeddingModel,
+          url: env.EMBEDDING_MODEL_URL ?? 'http://localhost:11434/v1',
+          apiKey: env.EMBEDDING_MODEL_API_KEY ?? 'ollama',
+        }
+      : null,
     ...(env.MASTRA_TOKEN ? { token: env.MASTRA_TOKEN } : {}),
     ...(env.CONTEXT7_API_KEY ? { context7ApiKey: env.CONTEXT7_API_KEY } : {}),
   }

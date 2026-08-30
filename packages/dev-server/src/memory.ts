@@ -62,6 +62,11 @@ const STORAGE_DB_URL = MEMORY_DB_URL
  */
 const OBSERVABILITY_DUCKDB_PATH = join(PKG_TEMP_DIR, 'observability.duckdb')
 
+/** 包根 .temp/ 下库文件的统一 URL 构造（rag 向量库等新增派生数据沿用同锚定） */
+export function tempDbUrl(filename: string): string {
+  return `file:${join(PKG_TEMP_DIR, filename)}`
+}
+
 /** libsql 本地文件模式不自动建父目录，目录缺失时 SQLITE_CANTOPEN 直接崩启动 */
 export function ensureDbDir(url: string): void {
   if (!url.startsWith('file:')) return

@@ -1,14 +1,8 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { relative } from 'node:path'
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-
-/**
- * 检索范围是 packages/docs（组件用法文档：components/ + guide/）。
- * fileURLToPath(import.meta.url) 而非 import.meta.dirname：vitest 与 tsx 下行为一致。
- */
-const DOCS_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../docs')
+import { collectMdFiles, DOCS_ROOT } from '../rag/docs-corpus'
 
 /**
  * 领域同义词表：用户口语 → 文档词汇的映射层。
@@ -42,23 +36,6 @@ const SYNONYMS: Record<string, readonly string[]> = {
   工具调用: ['tool-call'],
 }
 
-/** 递归收集 md 文件（跳过隐藏目录 / node_modules / dist 产物） */
-function collectMdFiles(dir: string): string[] {
-  const out: string[] = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (
-      entry.name.startsWith('.') ||
-      entry.name === 'node_modules' ||
-      entry.name === 'dist'
-    )
-      continue
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) out.push(...collectMdFiles(full))
-    else if (entry.name.endsWith('.md')) out.push(full)
-  }
-  return out
-}
-
 /** 正则特殊字符转义：检索词按字面匹配，不当模式解析 */
 function escapeRegExp(term: string): string {
   return term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -84,7 +61,7 @@ interface DocIndexEntry {
   snippetSource: string
 }
 
-/** 每次执行全量读盘（45 篇文档 <1MB，dev 工具无需索引常驻） */
+/** 每次执行全量读盘（47 篇文档 <1MB，dev 工具无需索引常驻） */
 function buildIndex(): DocIndexEntry[] {
   return collectMdFiles(DOCS_ROOT).map((file) => {
     const content = readFileSync(file, 'utf-8')

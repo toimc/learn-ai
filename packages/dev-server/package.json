@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "index:docs": "tsx --env-file-if-exists=.env src/rag/cli.ts",
     "start": "tsx --env-file-if-exists=.env src/index.ts",
     "studio": "mastra dev -e .env",
     "build": "mastra build",
@@ -21,6 +22,7 @@
     "@mastra/mcp": "^1.17.2",
     "@mastra/memory": "^1.27.0",
     "@mastra/observability": "^1.16.6",
+    "@mastra/rag": "^2.6.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@toimc/agents": "workspace:*",
     "@toimc/core": "workspace:*",
