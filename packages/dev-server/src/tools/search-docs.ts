@@ -3,6 +3,7 @@ import { relative } from 'node:path'
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 import { readDevServerEnv } from '../env'
+import type { EmbeddingEnv } from '../env'
 import { collectMdFiles, DOCS_ROOT } from '../rag/docs-corpus'
 import { createEmbedder } from '../rag/embedder'
 import type { FusionCandidate } from '../rag/fusion'
@@ -99,11 +100,11 @@ const VECTOR_MIN_SCORE = 0.35
  */
 async function retrieveVectorHits(
   queryText: string,
+  embedding: EmbeddingEnv | null,
 ): Promise<FusionCandidate[]> {
-  const env = readDevServerEnv()
-  if (!env.embedding) return []
+  if (!embedding) return []
 
-  const embedder = createEmbedder(env.embedding)
+  const embedder = createEmbedder(embedding)
   const store = createDocsVectorStore()
   const { embeddings } = await embedder.doEmbed({ values: [queryText] })
   const hits = await store.query({
@@ -129,6 +130,125 @@ async function retrieveVectorHits(
   }))
 }
 
+/** 单条检索结果（工具返回与 /vector 路由共用形状） */
+export interface SearchResultItem {
+  source: string
+  title: string
+  snippet: string
+  score: number
+  matchedTerms: string[]
+}
+
+/** 一次检索的完整出口：mode 记录实际走向，degradedReason 存在即向量路降级过 */
+export interface SearchOutcome {
+  results: SearchResultItem[]
+  hint?: string
+  mode: 'hybrid' | 'keyword'
+  degradedReason?: string
+}
+
+/**
+ * 检索主入口（工具 execute 与 /vector 对比路由共用）。
+ * options.embedding 显式传 null 可强制纯关键词路（对比演示用）；
+ * 缺省读进程 env。降级不抛错，理由带回 degradedReason。
+ */
+export async function runSearch(
+  keywords: string[],
+  component?: string,
+  options: { embedding?: EmbeddingEnv | null } = {},
+): Promise<SearchOutcome> {
+  const terms = expandKeywords(keywords ?? [], component)
+  if (terms.length === 0) {
+    return { results: [], hint: HINT_NO_HIT, mode: 'keyword' }
+  }
+
+  const keywordOutcome = keywordSearch(terms)
+  const embedding =
+    options.embedding === undefined
+      ? readDevServerEnv().embedding
+      : options.embedding
+
+  let vectorHits: FusionCandidate[] = []
+  let degradedReason: string | undefined
+  if (embedding) {
+    try {
+      vectorHits = await retrieveVectorHits(terms.join(' '), embedding)
+    } catch (error) {
+      degradedReason = error instanceof Error ? error.message : String(error)
+    }
+  }
+  const results = rrfFuse(vectorHits, keywordOutcome, 5)
+  return {
+    ...(results.length === 0 ? { hint: HINT_NO_HIT } : {}),
+    results,
+    mode: vectorHits.length > 0 ? 'hybrid' : 'keyword',
+    ...(degradedReason ? { degradedReason } : {}),
+  }
+}
+
+/** 关键词路：TF-IDF + 标题加权评分，返回降序 top5（纯本地读盘，无向量参与） */
+function keywordSearch(terms: string[]): SearchResultItem[] {
+  const index = buildIndex()
+  const lowerTerms = terms.map((t) => t.toLowerCase())
+
+  // 文档频率 → IDF：常见词（"组件""使用"）降权，让稀有术语主导相关性
+  const docFreq = new Map<string, number>()
+  for (const term of lowerTerms) {
+    const variants = [term, ...(SYNONYMS[term] ?? [])]
+    docFreq.set(
+      term,
+      index.filter(
+        (doc) =>
+          variants.some((v) => doc.lowerBody.includes(v)) ||
+          doc.titleText.includes(term),
+      ).length,
+    )
+  }
+
+  const scored: SearchResultItem[] = []
+
+  for (const doc of index) {
+    let score = 0
+    const matchedTerms: string[] = []
+    const hitPositions: number[] = []
+
+    for (const term of lowerTerms) {
+      const variants = [term, ...(SYNONYMS[term] ?? [])]
+      let titleTf = 0
+      let bodyTf = 0
+      for (const variant of variants) {
+        titleTf += countMatches(doc.titleText, variant)
+        bodyTf += countMatches(doc.lowerBody, variant)
+        const idx = doc.lowerBody.indexOf(variant)
+        if (idx >= 0) hitPositions.push(idx)
+      }
+      if (titleTf + bodyTf === 0) continue
+
+      const df = docFreq.get(term) ?? 0
+      const idf = Math.log(1 + index.length / (1 + df))
+      // 标题命中 ×5：正文里的高频引用不得压过标题命中（实测查 ChatWindow
+      // 时 message-bubble.md 因正文引用 6 次反超 chat-window.md 的标题命中）
+      score += idf * (titleTf * 5 + bodyTf)
+      matchedTerms.push(term)
+    }
+
+    if (score === 0 || matchedTerms.length === 0) continue
+
+    // 片段：最早命中变体位置前 100 字起截 400 字（仅标题命中时从头截）
+    const firstHit = hitPositions.length > 0 ? Math.min(...hitPositions) : 0
+    const start = Math.max(0, firstHit - 100)
+    scored.push({
+      source: doc.source,
+      title: doc.title,
+      snippet: doc.snippetSource.slice(start, start + 400),
+      score: Math.round(score * 100) / 100,
+      matchedTerms,
+    })
+  }
+
+  return scored.sort((a, b) => b.score - a.score).slice(0, 5)
+}
+
 export const searchDocsTool = createTool({
   id: 'search_docs',
   description:
@@ -142,95 +262,23 @@ export const searchDocsTool = createTool({
   }),
   // @mastra/core 1.60 的 execute 签名是 (inputData, executionContext)
   execute: async ({ keywords, component }, context) => {
-    const terms = expandKeywords(keywords ?? [], component)
-    if (terms.length === 0) {
-      return { results: [], hint: HINT_NO_HIT }
-    }
-
-    const index = buildIndex()
-    const lowerTerms = terms.map((t) => t.toLowerCase())
-
-    // 文档频率 → IDF：常见词（"组件""使用"）降权，让稀有术语主导相关性
-    const docFreq = new Map<string, number>()
-    for (const term of lowerTerms) {
-      const variants = [term, ...(SYNONYMS[term] ?? [])]
-      docFreq.set(
-        term,
-        index.filter(
-          (doc) =>
-            variants.some((v) => doc.lowerBody.includes(v)) ||
-            doc.titleText.includes(term),
-        ).length,
-      )
-    }
-
-    const scored: Array<{
-      source: string
-      title: string
-      snippet: string
-      score: number
-      matchedTerms: string[]
-    }> = []
-
-    for (const doc of index) {
-      let score = 0
-      const matchedTerms: string[] = []
-      const hitPositions: number[] = []
-
-      for (const term of lowerTerms) {
-        const variants = [term, ...(SYNONYMS[term] ?? [])]
-        let titleTf = 0
-        let bodyTf = 0
-        for (const variant of variants) {
-          titleTf += countMatches(doc.titleText, variant)
-          bodyTf += countMatches(doc.lowerBody, variant)
-          const idx = doc.lowerBody.indexOf(variant)
-          if (idx >= 0) hitPositions.push(idx)
-        }
-        if (titleTf + bodyTf === 0) continue
-
-        const df = docFreq.get(term) ?? 0
-        const idf = Math.log(1 + index.length / (1 + df))
-        // 标题命中 ×5：正文里的高频引用不得压过标题命中（实测查 ChatWindow
-        // 时 message-bubble.md 因正文引用 6 次反超 chat-window.md 的标题命中）
-        score += idf * (titleTf * 5 + bodyTf)
-        matchedTerms.push(term)
-      }
-
-      if (score === 0 || matchedTerms.length === 0) continue
-
-      // 片段：最早命中变体位置前 100 字起截 400 字（仅标题命中时从头截）
-      const firstHit = hitPositions.length > 0 ? Math.min(...hitPositions) : 0
-      const start = Math.max(0, firstHit - 100)
-      scored.push({
-        source: doc.source,
-        title: doc.title,
-        snippet: doc.snippetSource.slice(start, start + 400),
-        score: Math.round(score * 100) / 100,
-        matchedTerms,
-      })
-    }
-
-    const keywordResults = scored.sort((a, b) => b.score - a.score).slice(0, 5)
-
-    // 向量路：EMBEDDING_MODEL 配置时语义召回，失败降级纯关键词（不崩、不静默丢日志）
-    let vectorHits: FusionCandidate[] = []
-    try {
-      vectorHits = await retrieveVectorHits(terms.join(' '))
-    } catch (error) {
-      context?.mastra?.getLogger()?.warn('语义检索路失败，已降级纯关键词', {
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
-    const results = rrfFuse(vectorHits, keywordResults, 5)
+    const outcome = await runSearch(keywords ?? [], component)
+    const query = expandKeywords(keywords ?? [], component).join(' ')
 
     // 网关线裸 Agent 调用本工具时 context.mastra 不存在，须 optional chaining 不可崩
+    if (outcome.degradedReason) {
+      context?.mastra?.getLogger()?.warn('语义检索路失败，已降级纯关键词', {
+        error: outcome.degradedReason,
+      })
+    }
     context?.mastra?.getLogger()?.info('检索文档', {
-      query: terms.join(' '),
-      mode: vectorHits.length > 0 ? 'hybrid' : 'keyword',
-      hits: results.length,
+      query,
+      mode: outcome.mode,
+      hits: outcome.results.length,
     })
 
-    return results.length === 0 ? { results, hint: HINT_NO_HIT } : { results }
+    return outcome.results.length === 0
+      ? { results: outcome.results, hint: outcome.hint }
+      : { results: outcome.results }
   },
 })

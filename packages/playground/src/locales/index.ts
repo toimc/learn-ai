@@ -133,6 +133,35 @@ const zhCN = {
     offline: '（离线）',
     offlineHint: '无法连接 {url}，请先启动对应服务后再切换。',
   },
+  vector: {
+    title: '向量检索演示',
+    description:
+      '同一查询双路对比：左路是纯关键词检索（TF-IDF + 同义词表），右路是语义混合检索（本地 bge-m3 向量召回 + 关键词 RRF 融合）。口语化查询（如「怎么让组件库支持英文」）关键词路 0 命中、语义路精准命中——这就是 docs-agent 检索升级的效果。',
+    statusOnline: '已连接',
+    statusConnecting: '连接中…',
+    statusOffline: '未连接',
+    statsChunks: '语义块',
+    statsDimension: '维',
+    offlineTitle: '无法连接 dev-server',
+    offlineHint:
+      '请在项目根目录运行 pnpm dev（同时启动文档站与 dev 服务）后刷新本页。',
+    notEnabledTitle: '语义检索未启用',
+    notEnabledHint:
+      'packages/dev-server/.env 未配置 EMBEDDING_MODEL。配置 EMBEDDING_MODEL=bge-m3（本地 Ollama，先 ollama pull bge-m3）后重启 dev-server。',
+    noIndexTitle: '向量索引未建',
+    noIndexHint:
+      '已配置 embedding 但 .temp/docs-vector.db 无索引。在 packages/dev-server 下运行 pnpm index:docs 入库（47 篇文档约 30 秒）。',
+    inputPlaceholder: '输入查询，双路对比检索效果…',
+    search: '查询',
+    searching: '查询中…',
+    examples: '示例查询',
+    keywordLane: '纯关键词路（TF-IDF）',
+    hybridLane: '语义混合路（向量 + RRF）',
+    modeHybrid: 'hybrid',
+    modeKeyword: 'keyword',
+    noHit: '0 命中',
+    degraded: '向量路已降级为关键词：{reason}',
+  },
   workflow: {
     title: 'Workflow 编排演示',
     description:
@@ -343,6 +372,35 @@ const enUS: typeof zhCN = {
       "{'@'}toimc/server gateway + SSE protocol (pick model in dropdown)",
     offline: ' (offline)',
     offlineHint: 'Cannot reach {url} — start the service first, then switch.',
+  },
+  vector: {
+    title: 'Vector Search Demo',
+    description:
+      'Side-by-side comparison of two retrieval paths: the left lane is pure keyword search (TF-IDF + synonym table), the right lane is hybrid semantic search (local bge-m3 vector recall + keyword RRF fusion). Colloquial queries like "怎么让组件库支持英文" get zero keyword hits but precise semantic hits — this is the upgraded docs-agent retrieval.',
+    statusOnline: 'Connected',
+    statusConnecting: 'Connecting…',
+    statusOffline: 'Offline',
+    statsChunks: 'chunks',
+    statsDimension: 'd',
+    offlineTitle: 'Cannot reach dev-server',
+    offlineHint:
+      'Run pnpm dev at the repo root (starts the docs site and dev server together), then refresh this page.',
+    notEnabledTitle: 'Semantic search not enabled',
+    notEnabledHint:
+      'EMBEDDING_MODEL is not set in packages/dev-server/.env. Set EMBEDDING_MODEL=bge-m3 (local Ollama, pull bge-m3 first) and restart dev-server.',
+    noIndexTitle: 'Vector index not built',
+    noIndexHint:
+      'Embedding is configured but .temp/docs-vector.db has no index. Run pnpm index:docs under packages/dev-server (47 docs, ~30s).',
+    inputPlaceholder: 'Type a query to compare both lanes…',
+    search: 'Search',
+    searching: 'Searching…',
+    examples: 'Examples',
+    keywordLane: 'Keyword only (TF-IDF)',
+    hybridLane: 'Hybrid (vector + RRF)',
+    modeHybrid: 'hybrid',
+    modeKeyword: 'keyword',
+    noHit: '0 hits',
+    degraded: 'Vector path degraded to keyword: {reason}',
   },
   workflow: {
     title: 'Workflow Orchestration Demo',

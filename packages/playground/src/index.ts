@@ -5,6 +5,7 @@ export { default as MultimodalDemoPage } from './components/MultimodalDemoPage.v
 export { default as MockServerDemoPage } from './components/MockServerDemoPage.vue'
 export { default as MultiAgentDemoPage } from './components/MultiAgentDemoPage.vue'
 export { default as WorkflowDemoPage } from './components/WorkflowDemoPage.vue'
+export { default as VectorSearchDemoPage } from './components/VectorSearchDemoPage.vue'
 export { default as MockApiPage } from './components/MockApiPage.vue'
 export { default as MultimodalInputDemo } from './components/demos/MultimodalInputDemo.vue'
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'

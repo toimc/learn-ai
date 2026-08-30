@@ -147,11 +147,13 @@ export default {
         MockServerDemoPage,
         MultiAgentDemoPage,
         WorkflowDemoPage,
+        VectorSearchDemoPage,
         MockApiPage,
       } = await import('@toimc/playground')
       app.component('MockServerDemoPage', MockServerDemoPage)
       app.component('MultiAgentDemoPage', MultiAgentDemoPage)
       app.component('WorkflowDemoPage', WorkflowDemoPage)
+      app.component('VectorSearchDemoPage', VectorSearchDemoPage)
       app.component('MockApiPage', MockApiPage)
     }
     // 组件文档内嵌交互演示
