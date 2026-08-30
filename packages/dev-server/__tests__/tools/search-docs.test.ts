@@ -149,4 +149,18 @@ describe('search_docs 语义检索路（EMBEDDING_MODEL 门控）', () => {
     const { results } = await search({ keywords: ['ChatWindow'] })
     expect(results[0].source).toBe('components/chat-window.md')
   })
+
+  it('中英混排词按边界切分：「Message组件」关键词路可命中 message 文档', async () => {
+    vi.stubEnv('EMBEDDING_MODEL', '')
+    delete process.env.EMBEDDING_MODEL
+    try {
+      const { results } = await search({ keywords: ['Message组件'] })
+      // 修复前：整串「message组件」字面不存在于任何文档 → 0 命中
+      expect(results.length).toBeGreaterThan(0)
+      expect(results[0].source).toBe('components/message.md')
+      expect(results[0].matchedTerms).toContain('message')
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
 })

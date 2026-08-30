@@ -51,10 +51,24 @@ function countMatches(haystack: string, term: string): number {
   return (haystack.match(new RegExp(escapeRegExp(term), 'g')) ?? []).length
 }
 
-/** 入参关键词展开为检索词项：元素内再按空白拆（防"Button Input"整元素），去重 */
+/**
+ * 中英边界切分：「Message组件」→ message + 组件。
+ * 必要性：关键词路按字面匹配，无空格混排词（Message组件/useChat用法）
+ * 整串在任何文档都不存在，实测「Message组件」0 命中。
+ */
+function splitCjkLatin(term: string): string[] {
+  return term
+    .replace(
+      /(\p{Script=Han})(?=[A-Za-z0-9])|([A-Za-z0-9])(?=\p{Script=Han})/gu,
+      '$1$2 ',
+    )
+    .split(/\s+/)
+}
+
+/** 入参关键词展开为检索词项：元素内按空白与中英边界拆（防"Button Input"整元素），去重 */
 function expandKeywords(keywords: string[], component?: string): string[] {
   const raw = [...keywords, ...(component ? [component] : [])]
-    .flatMap((k) => k.trim().split(/\s+/))
+    .flatMap((k) => splitCjkLatin(k.trim()))
     .filter(Boolean)
   return [...new Set(raw)]
 }
