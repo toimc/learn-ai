@@ -46,17 +46,16 @@ export function rrfFuse(
 
   const fused: Array<{ candidate: FusionCandidate; fusedScore: number }> = []
   for (const entry of entries.values()) {
+    const base = entry.vector?.candidate ?? entry.keyword?.candidate
+    if (!base) continue // 条目至少来自一路，防御分支
     let fusedScore = 0
     if (entry.vector) fusedScore += 1 / (RRF_K + entry.vector.rank)
     if (entry.keyword) fusedScore += 1 / (RRF_K + entry.keyword.rank)
     fused.push({
       fusedScore,
       candidate: {
-        ...(entry.vector?.candidate ?? entry.keyword?.candidate),
-        snippet:
-          entry.vector?.candidate.snippet ??
-          entry.keyword?.candidate.snippet ??
-          '',
+        ...base,
+        snippet: entry.vector?.candidate.snippet ?? base.snippet,
         matchedTerms: entry.keyword?.candidate.matchedTerms ?? [],
       },
     })

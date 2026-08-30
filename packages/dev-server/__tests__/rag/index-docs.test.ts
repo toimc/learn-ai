@@ -95,9 +95,9 @@ describe('buildDocsIndex', () => {
       queryVector: [1, 1],
       topK: 100,
     })
-    expect(all.every((h) => !String(h.metadata.text).includes('layout:'))).toBe(
-      true,
-    )
+    expect(
+      all.every((h) => !String(h.metadata?.text).includes('layout:')),
+    ).toBe(true)
   })
 
   it('重复入库幂等：块数不翻倍（全量 truncate 后重灌）', async () => {

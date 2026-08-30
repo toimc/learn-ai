@@ -1,4 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { LibSQLVector } from '@mastra/libsql'
+import { DOCS_INDEX_NAME } from '../../src/rag/vector-store'
 import { createVectorRoutes } from '../../src/routes/vector'
 
 /** stats 端点的最小 store 替身（结构兼容 LibSQLVector 的两个只读方法） */
@@ -124,5 +129,70 @@ describe('POST /search', () => {
       },
     )
     expect(res.status).toBe(400)
+  })
+})
+
+describe('GET /chunks（向量库浏览）', () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'vector-chunks-test-'))
+  afterAll(() => rmSync(tmp, { recursive: true, force: true }))
+
+  let routes: ReturnType<typeof app>
+  beforeAll(async () => {
+    // 真文件库 fixture：3 块（a.md ×2 / b.md ×1），node:sqlite 直读该文件。
+    // 只 seed 一次：libsql 写与 node:sqlite 读交替打开同一文件会 IOERR，用例间不重复写
+    const store = new LibSQLVector({
+      id: 't-chunks',
+      url: `file:${join(tmp, 'v.db')}`,
+    })
+    await store.createIndex({ indexName: DOCS_INDEX_NAME, dimension: 2 })
+    await store.upsert({
+      indexName: DOCS_INDEX_NAME,
+      vectors: [
+        [0.1, 0.2],
+        [0.3, 0.4],
+        [0.5, 0.6],
+      ],
+      metadata: [
+        { source: 'a.md', title: '甲文档', text: '甲'.repeat(60) },
+        { source: 'b.md', title: '乙文档', text: '乙'.repeat(60) },
+        { source: 'a.md', title: '甲文档', text: '丙'.repeat(60) },
+      ],
+    })
+    routes = app({
+      env: async () => ({ embedding: embeddingEnv }),
+      createStore: () => fakeStore(),
+      chunksDbPath: join(tmp, 'v.db'),
+    })
+  })
+
+  it('分页列出全部分块，含 source/title/text/chars', async () => {
+    const res = await routes.request('/chunks?page=1&pageSize=2')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.total).toBe(3)
+    expect(body.page).toBe(1)
+    expect(body.chunks).toHaveLength(2)
+    expect(body.chunks[0]).toMatchObject({
+      source: 'a.md',
+      title: '甲文档',
+      chars: 60,
+    })
+    expect(body.chunks[0].text).toHaveLength(60)
+  })
+
+  it('source 过滤只列该文档的块', async () => {
+    const res = await routes.request('/chunks?source=a.md')
+    const body = await res.json()
+    expect(body.total).toBe(2)
+    expect(
+      body.chunks.every((c: { source: string }) => c.source === 'a.md'),
+    ).toBe(true)
+  })
+
+  it('翻页到尾页后返回剩余块', async () => {
+    const res = await routes.request('/chunks?page=2&pageSize=2')
+    const body = await res.json()
+    expect(body.chunks).toHaveLength(1)
+    expect(body.chunks[0].source).toBe('a.md')
   })
 })

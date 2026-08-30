@@ -1,6 +1,8 @@
+import { DatabaseSync } from 'node:sqlite'
 import { Hono } from 'hono'
 import type { DevServerEnv, EmbeddingEnv } from '../env'
 import { readDevServerEnv } from '../env'
+import { tempFilePath } from '../paths'
 import {
   createDocsVectorStore,
   DOCS_INDEX_NAME,
@@ -24,6 +26,8 @@ export interface VectorRoutesDeps {
     Promise<Pick<DevServerEnv, 'embedding'>> | Pick<DevServerEnv, 'embedding'>
   /** 向量库工厂（stats 用；缺省真连 .temp/docs-vector.db） */
   createStore?: () => VectorStatsStore
+  /** chunks 浏览端点直读的库文件路径（测试注入临时库；缺省包根 .temp） */
+  chunksDbPath?: string
 }
 
 /** 向量检索演示端点：库统计 + 关键词/语义两路对比（docs 页 vector-search-demo 数据源） */
@@ -91,6 +95,81 @@ export function createVectorRoutes(deps: VectorRoutesDeps = {}) {
       // 链路演示：两路各自耗时（vectorMs=0 即未配置，非失败）
       timing: { keyword: keyword.timing, hybrid: hybrid.timing },
     })
+  })
+
+  /**
+   * 向量库浏览：node:sqlite 直读 docs_chunks 表分页列出全部分块。
+   * MastraVector 接口无「全量 list」方法，本地文件库直查是最直接可靠的途径。
+   */
+  app.get('/chunks', (c) => {
+    const page = Math.max(1, Number(c.req.query('page')) || 1)
+    const pageSize = Math.min(
+      50,
+      Math.max(1, Number(c.req.query('pageSize')) || 20),
+    )
+    const source = c.req.query('source')?.trim()
+
+    const dbPath = deps.chunksDbPath ?? tempFilePath('docs-vector.db')
+    let db: DatabaseSync
+    try {
+      db = new DatabaseSync(dbPath)
+    } catch {
+      return c.json({
+        total: 0,
+        page,
+        pageSize,
+        chunks: [],
+        error: `库文件不可读：${dbPath}`,
+      })
+    }
+    try {
+      const sourceCond = source
+        ? `AND json_extract(metadata,'$.source') = ?`
+        : ''
+      const bind = source ? [source] : []
+      const total = (
+        db
+          .prepare(
+            `SELECT COUNT(*) AS n FROM docs_chunks WHERE embedding IS NOT NULL ${sourceCond}`,
+          )
+          .get(...bind) as { n: number }
+      ).n
+      const rows = db
+        .prepare(
+          `SELECT rowid AS id, metadata FROM docs_chunks
+           WHERE embedding IS NOT NULL ${sourceCond}
+           ORDER BY rowid LIMIT ? OFFSET ?`,
+        )
+        .all(...bind, pageSize, (page - 1) * pageSize) as Array<{
+        id: number
+        metadata: string
+      }>
+      const chunks = rows.map((row) => {
+        const meta = JSON.parse(row.metadata) as {
+          source?: string
+          title?: string
+          text?: string
+        }
+        return {
+          id: row.id,
+          source: meta.source ?? '',
+          title: meta.title ?? '',
+          text: meta.text ?? '',
+          chars: (meta.text ?? '').length,
+        }
+      })
+      return c.json({ total, page, pageSize, chunks })
+    } catch (error) {
+      return c.json({
+        total: 0,
+        page,
+        pageSize,
+        chunks: [],
+        error: error instanceof Error ? error.message : String(error),
+      })
+    } finally {
+      db.close()
+    }
   })
 
   return app

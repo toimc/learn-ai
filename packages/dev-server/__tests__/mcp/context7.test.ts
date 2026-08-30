@@ -7,6 +7,7 @@ describe('loadContext7Tools 门控', () => {
       await loadContext7Tools({
         port: 8787,
         mastra: null,
+        embedding: null,
         observability: false,
       }),
     ).toEqual({})
@@ -17,6 +18,7 @@ describe('loadContext7Tools 门控', () => {
       await loadContext7Tools({
         port: 8787,
         mastra: { model: 'deepseek/deepseek-chat' },
+        embedding: null,
         observability: false,
       }),
     ).toEqual({})

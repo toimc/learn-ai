@@ -9,7 +9,10 @@ import type { EmbeddingEnv } from '../env'
  */
 export function createEmbedder(env: EmbeddingEnv): ModelRouterEmbeddingModel {
   // 裸模型名（bge-m3）补本地 Ollama 前缀；含 provider/ 的模型串原样透传
-  const id = env.model.includes('/') ? env.model : `ollama/${env.model}`
+  // as 收窄有依据：正则已验证 provider/model 形态
+  const id: `${string}/${string}` = /^[^/]+\/.+/.test(env.model)
+    ? (env.model as `${string}/${string}`)
+    : `ollama/${env.model}`
   return new ModelRouterEmbeddingModel({ id, url: env.url, apiKey: env.apiKey })
 }
 

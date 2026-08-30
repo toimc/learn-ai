@@ -122,6 +122,64 @@ async function search(text: string): Promise<void> {
   }
 }
 
+/** 向量库浏览（/api/vector/chunks 分页直读库文件） */
+interface VectorChunk {
+  id: number
+  source: string
+  title: string
+  text: string
+  chars: number
+  expanded?: boolean
+}
+
+const showChunks = ref(false)
+const chunksList = ref<VectorChunk[]>([])
+const chunksPage = ref(1)
+const chunksTotal = ref(0)
+const chunksSource = ref('')
+const loadingChunks = ref(false)
+
+const chunksPages = computed(() =>
+  Math.max(1, Math.ceil(chunksTotal.value / 20)),
+)
+
+async function loadChunks(page = 1, source = ''): Promise<void> {
+  loadingChunks.value = true
+  try {
+    const params = new window.URLSearchParams({
+      page: String(page),
+      pageSize: '20',
+    })
+    if (source) params.set('source', source)
+    const res = await window.fetch(`${BASE_URL}/api/vector/chunks?${params}`)
+    const body = (await res.json()) as {
+      total: number
+      page: number
+      chunks: VectorChunk[]
+    }
+    chunksTotal.value = body.total
+    chunksPage.value = body.page
+    chunksList.value = body.chunks.map((c) => ({ ...c, expanded: false }))
+  } catch {
+    chunksList.value = []
+  } finally {
+    loadingChunks.value = false
+  }
+}
+
+function toggleBrowse(): void {
+  showChunks.value = !showChunks.value
+  if (showChunks.value && chunksList.value.length === 0) {
+    chunksSource.value = ''
+    loadChunks(1)
+  }
+}
+
+function filterBySource(source: string): void {
+  chunksSource.value = source
+  loadChunks(1, source)
+}
+
 onMounted(refreshStats)
 </script>
 
@@ -277,6 +335,91 @@ onMounted(refreshStats)
           t('pg.vector.chainIdle')
         }}</span>
       </div>
+    </section>
+
+    <!-- 向量库浏览：分页直读库文件的全部语义块 -->
+    <section class="vsd-browse">
+      <button type="button" class="vsd-browse-toggle" @click="toggleBrowse">
+        📚 {{ t('pg.vector.browseTitle') }}
+        <span class="vsd-browse-hint">{{
+          showChunks
+            ? t('pg.vector.browseCollapse')
+            : t('pg.vector.browseToggle', { total: stats?.chunks ?? 0 })
+        }}</span>
+      </button>
+
+      <template v-if="showChunks">
+        <div class="vsd-browse-toolbar">
+          <button
+            v-if="chunksSource"
+            type="button"
+            class="vsd-browse-filter"
+            @click="filterBySource('')"
+          >
+            {{ chunksSource }} ✕ {{ t('pg.vector.browseFilterClear') }}
+          </button>
+          <span class="vsd-browse-page">
+            {{
+              t('pg.vector.browsePage', {
+                page: chunksPage,
+                pages: chunksPages,
+                total: chunksTotal,
+              })
+            }}
+          </span>
+          <span class="vsd-browse-spacer" />
+          <button
+            type="button"
+            class="vsd-browse-nav"
+            :disabled="chunksPage <= 1 || loadingChunks"
+            @click="loadChunks(chunksPage - 1, chunksSource)"
+          >
+            ‹ {{ t('pg.vector.browsePrev') }}
+          </button>
+          <button
+            type="button"
+            class="vsd-browse-nav"
+            :disabled="chunksPage >= chunksPages || loadingChunks"
+            @click="loadChunks(chunksPage + 1, chunksSource)"
+          >
+            {{ t('pg.vector.browseNext') }} ›
+          </button>
+        </div>
+
+        <p v-if="loadingChunks" class="vsd-browse-loading">…</p>
+        <p v-else-if="chunksList.length === 0" class="vsd-browse-loading">
+          {{ t('pg.vector.browseEmpty') }}
+        </p>
+        <ul v-else class="vsd-browse-list">
+          <li
+            v-for="ch in chunksList"
+            :key="ch.id"
+            class="vsd-chunk"
+            :class="{ 'is-open': ch.expanded }"
+            @click="ch.expanded = !ch.expanded"
+          >
+            <div class="vsd-chunk-head">
+              <button
+                type="button"
+                class="vsd-chunk-source"
+                @click.stop="filterBySource(ch.source)"
+              >
+                {{ ch.source }}
+              </button>
+              <span class="vsd-chunk-meta"
+                >#{{ ch.id }} · {{ ch.title }} · {{ ch.chars }} 字</span
+              >
+            </div>
+            <p class="vsd-chunk-text">
+              {{
+                ch.expanded
+                  ? ch.text
+                  : ch.text.slice(0, 110) + (ch.chars > 110 ? '…' : '')
+              }}
+            </p>
+          </li>
+        </ul>
+      </template>
     </section>
 
     <!-- 两路对比 -->
@@ -640,6 +783,144 @@ onMounted(refreshStats)
   border-radius: 8px;
   background: rgba(234, 179, 8, 0.12);
   color: #b45309;
+}
+
+.vsd-browse {
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vsd-browse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.vsd-browse-hint {
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.vsd-browse-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vsd-browse-filter {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.1);
+  color: inherit;
+  cursor: pointer;
+}
+
+.vsd-browse-page {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.vsd-browse-spacer {
+  flex: 1;
+}
+
+.vsd-browse-nav {
+  font-size: 12px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.vsd-browse-nav:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.15);
+}
+.vsd-browse-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.vsd-browse-loading {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.vsd-browse-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vsd-chunk {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.vsd-chunk:hover {
+  border-color: rgba(128, 128, 128, 0.45);
+}
+.vsd-chunk.is-open {
+  border-color: var(--ai-chat-color-accent-500, #6366f1);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.vsd-chunk-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.vsd-chunk-source {
+  font-size: 12px;
+  font-family: var(--ai-chat-font-mono, monospace);
+  font-weight: 600;
+  border: none;
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 4px;
+  padding: 1px 8px;
+  color: inherit;
+  cursor: pointer;
+}
+.vsd-chunk-source:hover {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.vsd-chunk-meta {
+  opacity: 0.6;
+}
+
+.vsd-chunk-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.8;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .vsd-lanes {

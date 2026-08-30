@@ -29,11 +29,13 @@ vi.mock('../../src/orchestration/children', () => ({
 const MOCK_ENV: DevServerEnv = {
   port: 8787,
   mastra: null,
+  embedding: null,
   observability: false,
 }
 const MASTRA_ENV: DevServerEnv = {
   port: 8787,
   mastra: { model: 'main-model' },
+  embedding: null,
   observability: false,
 }
 
