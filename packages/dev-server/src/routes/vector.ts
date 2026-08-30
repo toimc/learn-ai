@@ -1,7 +1,11 @@
 import { Hono } from 'hono'
 import type { DevServerEnv, EmbeddingEnv } from '../env'
 import { readDevServerEnv } from '../env'
-import { createDocsVectorStore, DOCS_INDEX_NAME } from '../rag/vector-store'
+import {
+  createDocsVectorStore,
+  DOCS_INDEX_NAME,
+  DOCS_VECTOR_STORE_DESC,
+} from '../rag/vector-store'
 import { runSearch } from '../tools/search-docs'
 
 /** stats 端点只依赖的两个只读方法（测试可注入替身） */
@@ -33,7 +37,12 @@ export function createVectorRoutes(deps: VectorRoutesDeps = {}) {
     const { embedding } = await readEnv()
     if (!embedding) return c.json({ enabled: false })
 
-    const base = { enabled: true, model: embedding.model, url: embedding.url }
+    const base = {
+      enabled: true,
+      model: embedding.model,
+      url: embedding.url,
+      vector: DOCS_VECTOR_STORE_DESC,
+    }
     try {
       const store = createStore()
       const indexes = await store.listIndexes()

@@ -19,10 +19,12 @@ interface SearchResultItem {
 interface VectorStats {
   enabled: boolean
   model?: string
+  url?: string
   indexExists?: boolean
   chunks?: number
   dimension?: number
   error?: string
+  vector?: { engine: string; location: string }
 }
 
 interface VectorSearchResponse {
@@ -252,8 +254,10 @@ onMounted(refreshStats)
           </span>
           <span class="vsd-chain-arrow">→</span>
           <span class="vsd-node">
-            🗃️ {{ t('pg.vector.nodeVector')
-            }}<small>{{ t('pg.vector.nodeVectorSub') }}</small>
+            🗃️ {{ stats?.vector?.engine || 'LibSQLVector'
+            }}<small
+              >{{ stats?.vector?.location || 'docs-vector.db' }} · top8</small
+            >
           </span>
           <span v-if="response" class="vsd-ms"
             >{{ response.timing.hybrid.vectorMs }}ms</span

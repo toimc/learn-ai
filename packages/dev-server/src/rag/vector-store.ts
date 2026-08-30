@@ -4,6 +4,16 @@ import { ensureDbDir, tempDbUrl } from '../paths'
 /** 文档语义索引名（LibSQLVector 内建表名，命名规范：字母开头字母数字下划线） */
 export const DOCS_INDEX_NAME = 'docs_chunks'
 
+/**
+ * 向量库引擎描述（stats 端点与演示页链路图的展示来源）。
+ * 换库（Qdrant/PgVector 等）时与下方 createDocsVectorStore 工厂同步修改
+ * 这一处——MastraVector 统一接口保证业务代码零改动，展示层也跟着如实。
+ */
+export const DOCS_VECTOR_STORE_DESC: { engine: string; location: string } = {
+  engine: 'LibSQLVector',
+  location: 'docs-vector.db',
+}
+
 /** 向量库默认落盘：包根 .temp/docs-vector.db。与会话记忆 dev-server.db 分文件——
  * 文档索引是可随时重建的派生数据（pnpm index:docs），删库重灌不伤对话历史 */
 const DOCS_VECTOR_DB_URL = tempDbUrl('docs-vector.db')
