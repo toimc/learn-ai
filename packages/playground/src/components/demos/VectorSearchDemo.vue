@@ -70,6 +70,22 @@ const statusText = computed(() =>
       : t('pg.vector.statusOffline'),
 )
 
+/** 嵌入端点 host（链路节点随 EMBEDDING_MODEL_URL 如实展示本地/云端） */
+const embeddingHost = computed(() => {
+  const raw = stats.value?.url ?? 'http://localhost:11434/v1'
+  try {
+    return new URL(raw).host
+  } catch {
+    return raw
+  }
+})
+
+const isLocalEmbedding = computed(() =>
+  ['localhost', '127.0.0.1', '[::1]'].some((h) =>
+    embeddingHost.value.startsWith(h),
+  ),
+)
+
 async function refreshStats(): Promise<void> {
   status.value = 'connecting'
   try {
@@ -219,10 +235,18 @@ onMounted(refreshStats)
           }"
         >
           <span class="vsd-node">
-            🧠 {{ t('pg.vector.nodeOllama') }}
-            <em class="vsd-node-badge">{{ t('pg.vector.chainLocal') }}</em>
+            {{ isLocalEmbedding ? '🧠' : '☁️' }} {{ embeddingHost }}
+            <em
+              class="vsd-node-badge"
+              :class="{ 'is-cloud': !isLocalEmbedding }"
+              >{{
+                isLocalEmbedding
+                  ? t('pg.vector.chainLocal')
+                  : t('pg.vector.chainCloud')
+              }}</em
+            >
             <small
-              >{{ stats?.model || 'bge-m3' }} ·
+              >{{ stats?.model || '—' }} ·
               {{ t('pg.vector.nodeOllamaSub') }}</small
             >
           </span>
@@ -578,6 +602,11 @@ onMounted(refreshStats)
   background: rgba(34, 197, 94, 0.15);
   color: #16a34a;
   align-self: center;
+}
+
+.vsd-node-badge.is-cloud {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
 }
 
 .vsd-chain-arrow {
