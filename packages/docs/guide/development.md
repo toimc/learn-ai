@@ -43,6 +43,8 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 
 dev-server 的全部环境变量（`MASTRA_MODEL` 模型门控、`CONTEXT7_API_KEY` 外部库文档工具等）见 [Mastra 集成](/guide/mastra#dev-server本仓库的完整示例) 的 env 表；context7 工具由 `src/mcp/` 的 stdio 适配层在启动时动态发现，key 缺失或连接失败自动降级，不影响启动。
 
+浏览器直接访问 `http://localhost:8787/` 可看到 dev-server 落地页：端点清单 + 当前 LLM / 检索配置状态（mock 还是真实模型、关键词还是混合检索），服务在浏览器里自描述。
+
 ## 编码规范
 
 完整规则见仓库 `.claude/rules/` 目录，以下是日常开发最高频的要点。

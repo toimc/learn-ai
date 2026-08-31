@@ -135,6 +135,8 @@ model: myLanguageModel
 | `CONTEXT7_API_KEY`     | 可选；docs-agent 的 context7 工具 key（stdio 启动 `npx @upstash/context7-mcp`，失败自动降级为不挂载） | `ctx7sk-xxx`                          |
 | `DEV_SERVER_PORT`      | 可选；服务端口，缺省 `8787`                                            | `8787`                               |
 
+浏览器打开服务根路径（如 `http://localhost:8787/`）是落地页：端点清单 + 上述 env 的实际生效状态（当前 LLM 是 mock 还是真实模型、检索是关键词还是混合），一眼确认配置是否按预期加载。
+
 模型 API Key 按 Mastra 路由约定的环境变量命名（如 `DEEPSEEK_API_KEY`），只放在 `packages/dev-server/.env`（不提交，参照 `.env.example`）。记忆落盘在 `file:.temp/dev-server.db`（相对 dev-server 包目录，启动时自动建目录），进程重启对话保留。API Key 缺失时 Mastra 直接抛明确错误（如 `Could not find API key process.env.DEEPSEEK_API_KEY`），以 `error` chunk 展示在前端，SSE 流仍完整可解析。
 
 ### 语义检索：LibSQLVector + 本地 Ollama（RAG）

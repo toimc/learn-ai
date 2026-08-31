@@ -228,3 +228,23 @@ describe('OpenAPI 规范', () => {
     }
   })
 })
+
+describe('根路径落地页', () => {
+  it('GET / 返回自描述 HTML（标题与端点清单）', async () => {
+    const app = await createDevApp()
+    const res = await app.request('/')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('text/html')
+    const html = await res.text()
+    expect(html).toContain('ai-chat-ui')
+    expect(html).toContain('GET /api/health')
+    expect(html).toContain('POST /api/vector/search')
+  })
+
+  it('未配置 EMBEDDING_MODEL 时显示关键词检索降级文案', async () => {
+    const app = await createDevApp()
+    const html = await (await app.request('/')).text()
+    // 测试进程不加载 .env，embedding 为 null——落地页如实展示降级状态
+    expect(html).toContain('关键词检索（未配置 EMBEDDING_MODEL）')
+  })
+})
