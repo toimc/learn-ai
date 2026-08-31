@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../mock/dev-server-url'
 import type { Ref } from 'vue'
 import { checkHealth } from '../mock/sse-adapter'
 
@@ -17,7 +18,7 @@ const LEGACY_ALIASES: Record<string, PlaygroundBackendId> = {
 
 /** 远端后端基地址（探活与提示共用） */
 export const BACKEND_BASE_URLS = {
-  'dev-server': 'http://localhost:8787',
+  'dev-server': DEV_SERVER_BASE_URL,
 } as const
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>

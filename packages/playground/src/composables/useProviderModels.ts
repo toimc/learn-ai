@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../mock/dev-server-url'
 import type { Ref } from 'vue'
 import type { ProviderFormPayload, ProviderOption } from '@toimc/vue'
 import { httpErrorMessage } from '../mock/sse-adapter'
@@ -55,7 +56,7 @@ interface UseProviderModelsOptions {
   storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 }
 
-const DEFAULT_BASE_URL = 'http://localhost:8787'
+const DEFAULT_BASE_URL = DEV_SERVER_BASE_URL
 
 function defaultStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
   if (typeof localStorage === 'undefined') {

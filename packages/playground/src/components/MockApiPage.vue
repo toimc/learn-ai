@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../mock/dev-server-url'
 import { aiChatI18n } from '@toimc/vue'
 import { checkHealth } from '../mock/sse-adapter'
 import '../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 
-const SPEC_URL = 'http://localhost:8787/api/openapi.json'
+const SPEC_URL = `${DEV_SERVER_BASE_URL}/api/openapi.json`
 
 const host = ref<HTMLElement>()
 const status = ref<'connecting' | 'online' | 'offline'>('connecting')

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../../mock/dev-server-url'
 import { useChat } from '@toimc/core'
 import type { SendMessageOptions, StreamChunk } from '@toimc/core'
 import {
@@ -28,7 +29,7 @@ import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 
-const BASE_URL = 'http://localhost:8787'
+const BASE_URL = DEV_SERVER_BASE_URL
 
 type Pattern = 'pipeline' | 'council' | 'supervisor'
 

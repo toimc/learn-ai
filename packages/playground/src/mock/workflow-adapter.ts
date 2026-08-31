@@ -1,4 +1,5 @@
 import type { ChatAdapter, SendMessageOptions, StreamChunk } from '@toimc/core'
+import { DEV_SERVER_BASE_URL } from './dev-server-url'
 import { httpErrorMessage, parseSseStream } from './sse-adapter'
 
 export interface WorkflowSseAdapterOptions {
@@ -13,7 +14,7 @@ export interface WorkflowSummary {
   description: string
 }
 
-const DEFAULT_BASE_URL = 'http://localhost:8787'
+const DEFAULT_BASE_URL = DEV_SERVER_BASE_URL
 
 /** 探活 + 列表：dev-server 的原生 Workflow 注册表 */
 export async function fetchWorkflows(

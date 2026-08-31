@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../../mock/dev-server-url'
 import { useChat } from '@toimc/core'
 import type { Message as ChatMessage } from '@toimc/core'
 import {
@@ -32,7 +33,7 @@ import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 
-const BASE_URL = 'http://localhost:8787'
+const BASE_URL = DEV_SERVER_BASE_URL
 
 type ServerStatus = 'connecting' | 'online' | 'offline'
 const status = ref<ServerStatus>('connecting')

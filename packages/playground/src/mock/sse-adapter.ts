@@ -4,6 +4,7 @@ import type {
   SendMessageOptions,
   StreamChunk,
 } from '@toimc/core'
+import { DEV_SERVER_BASE_URL } from './dev-server-url'
 
 export interface SseAdapterOptions {
   baseUrl?: string
@@ -13,7 +14,7 @@ export interface SseAdapterOptions {
   getModel?: () => string | undefined
 }
 
-const DEFAULT_BASE_URL = 'http://localhost:8787'
+const DEFAULT_BASE_URL = DEV_SERVER_BASE_URL
 
 /** 非 2xx 时拼上服务端 {error} 详情（如 unknown model: custom-1），无详情则只报状态码 */
 export async function httpErrorMessage(res: Response): Promise<string> {

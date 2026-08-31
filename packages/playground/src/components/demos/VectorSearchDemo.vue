@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { DEV_SERVER_BASE_URL } from '../../mock/dev-server-url'
 import { aiChatI18n } from '@toimc/vue'
 import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 
-const BASE_URL = 'http://localhost:8787'
+const BASE_URL = DEV_SERVER_BASE_URL
 
 /** 与 dev-server /vector 路由的返回形状一致（服务端 types 不跨包，前端独立声明） */
 interface SearchResultItem {

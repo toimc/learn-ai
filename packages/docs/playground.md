@@ -67,6 +67,20 @@ await chat.regenerate(assistantMsg.id)             // 任意位置重新生成
 
 dev-server 配置 `MASTRA_MODEL` 环境变量后，模型下拉会出现 `chat-agent`（Mastra Agent：工具调用 + 会话记忆，配置方式见[智能体接入](/guide/mastra)）；未配置时是纯 mock 模式。
 
+### 远程部署（服务器构建）
+
+所有演示页的 dev-server 请求地址统一收口在 `packages/playground/src/mock/dev-server-url.ts` 单一常量，构建时用 `VITE_DEV_SERVER_URL` 覆盖：
+
+- **不设置**（本地开发缺省）：`http://localhost:8787`，与 `pnpm dev` 的行为完全一致
+- **置空串**：拼接产物为 `/api/...` **同域相对路径**——配合 nginx 反代 `location /api/ { proxy_pass http://127.0.0.1:8787; }` 使用，浏览器请求发给文档站自己的域名，无跨域、无硬编码 IP，换域名或上 HTTPS 都不需要重新构建
+
+```bash
+# 服务器版构建（产物内请求地址全部同域化）
+cd packages/docs && VITE_DEV_SERVER_URL= pnpm build
+```
+
+注意 SSE 流式对话需要反代关闭缓冲：`proxy_buffering off;`，否则流式回复会攒成一块再吐出。产品库自身零部署假设——这套机制只作用于 Playground 演示层，宿主接入时 API 地址本来就由自己的 ChatAdapter 决定。
+
 ### 真实模型会话（Provider 设置）
 
 本地 mock 之外，还可以在浏览器里注册**真实大模型**（自带 API Key；密钥只在服务端内存与本地持久化文件间流转，见下方「隐私边界」），整条链路需要 dev-server 在线（`pnpm dev` 同时启动两者）：
