@@ -11,6 +11,8 @@ title: Playground
 
 RAG 引用链路（思维链多步骤 + 正文角标 + 来源列表 + 工具审批）见 [RAG 引用演示](/citation-demo)，纯前端自包含 mock，无需启动 dev-server。模型品牌图标 / 厂商分组 / 定价格式化 / 工具参数 diff 见 [模型元数据演示](/model-meta-demo)；欢迎页提示词 + 消息操作四件 + 分支翻页 + 输入内联建议见 [反馈与操作演示](/feedback-demo)。
 
+生成式 UI（天气卡片 / 方案采纳按钮组，工具回复渲染为真实组件，需 dev-server）见 [生成式 UI 演示](/genui-demo)；语音输入麦克风 + 消息朗读 + 流式自动朗读（浏览器原生 Web Speech API，无需服务）见 [语音演示](/voice-demo)。
+
 浏览器端语义搜索（Transformers.js 在浏览器里跑 bge-small-zh 向量检索，WebGPU 优先 / WASM 回退 / 关键字兜底，零 API 调用）见[浏览器端语义搜索](/edge-search-demo)，同样无需启动任何服务——与服务端方案的[向量检索演示](/vector-search-demo)互为对照。
 
 ### 🧠 思考过程展示

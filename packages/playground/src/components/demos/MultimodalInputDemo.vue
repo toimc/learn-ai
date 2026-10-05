@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Attachment } from '@toimc/core'
+import { ref, watch, nextTick } from 'vue'
+import { useChat, isImageFile } from '@toimc/core'
+import type { Attachment, Message as ChatMessage } from '@toimc/core'
 import {
   aiChatI18n,
+  compressImageToDataUrl,
+  Conversation,
+  ConversationContent,
+  ConversationEmpty,
+  Message,
+  MessageAttachments,
+  MessageContent,
   PromptInput,
   PromptInputAttachments,
   PromptInputBody,
@@ -12,32 +20,67 @@ import {
   PromptInputTools,
   PromptInputUploadButton,
 } from '@toimc/vue'
-
+import { createSseAdapter } from '../../mock/sse-adapter'
 import '../../locales' // 副作用：合并 pg 字典
 
 const { t } = aiChatI18n.global
 
-interface SendPayload {
-  text: string
-  attachments?: Attachment[]
-  files?: File[]
+// 真发送链路：dev-server 在线时走 SSE（mock 剧本模式忽略图片照常回文本）
+const chat = useChat(createSseAdapter())
+
+const chatAreaRef = ref<HTMLElement>()
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (chatAreaRef.value) {
+      chatAreaRef.value.scrollTop = chatAreaRef.value.scrollHeight
+    }
+  })
 }
 
-const lastPayload = ref<SendPayload | null>(null)
+watch(() => chat.messages.length, scrollToBottom)
 
-async function mockUpload(files: File[]): Promise<Attachment[]> {
-  await new Promise((r) => setTimeout(r, 800))
-  return files.map((f) => ({
-    id: `att_${f.name}_${f.size}`,
-    name: f.name,
-    mediaType: f.type || 'application/octet-stream',
-    size: f.size,
-    url: URL.createObjectURL(f),
-  }))
+// 压缩产物 dataUrl 同时承担预览（url）与发送（dataUrl）：
+// 不经 createObjectURL，预览地址无失效窗口，也零 blob 生命周期管理成本
+async function beforeSend(files: File[]): Promise<Attachment[]> {
+  const results: Attachment[] = []
+  for (const f of files) {
+    if (isImageFile(f)) {
+      const dataUrl = await compressImageToDataUrl(f)
+      results.push({
+        id: `att_${f.name}_${f.size}`,
+        name: f.name,
+        mediaType: f.type,
+        size: f.size,
+        url: dataUrl,
+        dataUrl,
+      })
+    } else {
+      results.push({
+        id: `att_${f.name}_${f.size}`,
+        name: f.name,
+        mediaType: f.type || 'application/octet-stream',
+        size: f.size,
+      })
+    }
+  }
+  return results
 }
 
-function onSend(payload: SendPayload) {
-  lastPayload.value = payload
+/** 最近一次发送的线协议形状（教学展示：parts 组装结果） */
+const lastWire = ref<ChatMessage[] | null>(null)
+
+function onSend(payload: { text: string; attachments?: Attachment[] }) {
+  lastWire.value = [
+    {
+      id: 'preview',
+      role: 'user',
+      content: payload.text,
+      attachments: payload.attachments,
+      createdAt: new Date(),
+    },
+  ]
+  void chat.send(payload.text, payload.attachments)
 }
 
 function formatBytes(bytes?: number) {
@@ -55,55 +98,82 @@ function formatBytes(bytes?: number) {
       <p class="pg-demo-card__desc">{{ t('pg.multimodalDemo.description') }}</p>
     </header>
 
-    <PromptInput
-      :before-send="mockUpload"
-      :max-size="10 * 1024 * 1024"
-      :max-files="5"
-      @send="onSend"
-    >
-      <PromptInputAttachments />
-      <PromptInputBody>
-        <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
-      </PromptInputBody>
-      <template #footer>
-        <PromptInputFooter>
-          <template #tools>
-            <PromptInputTools>
-              <PromptInputUploadButton kind="image" />
-              <PromptInputUploadButton kind="file" />
-            </PromptInputTools>
-          </template>
-          <template #hint>
-            <PromptInputSubmit />
-          </template>
-        </PromptInputFooter>
-      </template>
-    </PromptInput>
+    <Conversation>
+      <ConversationContent ref="chatAreaRef">
+        <ConversationEmpty v-if="chat.messages.length === 0">
+          <p class="pg-demo-card__payload-empty">
+            {{ t('pg.multimodalDemo.payloadEmpty') }}
+          </p>
+        </ConversationEmpty>
+        <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+          <MessageAttachments v-if="msg.attachments?.length">
+            <img
+              v-for="att in msg.attachments"
+              :key="att.id"
+              class="pg-multimodal-thumb"
+              :src="att.url"
+              :alt="att.name"
+            />
+          </MessageAttachments>
+          <MessageContent
+            :content="msg.content"
+            :streaming="chat.isStreaming"
+          />
+        </Message>
+      </ConversationContent>
+
+      <PromptInput
+        send-key="enter"
+        :before-send="beforeSend"
+        :max-size="10 * 1024 * 1024"
+        :max-files="5"
+        @send="onSend"
+      >
+        <PromptInputAttachments />
+        <PromptInputBody>
+          <PromptInputTextarea :placeholder="t('pg.input.placeholder')" />
+        </PromptInputBody>
+        <template #footer>
+          <PromptInputFooter>
+            <template #tools>
+              <PromptInputTools>
+                <PromptInputUploadButton kind="image" />
+                <PromptInputUploadButton kind="file" />
+              </PromptInputTools>
+            </template>
+            <template #hint>
+              <PromptInputSubmit />
+            </template>
+          </PromptInputFooter>
+        </template>
+      </PromptInput>
+    </Conversation>
+
+    <div v-if="chat.error" class="pg-multimodal-error" role="alert">
+      {{ chat.error.message }}
+    </div>
 
     <div class="pg-demo-card__payload">
       <div class="pg-demo-card__payload-head">
         <span>{{ t('pg.multimodalDemo.payloadTitle') }}</span>
         <button
-          v-if="lastPayload"
+          v-if="lastWire"
           class="pg-demo-card__reset"
           type="button"
-          @click="lastPayload = null"
+          @click="lastWire = null"
         >
           {{ t('pg.multimodalDemo.reset') }}
         </button>
       </div>
-      <pre v-if="lastPayload" class="pg-demo-card__payload-body">{{
+      <pre v-if="lastWire" class="pg-demo-card__payload-body">{{
         JSON.stringify(
           {
-            text: lastPayload.text,
-            attachments: lastPayload.attachments?.map((a) => ({
+            text: lastWire[0]?.content,
+            attachments: lastWire[0]?.attachments?.map((a) => ({
               name: a.name,
               mediaType: a.mediaType,
               size: formatBytes(a.size),
-            })),
-            files: lastPayload.files?.map((f) => ({
-              name: f.name,
-              size: f.size,
+              hasDataUrl: Boolean(a.dataUrl),
             })),
           },
           null,
@@ -118,84 +188,21 @@ function formatBytes(bytes?: number) {
 </template>
 
 <style scoped>
-.pg-demo-card {
-  max-width: var(--ai-chat-content-max-width, 768px);
-  margin: 0 auto;
-  padding: 24px 16px 48px;
-}
-
-.pg-demo-card__header {
-  margin-bottom: 16px;
-}
-
-.pg-demo-card__title {
-  margin: 0 0 8px;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ai-chat-color-text-primary);
-}
-
-.pg-demo-card__desc {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--ai-chat-color-text-secondary);
-}
-
-.pg-demo-card__hint {
-  font-size: 12px;
-  color: var(--ai-chat-color-text-muted);
-}
-
-.pg-demo-card__payload {
-  margin-top: 16px;
-  border: 1px solid var(--ai-chat-color-border);
-  border-radius: var(--ai-chat-radius-lg);
-  background: var(--ai-chat-color-bg-secondary);
-  overflow: hidden;
-}
-
-.pg-demo-card__payload-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--ai-chat-color-border);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ai-chat-color-text-secondary);
-}
-
-.pg-demo-card__reset {
-  height: 26px;
-  padding: 0 10px;
-  border: 1px solid var(--ai-chat-color-border);
+.pg-multimodal-thumb {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
   border-radius: var(--ai-chat-radius-md);
-  background: var(--ai-chat-color-bg-primary);
-  color: var(--ai-chat-color-text-secondary);
-  font-size: 12px;
-  cursor: pointer;
+  border: 1px solid var(--ai-chat-color-border);
 }
 
-.pg-demo-card__reset:hover {
+.pg-multimodal-error {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: var(--ai-chat-radius-md);
   background: var(--ai-chat-hover-neutral);
-}
-
-.pg-demo-card__payload-body {
-  margin: 0;
-  padding: 14px;
-  max-height: 260px;
-  overflow: auto;
-  font-family: var(--ai-chat-font-mono);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--ai-chat-color-text-primary);
-}
-
-.pg-demo-card__payload-empty {
-  margin: 0;
-  padding: 14px;
   font-size: 13px;
-  color: var(--ai-chat-color-text-muted);
+  line-height: 1.6;
+  color: var(--ai-chat-color-text-secondary);
 }
 </style>
