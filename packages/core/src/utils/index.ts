@@ -41,3 +41,5 @@ export type { ModelVendor, VendorInfo } from './model-vendor'
 
 export { formatPerMillion, formatTokenCost, pricingTier } from './pricing'
 export type { ModelPricing } from './pricing'
+
+export { copyText } from './clipboard'

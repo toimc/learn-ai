@@ -335,3 +335,15 @@ pricingTier({ inputPerMTokens: 12 }) // 'premium'
 - `ModelPricing`：`inputPerMTokens` / `outputPerMTokens`（$/1M token，缺省视为未知不参与计算）+ 可选 `currency`（默认 `'$'`）
 - 档位阈值（$/1M 均价）：`0` → free、`<1` → economy、`<10` → standard、`≥10` → premium；价格全未知返回中性 `standard`
 - 数字格式固定 en-US（千分位分组）；档位标签的本地化翻译由消费方按 tier → `t()` 映射
+
+### 剪贴板复制 copyText
+
+```typescript
+import { copyText } from '@toimc/core'
+
+const ok = await copyText('要复制的文本')
+```
+
+- 降级链：安全上下文（HTTPS/localhost）优先 `navigator.clipboard.writeText`，失败或不可用时降级 `textarea + document.execCommand('copy')`
+- 空字符串、非浏览器环境（SSR）、全链路失败均返回 `false`，不抛异常
+- 需要响应式 `copied` 状态时用 vue 层的 `useClipboard` composable（内部基于 `copyText`）
