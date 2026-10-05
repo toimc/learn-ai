@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest'
+import { installSpeechMocks } from './mocks/speech'
+
+installSpeechMocks()
 
 if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = (query: string) => ({
