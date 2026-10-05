@@ -15,6 +15,61 @@ interface MessageSource {
 }
 ```
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { MessageSource } from '@toimc/core'
+import { InlineCitation } from '@toimc/vue'
+
+const demoSources: MessageSource[] = [
+  {
+    id: 's1',
+    type: 'url',
+    title: 'Vue 3 官方指南',
+    url: 'https://vuejs.org/guide/introduction.html',
+    snippet: 'Vue 是一款用于构建用户界面的 JavaScript 框架。',
+  },
+  {
+    id: 's2',
+    type: 'document',
+    title: '内部知识库《响应式原理》',
+    snippet: '响应式系统基于 Proxy 追踪属性访问与修改，依赖收集发生在读取时。',
+  },
+]
+
+const lastSelected = ref('（尚未选择）')
+
+function onSelect(source: MessageSource) {
+  lastSelected.value = source.title ?? source.id
+}
+</script>
+
+悬浮（或键盘聚焦）正文中的角标查看来源卡片；第一个角标关联两个来源，可在卡片内 prev / next 轮播：
+
+<DemoContainer>
+  <p style="margin: 0; line-height: 2">
+    Vue 的响应式系统基于 Proxy 实现<InlineCitation
+      :index="1"
+      :sources="demoSources"
+      @select="onSelect"
+    />，组合式 API 是其核心心智模型<InlineCitation
+      :index="2"
+      :sources="demoSources.slice(0, 1)"
+      @select="onSelect"
+    />。
+  </p>
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    最近选中：{{ lastSelected }}
+  </p>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

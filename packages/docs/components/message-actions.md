@@ -15,6 +15,68 @@ import {
 
 四个组件均渲染 MessageAction 基座（30px 图标按钮），可直接放进 `MessageActions` 行内组合使用。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import {
+  MessageActions,
+  MessageActionCopy,
+  MessageActionEdit,
+  MessageActionFeedback,
+  MessageActionRetry,
+} from '@toimc/vue'
+
+type FeedbackValue = 'up' | 'down' | null
+
+const answer = ref('这是 AI 的回答文本，可复制、可重试、可编辑重发。')
+const retryCount = ref(0)
+const feedbackValue = ref<FeedbackValue>(null)
+const log = ref<string[]>([])
+
+function onEdit(text: string) {
+  answer.value = text
+  log.value.unshift(`编辑重发：${text}`)
+}
+
+function onRetry() {
+  retryCount.value++
+  log.value.unshift('重试生成')
+}
+
+function onFeedback(v: FeedbackValue) {
+  feedbackValue.value = v
+  log.value.unshift(`反馈：${v ?? '已取消'}`)
+}
+</script>
+
+把鼠标悬浮到消息上（`MessageActions` 的显隐跟随 `.ai-chat-message:hover`），体验四个预设操作的完整交互——复制有 ✓ 回显、编辑进入行内文本域、反馈可评论：
+
+<DemoContainer>
+  <div class="ai-chat-message" style="padding: 4px 0">
+    <p style="margin: 0 0 4px">{{ answer }}</p>
+    <MessageActions>
+      <MessageActionCopy :text="answer" />
+      <MessageActionRetry :disabled="retryCount >= 3" @retry="onRetry" />
+      <MessageActionEdit :initial-text="answer" @edit="onEdit" />
+      <MessageActionFeedback
+        :value="feedbackValue"
+        @change="onFeedback"
+        @comment="(text: string) => log.unshift(`评论：${text}`)"
+      />
+    </MessageActions>
+  </div>
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    重试 {{ retryCount }}/3 · 事件：{{ log.length ? log[0] : '（无）' }}
+  </p>
+</DemoContainer>
+
 ## MessageActionCopy 复制
 
 内部走 `copyText`（`@toimc/core` 剪贴板降级链：`navigator.clipboard` → textarea + `execCommand`），复制成功后图标切换为 ✓，2 秒后回退；失败（非安全上下文等）保持原图标静默。

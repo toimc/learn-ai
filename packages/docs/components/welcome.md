@@ -2,6 +2,35 @@
 
 富欢迎页组件，用于对话开始前的首屏引导：头部图标 + 标题 + 描述 + 内容区（通常放 [`Prompts`](./prompts.md) 建议词）+ 底部附加信息。
 
+## 代码演示
+
+<script setup lang="ts">
+import { Welcome } from '@toimc/vue'
+</script>
+
+自定义标题 / 描述 / 图标，默认插槽放搜索框或 [Prompts](./prompts.md) 引导内容：
+
+<DemoContainer>
+  <Welcome
+    title="AI 组件库助手"
+    description="问我任何关于组件用法、Props 或最佳实践的问题"
+  >
+    <template #icon>🤖</template>
+    <p
+      style="
+        margin: 0;
+        font-size: 13px;
+        color: var(--ai-chat-color-text-muted);
+      "
+    >
+      默认插槽：放置搜索框、Prompts 等引导内容
+    </p>
+    <template #extra>
+      <span style="font-size: 12px">extra 插槽：版本号 / 免责声明</span>
+    </template>
+  </Welcome>
+</DemoContainer>
+
 ## 与 ConversationEmpty 的分工
 
 两者都可用在"还没有消息"的场景，定位不同：

@@ -2,6 +2,46 @@
 
 消息级 👍/👎 反馈组件：点赞/点踩 toggle → 点踩后出现「帮助我们改进 →」弱提示 → 展开评论输入框（提交/取消）。纯 UI 状态组件，不持有任何 API——反馈的持久化、上报失败静默等由宿主处理。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { MessageFeedback } from '@toimc/vue'
+
+type FeedbackValue = 'up' | 'down' | null
+
+const value = ref<FeedbackValue>(null)
+const log = ref<string[]>([])
+
+function onChange(v: FeedbackValue) {
+  value.value = v
+  log.value.unshift(v === null ? '取消反馈' : v === 'up' ? '点赞 👍' : '点踩 👎')
+}
+
+function onComment(text: string) {
+  log.value.unshift(`评论提交：${text}`)
+}
+</script>
+
+点赞 / 点踩为 toggle 语义（再点同值取消，按钮悬浮反馈区或聚焦时显示）；点踩后可展开评论框提交反馈：
+
+<DemoContainer>
+  <div style="display: flex; align-items: flex-start; gap: 16px">
+    <MessageFeedback :value="value" @change="onChange" @comment="onComment" />
+    <ul
+      style="
+        margin: 0;
+        padding-left: 16px;
+        font-size: 12px;
+        color: var(--ai-chat-color-text-muted);
+      "
+    >
+      <li v-for="(entry, i) in log" :key="i">{{ entry }}</li>
+      <li v-if="log.length === 0">（事件日志）</li>
+    </ul>
+  </div>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

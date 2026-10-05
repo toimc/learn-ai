@@ -2,6 +2,52 @@
 
 建议词卡片列表，通常放在 [`Welcome`](./welcome.md) 内容区作为对话入口。每张卡片展示 label + description + icon，点击后组件把整条 `PromptItem` 通过 `select` 事件上抛，由宿主决定发送还是进入二级。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Prompts } from '@toimc/vue'
+import type { PromptItem } from '@toimc/vue'
+
+const promptItems: PromptItem[] = [
+  {
+    key: 'compare',
+    label: '对比主流组件库',
+    description: '生成 ai-chat-ui 与 assistant-ui 的能力矩阵',
+    icon: '📊',
+  },
+  {
+    key: 'props',
+    label: '查询组件 Props',
+    description: '列出 Message 全部属性与默认值',
+    icon: '🧩',
+  },
+  {
+    key: 'theme',
+    label: '定制暗色主题',
+    description: '用 CSS Variables 覆盖语义令牌',
+    icon: '🎨',
+  },
+]
+
+const picked = ref('（点击上方任意提示词）')
+</script>
+
+点击提示词卡片，`select` 事件携带完整 `PromptItem` 交由宿主填充输入框：
+
+<DemoContainer>
+  <Prompts :items="promptItems" @select="(item: PromptItem) => (picked = item.label)" />
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    已选择：{{ picked }}
+  </p>
+</DemoContainer>
+
 ## 基础用法
 
 `title` 缺省走 i18n 字典（`prompts.title`，中文「试试这样问」/ 英文「Try asking」），传 props 优先：

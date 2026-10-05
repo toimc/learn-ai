@@ -2,6 +2,60 @@
 
 回到底部浮动按钮。必须放在 `Conversation` 内使用——它通过 inject 读取 `useScrollAnchor` 提供的滚动上下文：用户滚离底部时按钮可见，点击后平滑回到底部；离底期间有新内容时按钮右上角显示**未读角标**。
 
+## 代码演示
+
+<script setup lang="ts">
+import { onMounted, provide, ref, watch } from 'vue'
+import { Button, ConversationScrollBtn, useScrollAnchor } from '@toimc/vue'
+
+// Conversation 内部即这段装配：useScrollAnchor + provide('scrollAnchor')
+const anchor = useScrollAnchor()
+provide('scrollAnchor', anchor)
+
+const lines = ref(Array.from({ length: 12 }, (_, i) => `消息 ${i + 1}：对话进行中……`))
+
+// 未读计数由宿主维护（见下方「未读角标语义」）：badge prop 显式传入
+const unread = ref(0)
+watch(anchor.isAtBottom, (atBottom) => {
+  if (atBottom) unread.value = 0
+})
+
+onMounted(() => anchor.scrollToBottom())
+
+function addMessage() {
+  if (!anchor.isAtBottom.value) unread.value++
+  lines.value.push(`消息 ${lines.value.length + 1}：新消息到达`)
+}
+</script>
+
+先把容器滚动条向上拖离底部，再点「追加一条消息」——右下角浮现回到底部按钮并显示未读角标；点击按钮回到底部并清零：
+
+<DemoContainer>
+  <div
+    :ref="anchor.bindContainer"
+    style="
+      position: relative;
+      height: 200px;
+      overflow-y: auto;
+      padding: 12px 16px;
+      border: 1px solid var(--ai-chat-color-border);
+      border-radius: 8px;
+      background: var(--ai-chat-color-bg-primary);
+    "
+  >
+    <p v-for="(line, i) in lines" :key="i" style="margin: 0 0 10px; font-size: 13px">
+      {{ line }}
+    </p>
+    <ConversationScrollBtn :badge="unread" />
+  </div>
+  <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center">
+    <Button type="secondary" size="small" @click="addMessage">追加一条消息</Button>
+    <span style="font-size: 12px; color: var(--ai-chat-color-text-muted)">
+      离底追加计未读，回底自动清零（计数由宿主经 badge prop 传入）
+    </span>
+  </div>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

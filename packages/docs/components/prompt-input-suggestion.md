@@ -55,6 +55,81 @@ function onSelect(_item: unknown, nextText: string) {
 </template>
 ```
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { PromptInputSuggestion } from '@toimc/vue'
+import type { SuggestionTrigger } from '@toimc/vue'
+
+const text = ref('')
+const caret = ref(0)
+const boxEl = ref<HTMLElement | null>(null)
+const picked = ref('（尚未选择）')
+
+const triggers: SuggestionTrigger[] = [
+  {
+    char: '/',
+    items: [
+      { key: 'model', label: '/model', description: '切换对话模型' },
+      { key: 'clear', label: '/clear', description: '清空当前会话' },
+      { key: 'theme', label: '/theme', description: '切换明暗主题' },
+      { key: 'export', label: '/export', description: '导出会话为 Markdown' },
+    ],
+  },
+]
+
+function syncCaret(e: Event) {
+  caret.value = (e.target as HTMLTextAreaElement).selectionStart ?? 0
+}
+</script>
+
+在输入框键入 `/` 唤起命令菜单（↑↓ 导航、Enter 选中、Esc 关闭），继续键入即过滤候选：
+
+<DemoContainer>
+  <div ref="boxEl" style="position: relative">
+    <textarea
+      v-model="text"
+      placeholder="输入 / 唤起命令建议…"
+      style="
+        width: 100%;
+        min-height: 64px;
+        padding: 8px 10px;
+        border: 1px solid var(--ai-chat-color-border);
+        border-radius: 6px;
+        background: var(--ai-chat-color-bg-primary);
+        color: var(--ai-chat-color-text-primary);
+        resize: vertical;
+        font: inherit;
+      "
+      @input="syncCaret"
+      @keyup="syncCaret"
+      @click="syncCaret"
+    />
+    <PromptInputSuggestion
+      :text="text"
+      :caret="caret"
+      :triggers="triggers"
+      :anchor="boxEl"
+      @select="
+        (_item, nextText) => {
+          text = nextText
+          picked = '已选中命令'
+        }
+      "
+    />
+  </div>
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    {{ picked }} · 当前文本：{{ text || '（空）' }}
+  </p>
+</DemoContainer>
+
 ## 触发与过滤规则
 
 - **激活条件**：光标向前扫描，触发字符必须位于词首（文本首 / 行首 / 空白之后），`a/b` 里的 `/` 不激活；触发词内出现空白即失效

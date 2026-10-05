@@ -2,6 +2,47 @@
 
 模型品牌图标：输入模型 id，内部经 `detectModelVendor`（`@toimc/core`）识别厂商，渲染对应品牌的内联 SVG（path 数据取自 [@lobehub/icons](https://github.com/lobehub/lobe-icons) Mono 变体）；识别不出时降级为首字母圆形。适用于模型选择器、会话标题、用量列表等任何需要品牌标识的位置。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ModelIcon } from '@toimc/vue'
+
+const models = [
+  'gpt-4o',
+  'claude-sonnet-4',
+  'gemini-2.0-flash',
+  'deepseek-chat',
+  'qwen-max',
+  'glm-4.6',
+  'llama-3.1',
+  'kimi-k2',
+  'unknown-model',
+]
+</script>
+
+按模型 id 自动识别厂商；未识别的 id 走兜底图标：
+
+<DemoContainer>
+  <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+    <div
+      v-for="m in models"
+      :key="m"
+      style="display: flex; align-items: center; gap: 8px"
+    >
+      <ModelIcon :model="m" :size="22" />
+      <span style="font-size: 12px; font-family: monospace">{{ m }}</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <ModelIcon model="gpt-4o" :size="16" />
+      <ModelIcon model="gpt-4o" :size="24" />
+      <ModelIcon model="gpt-4o" :size="32" />
+      <span style="font-size: 12px; color: var(--ai-chat-color-text-muted)"
+        >16 / 24 / 32 px</span
+      >
+    </div>
+  </div>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

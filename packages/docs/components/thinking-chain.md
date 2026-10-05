@@ -5,6 +5,71 @@
 - **ThinkingBlock** — 单块思考文本（`thinking.content`），流式渲染
 - **ThinkingChain** — 结构化多步骤（`thinking.steps`），适合 RAG 检索链路、Agent 任务拆解等服务端组装的推理过程
 
+## 代码演示
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import type { ThinkingStep } from '@toimc/core'
+import { Button, ThinkingChain } from '@toimc/vue'
+
+const stepDefs = [
+  {
+    id: 's1',
+    title: '解析问题',
+    content: '提取关键词：向量检索、混合排序、重排策略',
+    duration: 320,
+  },
+  {
+    id: 's2',
+    title: '检索文档',
+    content: 'BM25 + 向量双路召回 47 篇文档，合并去重后 32 篇',
+    duration: 1240,
+  },
+  {
+    id: 's3',
+    title: '重排与筛选',
+    content: 'cross-encoder 对 top-20 重排，取前 5 进入上下文',
+    duration: 860,
+  },
+  {
+    id: 's4',
+    title: '组织答案',
+    content: '按「结论 → 依据 → 示例」结构输出，引用来源角标',
+    duration: 1500,
+  },
+]
+
+/** 已完成步数：=n 时第 n+1 步 active，其余 pending */
+const progress = ref(1)
+
+const steps = computed<ThinkingStep[]>(() =>
+  stepDefs.map((def, i) => ({
+    ...def,
+    status:
+      i < progress.value ? 'complete' : i === progress.value ? 'active' : 'pending',
+  })),
+)
+</script>
+
+点击「推进」模拟思考进行中的步骤流转；点击头部标题可展开 / 折叠步骤详情：
+
+<DemoContainer>
+  <ThinkingChain :steps="steps" title="深度思考" />
+  <div style="margin-top: 12px; display: flex; gap: 8px">
+    <Button
+      type="secondary"
+      size="small"
+      :disabled="progress >= stepDefs.length - 1"
+      @click="progress++"
+    >
+      推进下一步
+    </Button>
+    <Button type="secondary" size="small" :disabled="progress <= 0" @click="progress--">
+      回退
+    </Button>
+  </div>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

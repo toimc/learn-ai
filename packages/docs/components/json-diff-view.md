@@ -2,6 +2,55 @@
 
 JSON 差异视图：VSCode 风格双列对比（左旧值右新值），嵌套对象按 `a.b.c` 路径展平对齐，删除行红、新增行绿、修改行左红右绿，修改行内再做字符级公共前后缀切分高亮。全程纯文本分段 `span` 渲染，**零 `v-html`**，无 XSS 面。适用于工具调用参数对比、配置变更回显、消息编辑前后对照。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { JsonDiffView } from '@toimc/vue'
+
+const oldConfig = {
+  model: 'gpt-4o',
+  temperature: 0.7,
+  stream: true,
+  tools: ['search_docs'],
+}
+
+const newConfig = {
+  model: 'claude-sonnet-4',
+  temperature: 0.7,
+  stream: false,
+  tools: ['search_docs', 'read_file'],
+  maxTokens: 4096,
+}
+
+const onlyChanged = ref(false)
+</script>
+
+勾选下方开关切换「全量对比 / 仅差异路径」：
+
+<DemoContainer>
+  <JsonDiffView
+    :old-value="oldConfig"
+    :new-value="newConfig"
+    old-label="当前配置"
+    new-label="待应用配置"
+    :only-changed="onlyChanged"
+  />
+  <label
+    style="
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 12px;
+      font-size: 13px;
+      cursor: pointer;
+    "
+  >
+    <input v-model="onlyChanged" type="checkbox" />
+    仅显示有差异的路径
+  </label>
+</DemoContainer>
+
 ## 基础用法
 
 ```vue

@@ -18,6 +18,68 @@ interface MessageSource {
 - `type === 'url'` 且通过 http(s) 白名单校验：渲染 `<a>` 外链（`target="_blank"` + `rel="noopener noreferrer"`）
 - `type === 'document'`（或 url 校验不通过）：渲染非链接卡（标题 + snippet）
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { MessageSource } from '@toimc/core'
+import { Sources } from '@toimc/vue'
+
+const ragSources: MessageSource[] = [
+  {
+    id: 'r1',
+    type: 'url',
+    title: 'Mastra RAG 文档',
+    url: 'https://mastra.ai/docs',
+    snippet: '检索增强生成五环节：切块、嵌入、检索、重排、评估。',
+  },
+  {
+    id: 'r2',
+    type: 'url',
+    title: 'LibSQL Vector 文档',
+    url: 'https://docs.turso.tech/features/vector-search',
+    snippet: 'F32_BLOB 存储，vector_top_k 查询上限 65536 维。',
+  },
+  {
+    id: 'r3',
+    type: 'document',
+    title: '课程笔记《17-04 RAG 与语义检索》',
+    snippet: '混合检索 = BM25 关键词 + 向量语义双路召回，2025-2026 事实标配。',
+  },
+  {
+    id: 'r4',
+    type: 'document',
+    title: '内部评审记录',
+    snippet: '47 篇文档约 200KB，切块后数百向量，嵌入式库性价比最高。',
+  },
+]
+
+const lastSelected = ref('（尚未选择）')
+
+function onSelect(source: MessageSource) {
+  lastSelected.value = source.title ?? source.id
+}
+</script>
+
+上：折叠列表模式（点击头部开合，来源卡片可自定义插槽）；下：inline 徽标模式，超出 `maxInline` 的来源折叠进 Popover：
+
+<DemoContainer>
+  <Sources :sources="ragSources" @select="onSelect" />
+  <div
+    style="height: 1px; margin: 16px 0; background: var(--vp-c-divider)"
+  />
+  <Sources :sources="ragSources" inline :max-inline="3" @select="onSelect" />
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    最近选中：{{ lastSelected }}
+  </p>
+</DemoContainer>
+
 ## 基础用法（折叠列表）
 
 ```vue

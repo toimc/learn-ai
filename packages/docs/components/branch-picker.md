@@ -2,6 +2,32 @@
 
 消息分支（版本）翻页组件：`‹ 版本 1/3 ›` 工具条 + 当前分支内容容器。适用于「重新生成产生多版本回复」「用户编辑产生多版本输入」等场景，在几个分支间来回切换查看。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { BranchPicker } from '@toimc/vue'
+
+const branches = [
+  '分支 0：初版回答（简洁直答）',
+  '分支 1：补充了示例（推荐 ★）',
+  '分支 2：深度解析版（含原理推导）',
+]
+
+const active = ref(1)
+</script>
+
+点击左右箭头在分支间翻页，正文随 `change` 事件切换：
+
+<DemoContainer>
+  <p style="margin: 0 0 8px; min-height: 22px">{{ branches[active] }}</p>
+  <BranchPicker
+    :branch-count="branches.length"
+    :active-branch="active"
+    @change="(i: number) => (active = i)"
+  />
+</DemoContainer>
+
 ## 基础用法
 
 ```vue
