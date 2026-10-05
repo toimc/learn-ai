@@ -7,7 +7,10 @@ import type {
   AssistantResultMessage,
   ChatCompletionResult,
   ChatRequestBody,
+  ChatUsage,
+  GatewayEnv,
 } from '../types'
+import type { IdentityStore } from '../identity/types'
 
 export interface ChatRoutesDeps {
   registry: ModelRegistry
@@ -15,6 +18,8 @@ export interface ChatRoutesDeps {
   defaultModel?: string
   /** 流收尾钩子（含客户端中止与适配器异常场景） */
   onComplete?: (result: ChatCompletionResult) => void | Promise<void>
+  /** identity 模式的存储端口：thread 归属校验（identifyUser 已在上游写入 userId） */
+  identity?: { store: IdentityStore }
 }
 
 /**
@@ -24,8 +29,8 @@ export interface ChatRoutesDeps {
  * messages/model 之外的请求体字段整体透传给适配器 passthrough；
  * 适配器异常以 error chunk 收尾（最后一帧），保持线协议可解析。
  */
-export function createChatRoutes(deps: ChatRoutesDeps): Hono {
-  const app = new Hono()
+export function createChatRoutes(deps: ChatRoutesDeps): Hono<GatewayEnv> {
+  const app = new Hono<GatewayEnv>()
 
   app.post('/', async (c) => {
     const body = (await c.req
@@ -33,6 +38,25 @@ export function createChatRoutes(deps: ChatRoutesDeps): Hono {
       .catch(() => null)) as ChatRequestBody | null
     if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
       return c.json({ error: 'messages is required' }, 400)
+    }
+
+    // identity 模式：归属只信认证身份——客户端传入的 userId 一律丢弃后覆写；
+    // conversationId（= mastra thread）首次使用即登记归属，他人占用返回 403
+    if (deps.identity) {
+      const userId = c.get('userId')
+      if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+      delete body.userId
+      const thread = body.conversationId
+      if (typeof thread === 'string' && thread) {
+        const owned = await deps.identity.store.claimThread(thread, userId)
+        if (!owned) {
+          return c.json(
+            { error: 'Forbidden thread', code: 'THREAD_FORBIDDEN' },
+            403,
+          )
+        }
+      }
+      body.userId = userId
     }
 
     let modelId: string
@@ -105,6 +129,7 @@ export function createChatRoutes(deps: ChatRoutesDeps): Hono {
         body,
         model: modelId,
         assistant: collector.toResult(),
+        usage: collector.usage,
         durationMs: Date.now() - startedAt,
         aborted,
       })
@@ -127,12 +152,17 @@ function createAssistantCollector(id: string) {
   let content = ''
   let thinking = ''
   let lastType = ''
+  let usage: ChatUsage | undefined
   const toolCalls: NonNullable<AssistantResultMessage['toolCalls']> = []
   const toolIndex = new Map<string, number>()
 
   return {
     get lastType() {
       return lastType
+    },
+    /** 适配器在 done 帧 metadata.usage 回传的真实 token 用量（缺席为 undefined） */
+    get usage() {
+      return usage
     },
     push(chunk: StreamChunk) {
       lastType = chunk.type
@@ -142,6 +172,24 @@ function createAssistantCollector(id: string) {
       }
       if (chunk.type === 'thinking') {
         thinking += chunk.content
+        return
+      }
+      if (chunk.type === 'done') {
+        const meta = (chunk.metadata ?? {}) as Record<string, unknown>
+        const raw = meta.usage as
+          { inputTokens?: unknown; outputTokens?: unknown } | undefined
+        if (
+          raw &&
+          (typeof raw.inputTokens === 'number' ||
+            typeof raw.outputTokens === 'number')
+        ) {
+          usage = {
+            inputTokens:
+              typeof raw.inputTokens === 'number' ? raw.inputTokens : 0,
+            outputTokens:
+              typeof raw.outputTokens === 'number' ? raw.outputTokens : 0,
+          }
+        }
         return
       }
       const meta = (chunk.metadata ?? {}) as Record<string, unknown>

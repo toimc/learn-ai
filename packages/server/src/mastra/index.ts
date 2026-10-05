@@ -17,8 +17,12 @@ export interface MastraAgentDefinition {
   tools?: Record<string, unknown>
   /** Memory 实例工厂（惰性：注册时调用一次；不传则无记忆） */
   memory?: () => unknown
-  /** memory.resource，默认 'ai-chat' */
-  resource?: string
+  /**
+   * memory.resource，默认 'ai-chat'；函数形态按请求 passthrough 计算——
+   * identity 模式下宿主传 `(p) => p.userId ? \`user:\${p.userId}\` : 'ai-chat'`
+   * 实现按认证身份的服务端归属覆写
+   */
+  resource?: string | ((passthrough: Record<string, unknown>) => string)
 }
 
 export interface MastraGatewayOptions extends Omit<GatewayOptions, 'models'> {
