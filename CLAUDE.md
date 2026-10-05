@@ -14,7 +14,7 @@ Provider 抽象层模式：组件与 AI 后端完全解耦，通过 `ChatAdapter
 
 ## 包依赖关系
 
-- `core` — 无外部依赖，纯 TypeScript，定义所有核心类型和 composables
+- `core` — 零 dependencies（peer 依赖 vue），定义所有核心类型和 composables
 - `vue` — 依赖 `core`，peer 依赖 `vue ^3.5.0`
 - `markdown` — 依赖 `vue`，使用 Shiki + KaTeX
 - `agents` — 服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径），零外部依赖

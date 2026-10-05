@@ -12,7 +12,7 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.mjs' : 'index.cjs'),
     },
     rollupOptions: {
-      external: [],
+      external: ['vue'],
     },
   },
 })

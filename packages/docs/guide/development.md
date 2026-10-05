@@ -14,7 +14,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 
 | 包 | 职责 | 依赖 |
 |----|------|------|
-| `@toimc/core` | 核心类型（`Message` / `StreamChunk` / `ChatAdapter`）与 `useChat` 等 composables | **零外部依赖**，纯 TypeScript |
+| `@toimc/core` | 核心类型（`Message` / `StreamChunk` / `ChatAdapter`）与 `useChat` 等 composables | **零 dependencies**，peer 依赖 `vue ^3.5.0`（reactive 状态须与宿主共享同一 Vue 实例） |
 | `@toimc/vue` | UI 组件与依赖 Vue 的 composables | 依赖 `core`，peer 依赖 `vue ^3.5.0` |
 | `@toimc/markdown` | Markdown 流式渲染（markdown-it + DOMPurify，Shiki / KaTeX / Mermaid 按需懒加载） | 依赖 `vue` |
 | `playground` | 私有演示包，承载 Playground 页面与 mock 数据，每个功能一个独立 Demo 组件 | 依赖上述三个包 |
@@ -53,7 +53,7 @@ dev-server 的全部环境变量（`MASTRA_MODEL` 模型门控、`CONTEXT7_API_K
 
 - 全程保持 strict 模式；**禁止 `any`**，拿不准类型用 `unknown` + 收窄
 - **导出类型即公共 API**：跨包使用的类型（`Message` / `StreamChunk` / `ChatAdapter` 等）从 `@toimc/core` 统一导出，其他包 re-export，不各自复制定义
-- **`core` 零依赖红线**：不向 core 引入任何运行时依赖
+- **`core` 零依赖红线**：不向 core 引入任何 `dependencies`；`vue` 仅以 peer 依赖声明（core 的 reactive 状态必须与宿主共享同一 Vue 实例——一旦把 vue 打进产物即成双实例，宿主侧流式更新静默失效）
 - 流式输出统一 `AsyncGenerator<StreamChunk>`（`async *function` + `yield`），网络类操作必须支持 `AbortSignal`
 - 异步操作一律 `try-catch`，catch 中抛出面向用户可读的错误信息，不吞错
 
