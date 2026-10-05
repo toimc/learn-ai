@@ -381,6 +381,8 @@ pnpm clean          # 清理构建产物
 
 **dev-server 的 context7 MCP（可选）**：docs-agent 除本库 `search_docs` 检索外，还可查外部库最新文档——在 `packages/dev-server/.env` 配置 `CONTEXT7_API_KEY`（参照 `.env.example`）后，启动时经 stdio 拉起 `npx -y @upstash/context7-mcp` 并动态发现工具（`context7__resolve-library-id` 等）；key 缺失或连接失败自动降级为不挂载，不影响启动。实现见 `packages/dev-server/src/mcp/`（`@modelcontextprotocol/sdk` 客户端适配层，随 `pnpm install` 安装，无需手动操作）。
 
+**浏览器端语义搜索演示（18-03）**：Playground 的[端侧检索页](/edge-search-demo)用 `@huggingface/transformers`（Transformers.js v3，仅 playground 演示包的运行时依赖，库包本身不引入）在浏览器里跑 `bge-small-zh-v1.5` 向量检索——WebGPU 优先 / WASM 回退 / 关键字匹配兜底。模型经动态 `import()` 懒加载（不进主 chunk），首次聚焦搜索框才下载（q8 量化约 25MB），模型文件进 Cache Storage 后第二次秒级就绪。实现见 `packages/playground/src/semantic/`。
+
 **宿主方向**（把本地工具暴露给 MCP 客户端）：`@mastra/mcp` 的 `MCPServer` 把 `get_weather` 挂为 MCP 工具，stdio 入口 `packages/dev-server/src/mcp/weather-stdio.ts` 供 Claude Code / MCP Inspector 以 command 形式直连，用法见[智能体接入](/guide/mastra#宿主侧-把工具暴露为-mcp-server)。
 
 ### 端到端测试

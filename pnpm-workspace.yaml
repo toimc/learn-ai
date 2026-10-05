@@ -2,8 +2,13 @@ packages:
   - 'packages/*'
 
 # pnpm 11 构建脚本白名单（postinstall/install 等）
+# onnxruntime-node/protobufjs/sharp 是 @huggingface/transformers 的 Node 侧
+# 可选原生件；本项目只用浏览器端（onnxruntime-web 预编译 WASM），构建脚本一律跳过
 allowBuilds:
   esbuild: true
+  onnxruntime-node: false
+  protobufjs: false
+  sharp: false
   simple-git-hooks: true
   vue-demi: true
 

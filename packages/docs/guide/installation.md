@@ -58,6 +58,8 @@ pnpm add @mastra/core @mastra/memory @mastra/libsql zod
 pnpm add @mastra/rag
 ```
 
+以上可选依赖均属于**服务端**或本仓库演示包：Playground 的[浏览器端语义搜索演示](/edge-search-demo)额外依赖 `@huggingface/transformers`（Transformers.js，随仓库 `pnpm install` 安装，经动态 `import()` 懒加载）。发布的库包（core / vue / markdown / agents / server）**不依赖它**，组件库使用方无需安装。
+
 ## 可选样式：KaTeX 公式
 
 `@toimc/markdown` 不再自动注入 KaTeX 样式。需要渲染 LaTeX 公式时，手动引入子路径样式（约 25KB CSS + 数学字体，不用公式的项目可省去）：
