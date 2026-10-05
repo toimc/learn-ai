@@ -28,6 +28,16 @@ yarn add @toimc/core @toimc/vue @toimc/markdown
 
 :::
 
+## 引入组件样式
+
+`@toimc/vue` 的组件样式需要手动引入（JS 产物不自动注入 CSS，便于宿主控制加载时机与按需覆盖）：
+
+```ts
+import '@toimc/vue/style.css'
+```
+
+不引入该 CSS 时组件仍可工作但无视觉样式（布局/主题令牌/暗色模式均在此文件中）。主题定制方式见[主题系统](/guide/theming)。
+
 ## peerDependencies
 
 `@toimc/vue` 需要 Vue 3.5+ 作为 peer dependency，请确保项目中已安装：

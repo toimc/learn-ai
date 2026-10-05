@@ -21,9 +21,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@shikijs/stream": "^4.4.3",
     "@toimc/core": "workspace:*",
     "@toimc/vue": "workspace:*",
-    "@shikijs/stream": "^4.4.3",
     "dompurify": "^3.4.13",
     "katex": "^0.18.4",
     "markdown-it": "^15.0.0",
@@ -47,5 +47,6 @@
     "vitest": "^4.1.10",
     "vue": "^3.5.41",
     "vue-tsc": "^3.3.9"
-  }
+  },
+  "sideEffects": ["*.css"]
 }

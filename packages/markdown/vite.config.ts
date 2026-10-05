@@ -42,7 +42,7 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.mjs' : 'index.cjs'),
     },
     rollupOptions: {
-      external: ['vue', '@toimc/core', '@toimc/vue'],
+      external: ['vue', '@toimc/core', '@toimc/vue', 'mermaid'],
       output: {
         globals: {
           vue: 'Vue',
