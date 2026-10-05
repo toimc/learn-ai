@@ -45,6 +45,8 @@ COMPONENT_DOCS = {
 COMPOSABLE_DOCS = {
     "useTheme.ts": "packages/docs/composables/use-theme.md",
     "useThemePreset.ts": "packages/docs/composables/use-theme-preset.md",
+    "useSpeechInput.ts": "packages/docs/guide/speech.md",
+    "useSpeechOutput.ts": "packages/docs/guide/speech.md",
 }
 
 MARKDOWN_DOCS = {

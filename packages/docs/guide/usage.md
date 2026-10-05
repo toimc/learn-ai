@@ -409,3 +409,18 @@ joinAtoms(atoms) === md // 恒等：字节级往返保真
 - `editable: false` 的结构块在编辑器场景整块直通，不可逐字编辑
 - 红线保证：`joinAtoms(splitAtoms(md)) === md` 对任意输入成立（含 CRLF、段间空白、未闭合 fence/标签兜底），可直接用于编辑器往返
 - 围栏内的 `$$`、`<div>` 等行一律视为代码内容，不会误识别为原子
+
+## 语音输入与输出
+
+Web Speech API 的浏览器原生封装，均从 `@toimc/vue` 导出，完整 API 与行为契约见[语音输入与输出](/guide/speech)：
+
+```typescript
+import { useSpeechInput, useSpeechOutput } from '@toimc/vue'
+
+const input = useSpeechInput()          // 特性检测 supported + 状态机 + 实时字幕 interimText
+const output = useSpeechOutput()        // 句子级 TTS：feedChunk 流式凑句朗读，enabled 默认关闭
+```
+
+- `useSpeechInput`：点击切换式单句识别（`continuous=false`），识别文本进输入框确认再发送；Firefox 等不支持时 `supported` 为 false 驱动按钮显隐
+- `useSpeechOutput`：流式回复凑满一句读一句（`splitSentences` 切句），自动朗读开关默认关闭并经 localStorage 持久化；推荐经 `useChat` 的 `onResponse` 接入
+

@@ -136,3 +136,19 @@ export type { MessageLayout, MessageAlign } from './composables/layout-types'
 
 // Clipboard composable（core copyText 的响应式包装）
 export { useClipboard } from './composables/useClipboard'
+
+// 语音输入/输出（Web Speech API 浏览器原生能力）
+export { useSpeechInput } from './composables/useSpeechInput'
+export type {
+  SpeechInputStatus,
+  UseSpeechInputOptions,
+  UseSpeechInputReturn,
+  SpeechRecognitionLike,
+  SpeechRecognitionEventLike,
+} from './composables/useSpeechInput'
+export { useSpeechOutput, splitSentences } from './composables/useSpeechOutput'
+export type {
+  UseSpeechOutputOptions,
+  UseSpeechOutputReturn,
+  SentenceSplitResult,
+} from './composables/useSpeechOutput'
