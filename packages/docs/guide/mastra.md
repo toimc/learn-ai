@@ -122,6 +122,8 @@ model: myLanguageModel
 
 `chat-agent` 的 `get_weather` 工具结果额外携带 `ui` 字段（`{ type: 'weather-card', props: { city, temperatureC, description } }`）——生成式 UI 的服务端半边：schema 由工具代码确定性生成（模型只决策不渲染），原始字段仍供模型生成回复，前端经 `tool_result` 帧拿到后可渲染天气卡片（组件注册表由 `@toimc/vue` 的 GenUI 能力提供）。
 
+消息侧支持多模态：user 消息 `content` 可为 OpenAI 兼容 parts 数组（`text` + `image_url`），`@toimc/agents/mastra` 适配器在边界把 `image_url` 转成 AI SDK 的 `image` part（Mastra 底层消息模型不接受 OpenAI 方言），透传给 GLM-4V / OpenAI vision 类模型；纯 mock 模式（未配 `MASTRA_MODEL`）提取文字匹配剧本，图片忽略。wire 契约与各适配器行为见[服务端网关](/guide/server#多模态消息-content-parts)。
+
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
 | `MASTRA_MODEL`         | 存在才注册 `chat-agent` / `docs-agent` / `orchestrator-agent`；缺省时行为与纯 mock 完全一致  | `deepseek/deepseek-chat`              |

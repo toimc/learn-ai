@@ -11,6 +11,8 @@ title: 接口文档
 
 需要 dev-server 在线：项目根目录运行 `pnpm dev`（文档站与 dev 服务同时启动）。规范源码位于 `packages/dev-server/src/openapi.ts`，与路由实现同包维护。
 
+`POST /api/chat` 的 user 消息 `content` 支持多模态 parts 数组（`text` + `image_url`，OpenAI 兼容形态，示例见端点详情的「多模态」请求示例）：mock 剧本提取文字部分匹配（图片忽略，行为可预期），配置 `MASTRA_MODEL` 后透传给多模态模型。完整说明见[服务端网关](/guide/server#多模态消息-content-parts)。
+
 ## 向量检索端点
 
 「向量检索」分组三个端点是 docs-agent 语义检索的运维与调试面，前端消费见[向量检索演示](/vector-search-demo)，原理深读见[语义检索指南](/guide/rag)：

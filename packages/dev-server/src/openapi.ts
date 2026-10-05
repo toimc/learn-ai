@@ -187,6 +187,25 @@ export const openApiSpec = {
                     messages: [{ role: 'user', content: '查一下上海天气' }],
                   },
                 },
+                多模态: {
+                  summary: '图片 + 文字（content 为 parts 数组）',
+                  value: {
+                    messages: [
+                      {
+                        role: 'user',
+                        content: [
+                          { type: 'text', text: '这个报错怎么解决' },
+                          {
+                            type: 'image_url',
+                            image_url: {
+                              url: 'data:image/png;base64,iVBORw0KGgo=',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
               },
             },
           },
@@ -631,7 +650,38 @@ export const openApiSpec = {
               type: 'object',
               properties: {
                 role: { type: 'string', enum: ['user', 'assistant', 'system'] },
-                content: { type: 'string' },
+                content: {
+                  description:
+                    '消息正文：字符串，或 OpenAI 兼容 parts 数组（user 消息多模态：text + image_url base64/URL 图片）',
+                  oneOf: [
+                    { type: 'string' },
+                    {
+                      type: 'array',
+                      items: {
+                        oneOf: [
+                          {
+                            type: 'object',
+                            properties: {
+                              type: { const: 'text' },
+                              text: { type: 'string' },
+                            },
+                          },
+                          {
+                            type: 'object',
+                            properties: {
+                              type: { const: 'image_url' },
+                              image_url: {
+                                type: 'object',
+                                properties: { url: { type: 'string' } },
+                                required: ['url'],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
               },
               required: ['role', 'content'],
             },

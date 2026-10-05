@@ -124,6 +124,38 @@ describe('chat 路由（SSE）', () => {
     expect(messages[messages.length - 1].role).toBe('assistant')
   })
 
+  it('多模态 parts 消息写回历史时 content 归一为文本（不落数组污染持久化）', async () => {
+    const app = await createDevApp()
+    const res = await app.request('/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: '看图回答：这个报错怎么解决' },
+              {
+                type: 'image_url',
+                image_url: { url: 'data:image/png;base64,AAAA' },
+              },
+            ],
+          },
+        ],
+        speed: 0,
+        conversationId: 'conv_vue',
+      }),
+    })
+    await res.text()
+    const { messages } = await (
+      await app.request('/api/conversations/conv_vue/messages')
+    ).json()
+    const lastUser = messages[messages.length - 2]
+    expect(lastUser.role).toBe('user')
+    // parts 形态只落 text 文本；image_url（base64 数百 KB）不进持久化
+    expect(lastUser.content).toBe('看图回答：这个报错怎么解决')
+  })
+
   it('messages 缺失返回 400', async () => {
     const res = await (
       await createDevApp()

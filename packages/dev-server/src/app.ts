@@ -5,6 +5,7 @@ import { createMastraGateway } from '@toimc/server/mastra'
 import { ModelRegistry } from '@toimc/agents'
 import { buildAgentDefinitions } from './agents'
 import { readDevServerEnv } from './env'
+import { textContent } from './message-content'
 import { loadContext7Tools } from './mcp/context7'
 import { createMockAdapter } from './mock/mock-adapter'
 import { openApiSpec } from './openapi'
@@ -110,7 +111,13 @@ export async function createDevApp(
           .reverse()
           .find((m) => m.role === 'user')
         if (!lastUser) return
-        conversations.appendExchange(convId, lastUser.content, result.assistant)
+        // 多模态 parts 归一为文本再落库：DTO 的 content 是 string，
+        // 数组直传会污染持久化（base64 附件也不该进会话历史）
+        conversations.appendExchange(
+          convId,
+          textContent(lastUser.content),
+          result.assistant,
+        )
       },
     },
   })

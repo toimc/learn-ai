@@ -1,6 +1,7 @@
 import type { ChatRequest, ChatResponse, IModelAdapter } from '@toimc/agents'
 import type { StreamChunk } from '@toimc/core'
 import { estimateTokens } from '@toimc/core'
+import { textContent } from '../message-content'
 import { buildReply, type ScriptedChunk } from './scenarios'
 
 /** 三档演示模型的差异化因子 */
@@ -56,8 +57,9 @@ export function createMockAdapter(variant: MockVariant = 'pro'): IModelAdapter {
     const lastUser = [...request.messages]
       .reverse()
       .find((m) => m.role === 'user')
-    // 边界防御：非字符串内容按空输入处理，走默认剧本
-    const input = typeof lastUser?.content === 'string' ? lastUser.content : ''
+    // 多模态 parts 降级：提取 text 用于剧本匹配（图片忽略，mock 线无视觉能力）；
+    // 非法形态归空串走默认剧本
+    const input = textContent(lastUser?.content)
     const script = [...buildReply(input)]
     if (spec.thinkingLead && !script.some((s) => s.chunk.type === 'thinking')) {
       script.unshift(...spec.thinkingLead)
@@ -81,7 +83,7 @@ export function createMockAdapter(variant: MockVariant = 'pro'): IModelAdapter {
             ...chunk.metadata,
             usage: {
               inputTokens: request.messages.reduce(
-                (sum, m) => sum + estimateTokens(String(m.content ?? '')),
+                (sum, m) => sum + estimateTokens(textContent(m.content)),
                 0,
               ),
               outputTokens: estimateTokens(outputText),
