@@ -153,6 +153,11 @@ const zhCN = {
     expand: '展开',
     collapse: '收起',
   },
+  genui: {
+    invalidSchema: '界面数据格式无效',
+    unsupportedType: '未注册的界面组件：{type}',
+    adopt: '采纳',
+  },
 }
 
 export type MessageSchema = typeof zhCN
