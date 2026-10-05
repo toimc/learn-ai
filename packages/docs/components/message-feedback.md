@@ -134,4 +134,4 @@ function onComment(text: string) {
 
 ## 在动作行中使用
 
-紧凑单行形态见 [MessageActionFeedback](./message-actions.md#messageactionfeedback)，它包装本组件并适配操作按钮行的布局与显隐节奏。
+紧凑单行形态见 [MessageActionFeedback](./message-actions.md#messageactionfeedback-反馈)，它包装本组件并适配操作按钮行的布局与显隐节奏。

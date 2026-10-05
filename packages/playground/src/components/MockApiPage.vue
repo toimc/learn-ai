@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Content } from 'vitepress'
 import { DEV_SERVER_BASE_URL } from '../mock/dev-server-url'
 import { aiChatI18n } from '@toimc/vue'
 import { checkHealth } from '../mock/sse-adapter'
@@ -55,19 +56,21 @@ onMounted(async () => {
     <ClientOnly>
       <div ref="host" class="mock-api-page__host" />
     </ClientOnly>
+
+    <!-- md 正文（向量检索端点 / Provider 契约等）：Scalar 下方常规文档流。
+         VitePress 自定义 layout 不接收默认 slot，正文须经 Content 组件渲染 -->
+    <div class="mock-api-page__docs vp-doc">
+      <Content />
+    </div>
   </div>
 </template>
 
 <style scoped>
-/* 定高占满视口剩余高度（不是 min-height：那会让 Scalar 按内容撑开，
-   页面整体变成长滚动）。Scalar 自身依赖页面滚动（.scalar-app overflow
-   visible），因此把滚动容器设在 host 上：banner 固定、host 内部滚 */
+/* Scalar 区域定高约一屏（减 nav 与 banner 高度），滚动收在 host 内部；
+   md 正文在下方常规文档流中展开（vp-doc 复用站点排版） */
 .mock-api-page {
-  height: calc(100vh - var(--vp-nav-height, 64px));
-  height: calc(100dvh - var(--vp-nav-height, 64px));
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .mock-api-page__banner {
@@ -107,9 +110,18 @@ onMounted(async () => {
 
 /* host 即滚动容器：Scalar 内容在其中滚，sticky 侧栏相对它定位 */
 .mock-api-page__host {
-  flex: 1;
-  min-height: 0;
+  height: calc(100vh - var(--vp-nav-height, 64px) - 40px);
+  height: calc(100dvh - var(--vp-nav-height, 64px) - 40px);
+  min-height: 480px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.mock-api-page__docs {
+  max-width: 1152px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+  box-sizing: border-box;
 }
 </style>
