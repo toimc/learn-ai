@@ -61,6 +61,7 @@ export {
   PromptInputFooter,
   PromptInputTools,
   PromptInputButton,
+  PromptInputMicButton,
   PromptInputSubmit,
   PromptInputHeader,
   PromptInputUploadButton,

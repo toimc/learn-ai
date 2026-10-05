@@ -13,6 +13,8 @@ export default {
       'AI Chat UI may produce inaccurate information. Please double-check.',
     send: 'Send',
     stop: 'Stop',
+    micStart: 'Voice input',
+    micStop: 'Stop recording',
     previewAttachment: 'Preview {name}',
     removeAttachment: 'Remove {name}',
     uploading: 'Uploading',
@@ -159,5 +161,10 @@ export default {
     invalidSchema: 'Invalid UI data format',
     unsupportedType: 'Unregistered UI component: {type}',
     adopt: 'Adopt',
+  },
+  speechErrors: {
+    unsupported: 'Speech recognition is not supported in this browser',
+    noSpeech: 'No speech detected. Please try again',
+    notAllowed: 'Microphone permission denied. Allow it in browser settings',
   },
 } satisfies MessageSchema
