@@ -85,6 +85,6 @@ description: ai-chat-ui 天天向上——项目自评审与知识沉淀循环�
 ## 附录：三轴原始发现（<details> 折叠）
 ```
 
-## 夜间定时任务
+## 夜间定时任务（已停用）
 
-durable cron `17 23 * * *`（23:17，本地时区），提示词指向本 SKILL.md 执行定时档。已知平台约束：recurring 任务 7 天自动过期（到期最后跑一次后删除，需续期）；只在 Claude Code 会话运行且空闲时触发；机器休眠不跑。
+曾配置 durable cron `17 23 * * *`（2026-10-05 创建，同日应用户要求停止）。重新启用：让 Claude 执行 CronCreate（durable: true，提示词指向本 SKILL.md 执行定时档）。已知平台约束：recurring 任务 7 天自动过期（到期最后跑一次后删除，需续期）；只在 Claude Code 会话运行且空闲时触发；机器休眠不跑。
