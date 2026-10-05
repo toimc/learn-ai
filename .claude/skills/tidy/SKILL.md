@@ -9,9 +9,10 @@ description: 本地垃圾清理、上下文收敛与记忆压缩。清理项目�
 
 | 模式 | 触发 | 动作 |
 |------|------|------|
-| 清理（默认） | `/tidy`、"清理垃圾/临时文件/磁盘" | 读 [rules/cleanup-rules.md](rules/cleanup-rules.md) → 跑 `scripts/scan.sh` → A 级直删 → B 级列清单等确认 |
+| 清理+审计（默认） | `/tidy`、"清理垃圾/临时文件/磁盘" | 先走清理：读 [rules/cleanup-rules.md](rules/cleanup-rules.md) → 跑 `scripts/scan.sh` → A 级直删 → B 级列清单等确认；**清理完成后接上下文审计**：读 [rules/context-rules.md](rules/context-rules.md) 出迁移方案（只出方案，不自动执行迁移） |
 | 只扫描 | `/tidy scan` | 只跑 `scripts/scan.sh` 出报告，不删任何文件 |
-| 上下文收敛 | `/tidy context` | 读 [rules/context-rules.md](rules/context-rules.md)，审计常驻上下文，出迁移方案获确认后执行 |
+| 仅清理 | `/tidy clean` | 只走清理流程，不做上下文审计 |
+| 仅上下文收敛 | `/tidy context` | 读 [rules/context-rules.md](rules/context-rules.md)，审计常驻上下文，出迁移方案获确认后执行 |
 | 记忆压缩 | `/tidy memory`、"清理/压缩记忆" | 读 [rules/memory-rules.md](rules/memory-rules.md) → 跑 `scripts/scan.sh` 看 memory 节 → 完整性检查 → 压缩/清理方案逐条确认后执行 |
 
 ## 安全红线（任何模式不可违反）
