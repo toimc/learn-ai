@@ -4,16 +4,20 @@
 
 文本输入区域，支持发送和中止两种模式。按下 Enter 发送消息，流式输出时切换为中止按钮。
 
-## 基础用法
+## 代码演示
 
 <script setup lang="ts">
 import { ref } from 'vue'
 
 const lastSent = ref('')
+const aborted = ref(false)
+
 function onSend(content: string) {
   lastSent.value = content
 }
 </script>
+
+按 Enter 发送（Shift+Enter 换行）。Best for：旧版简单聊天输入，新代码请用 [PromptInput](/components/prompt-input)。
 
 <DemoContainer>
   <div>
@@ -26,10 +30,18 @@ function onSend(content: string) {
 
 ## 禁用状态（流式中）
 
-当 `disabled` 为 `true` 时，发送按钮变为中止按钮：
+当 `disabled` 为 `true` 时，发送按钮变为中止按钮，点击触发 `abort`。Best for：流式输出进行中，允许用户随时打断：
 
 <DemoContainer>
-  <InputArea disabled @abort="() => console.log('aborted')" />
+  <div>
+    <InputArea disabled @abort="aborted = true" />
+    <p
+      v-if="aborted"
+      style="margin-top: 8px; color: #666; font-size: 14px"
+    >
+      已中止生成，恢复后按钮切回发送态
+    </p>
+  </div>
 </DemoContainer>
 
 ## 自定义占位文本

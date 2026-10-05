@@ -26,7 +26,22 @@ const newConfig = {
 const onlyChanged = ref(false)
 </script>
 
-勾选下方开关切换「全量对比 / 仅差异路径」：
+### 全量对比
+
+默认形态：左旧右新双列，相同路径也列出。Best for：配置变更回显、审计等需要完整上下文的场景。
+
+<DemoContainer>
+  <JsonDiffView
+    :old-value="oldConfig"
+    :new-value="newConfig"
+    old-label="当前配置"
+    new-label="待应用配置"
+  />
+</DemoContainer>
+
+### 仅差异路径
+
+`onlyChanged` 过滤相同路径，只留变更项。Best for：工具调用参数对比、长 JSON 中快速定位变更。勾选下方开关实时切换两种形态：
 
 <DemoContainer>
   <JsonDiffView

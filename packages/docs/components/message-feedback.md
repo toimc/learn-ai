@@ -11,6 +11,7 @@ import { MessageFeedback } from '@toimc/vue'
 type FeedbackValue = 'up' | 'down' | null
 
 const value = ref<FeedbackValue>(null)
+const noCommentValue = ref<FeedbackValue>(null)
 const log = ref<string[]>([])
 
 function onChange(v: FeedbackValue) {
@@ -39,6 +40,23 @@ function onComment(text: string) {
       <li v-for="(entry, i) in log" :key="i">{{ entry }}</li>
       <li v-if="log.length === 0">（事件日志）</li>
     </ul>
+  </div>
+</DemoContainer>
+
+### 纯点赞点踩（无评论）
+
+`allow-comment` 关闭两级展开，点踩后不再出现「帮助我们改进」提示与评论框。Best for：只要态度统计、不需要收集文字反馈的轻量场景：
+
+<DemoContainer>
+  <div style="display: flex; align-items: flex-start; gap: 16px">
+    <MessageFeedback
+      :value="noCommentValue"
+      :allow-comment="false"
+      @change="(v: FeedbackValue) => (noCommentValue = v)"
+    />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">
+      当前反馈：{{ noCommentValue ?? '无' }}
+    </span>
   </div>
 </DemoContainer>
 

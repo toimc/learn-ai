@@ -1,19 +1,6 @@
 # MessageActions 预设操作四件
 
-基于 [MessageAction](./message.md#messageaction)（30px 图标按钮）封装的四个预设操作：复制、重试、编辑、反馈。开箱即用图标与文案（i18n `messageActions.*`），省去每个宿主重复手写 svg 与交互状态。
-
-```vue
-<script setup lang="ts">
-import {
-  MessageActionCopy,
-  MessageActionRetry,
-  MessageActionEdit,
-  MessageActionFeedback,
-} from '@toimc/vue'
-</script>
-```
-
-四个组件均渲染 MessageAction 基座（30px 图标按钮），可直接放进 `MessageActions` 行内组合使用。
+基于 [MessageAction](./message.md#messageaction)（30px 图标按钮）封装的四个预设操作：复制、重试、编辑、反馈。开箱即用图标与文案（i18n `messageActions.*`），省去每个宿主重复手写 svg 与交互状态。四个组件均渲染 MessageAction 基座，可直接放进 `MessageActions` 行内组合使用。
 
 ## 代码演示
 
@@ -33,6 +20,10 @@ const answer = ref('这是 AI 的回答文本，可复制、可重试、可编�
 const retryCount = ref(0)
 const feedbackValue = ref<FeedbackValue>(null)
 const log = ref<string[]>([])
+
+const singleRetryCount = ref(0)
+const editedText = ref('（尚未编辑）')
+const singleFeedback = ref<FeedbackValue>(null)
 
 function onEdit(text: string) {
   answer.value = text
@@ -77,9 +68,33 @@ function onFeedback(v: FeedbackValue) {
   </p>
 </DemoContainer>
 
+## 引入组件
+
+```vue
+<script setup lang="ts">
+import {
+  MessageActionCopy,
+  MessageActionRetry,
+  MessageActionEdit,
+  MessageActionFeedback,
+} from '@toimc/vue'
+</script>
+```
+
 ## MessageActionCopy 复制
 
-内部走 `copyText`（`@toimc/core` 剪贴板降级链：`navigator.clipboard` → textarea + `execCommand`），复制成功后图标切换为 ✓，2 秒后回退；失败（非安全上下文等）保持原图标静默。
+Best for：AI 回答、代码片段的一键复制。内部走 `copyText`（`@toimc/core` 剪贴板降级链：`navigator.clipboard` → textarea + `execCommand`），复制成功后图标切换为 ✓，2 秒后回退；失败（非安全上下文等）保持原图标静默。
+
+点击复制（图标变 ✓ 后可到任意输入框粘贴验证）：
+
+<DemoContainer>
+  <div style="display: flex; gap: 12px; align-items: center">
+    <MessageActionCopy :text="answer" />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">
+      复制目标：{{ answer }}
+    </span>
+  </div>
+</DemoContainer>
 
 ```vue
 <MessageActionCopy :text="message.content" />
@@ -94,7 +109,16 @@ function onFeedback(v: FeedbackValue) {
 
 ## MessageActionRetry 重试
 
-语义对接 `ChatState.regenerate`——组件只 emit `retry`，重发请求由宿主绑定：
+Best for：对回答不满意时重新生成。语义对接 `ChatState.regenerate`——组件只 emit `retry`，重发请求由宿主绑定：
+
+<DemoContainer>
+  <div style="display: flex; gap: 12px; align-items: center">
+    <MessageActionRetry :disabled="singleRetryCount >= 2" @retry="singleRetryCount++" />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">
+      已重试 {{ singleRetryCount }}/2（达到 2 次后禁用）
+    </span>
+  </div>
+</DemoContainer>
 
 ```vue
 <MessageActionRetry :disabled="chat.status === 'streaming'" @retry="chat.regenerate()" />
@@ -110,7 +134,16 @@ function onFeedback(v: FeedbackValue) {
 
 ## MessageActionEdit 行内编辑
 
-铅笔按钮 → 点击展开编辑面板（textarea + 保存并重发 / 取消）。语义对接 `ChatState.editMessage`：
+Best for：用户消息的原位修正重发。铅笔按钮 → 点击展开编辑面板（textarea + 保存并重发 / 取消）。语义对接 `ChatState.editMessage`：
+
+<DemoContainer>
+  <div style="display: flex; gap: 12px; align-items: flex-start">
+    <MessageActionEdit :initial-text="answer" @edit="editedText = $event" />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">
+      最近保存：{{ editedText }}
+    </span>
+  </div>
+</DemoContainer>
 
 ```vue
 <MessageActionEdit
@@ -136,7 +169,20 @@ function onFeedback(v: FeedbackValue) {
 
 ## MessageActionFeedback 反馈
 
-[MessageFeedback](./message-feedback.md) 的单行紧凑包装：👍/👎 + 点踩评论完整链路透传，适配操作按钮行——行本身已做 hover 显隐，包装内反馈按钮常显（透传 `data-always-visible`），评论框收窄为 280px。
+Best for：操作按钮行内的紧凑反馈位。[MessageFeedback](./message-feedback.md) 的单行紧凑包装：👍/👎 + 点踩评论完整链路透传，适配操作按钮行——行本身已做 hover 显隐，包装内反馈按钮常显（透传 `data-always-visible`），评论框收窄为 280px。
+
+<DemoContainer>
+  <div style="display: flex; gap: 12px; align-items: flex-start">
+    <MessageActionFeedback
+      :value="singleFeedback"
+      @change="(v: FeedbackValue) => (singleFeedback = v)"
+      @comment="(text: string) => log.unshift(`评论：${text}`)"
+    />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">
+      当前反馈：{{ singleFeedback ?? '无' }}（点踩后可提交评论）
+    </span>
+  </div>
+</DemoContainer>
 
 ```vue
 <MessageActionFeedback

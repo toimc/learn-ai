@@ -4,10 +4,12 @@
 
 单条消息气泡，包含头像、内容和操作按钮三个区域。根据 `message.role` 自动应用不同样式。
 
-## 基础用法
+## 代码演示
 
 <script setup lang="ts">
 import type { Message } from '@toimc/core'
+import { MessageBubble } from '@toimc/vue'
+import { MarkdownRenderer } from '@toimc/markdown'
 
 const userMsg: Message = {
   id: '1', role: 'user', content: '这是一条用户消息', createdAt: new Date(),
@@ -16,6 +18,8 @@ const assistantMsg: Message = {
   id: '2', role: 'assistant', content: '这是一条 **助手** 消息，支持 `Markdown`。', createdAt: new Date(),
 }
 </script>
+
+根据 `message.role` 自动应用 user / assistant 两种气泡样式（新代码请用 [Message](/components/message) + MessageContent 组合）：
 
 <DemoContainer>
   <div style="display: flex; flex-direction: column; gap: 12px">

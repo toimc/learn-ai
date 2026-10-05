@@ -4,7 +4,7 @@
 
 Input、Select、Radio、Button 是 `@toimc/vue` 的四个基础表单原语——构建表单与设置类界面的原子件。视觉语言对齐原子 CSS 体系的设计（subtle 边框、focus ring、统一控件高度、快速 transition），但全部以本库 `--ai-chat-*` 设计令牌实现，未引入任何原子 CSS 框架，暗色主题随语义令牌自动适配。
 
-## 基础用法
+## 代码演示
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -15,7 +15,7 @@ const apiKey = ref('')
 const touched = ref(false)
 </script>
 
-`v-model` 双向绑定，输入即更新：
+`v-model` 双向绑定，输入即更新。Best for：设置页表单、命名新建会话等单行文本录入。
 
 <DemoContainer>
   <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
@@ -24,24 +24,19 @@ const touched = ref(false)
   </div>
 </DemoContainer>
 
-在宿主应用中：
-
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { Input } from '@toimc/vue'
-
-const name = ref('')
-</script>
-
-<template>
-  <Input v-model="name" placeholder="请输入模型名称" />
-</template>
-```
-
 ## 密码输入
 
-`type="password"` 渲染密码框，`autocomplete` 透传原生属性（注册新密钥场景建议 `new-password`，避免浏览器误回填）：
+`type="password"` 渲染密码框，`autocomplete` 透传原生属性（注册新密钥场景建议 `new-password`，避免浏览器误回填）。Best for：API Key、访问令牌等敏感凭据录入。
+
+<DemoContainer>
+  <div style="max-width: 320px">
+    <Input v-model="apiKey" type="password" placeholder="API Key" autocomplete="new-password" />
+  </div>
+</DemoContainer>
+
+## 校验失败态与失焦事件
+
+`invalid` 会同时渲染 error 色边框和 `aria-invalid="true"`（未设置时不输出该属性）；`blur` 透传原生失焦事件，适合「失焦后 touched 才显示错误」的校验模式。Best for：必填校验、失焦后延迟报错的表单：
 
 <DemoContainer>
   <div style="max-width: 320px">
@@ -75,7 +70,7 @@ const name = ref('')
 
 ## 尺寸与禁用
 
-`size="sm"`（32px）用于工具栏等紧凑区，默认 `md`（36px）；`disabled` 降低透明度且输入不更新 `v-model`：
+`size="sm"`（32px）用于工具栏等紧凑区，默认 `md`（36px）；`disabled` 降低透明度且输入不更新 `v-model`。Best for：工具栏 / 窄侧栏用 `sm`，只读展示或权限不足时用 `disabled`：
 
 <DemoContainer>
   <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
@@ -84,6 +79,21 @@ const name = ref('')
     <Input disabled placeholder="禁用状态" />
   </div>
 </DemoContainer>
+
+## 在宿主应用中
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Input } from '@toimc/vue'
+
+const name = ref('')
+</script>
+
+<template>
+  <Input v-model="name" placeholder="请输入模型名称" />
+</template>
+```
 
 ## 视觉要点
 
