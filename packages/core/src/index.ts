@@ -26,6 +26,8 @@ export {
   VENDOR_LABELS,
 } from './utils/model-vendor'
 export type { ModelVendor, VendorInfo } from './utils/model-vendor'
+export { formatPerMillion, formatTokenCost, pricingTier } from './utils/pricing'
+export type { ModelPricing } from './utils/pricing'
 export {
   truncateContext,
   resolveTokenCount,

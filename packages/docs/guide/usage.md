@@ -302,3 +302,36 @@ groupModelsByVendor(['gpt-4o', 'deepseek-chat', 'mystery'])
 - `VendorInfo.label` 为品牌名（zh/en 同形，如 `'DeepSeek'`）；`unknown` 的 label 为空串，本地化文案由调用方注入
 - `matchedBy` 为命中的正则 source（调试用），未命中时缺省
 - 另导出 `VENDOR_ORDER`（展示顺序）与 `VENDOR_LABELS`（厂商名映射）
+
+### 模型定价格式化
+
+```typescript
+import {
+  formatPerMillion,
+  formatTokenCost,
+  pricingTier,
+} from '@toimc/core'
+
+// "$3.00/1M" 式单价展示；<0.01 用 4 位小数，未知返回 '—'
+formatPerMillion(3) // '$3.00/1M'
+formatPerMillion(0.0024) // '$0.0024/1M'
+formatPerMillion(15, '¥') // '¥15.00/1M'
+formatPerMillion(undefined) // '—'
+
+// 按 token 用量计一次对话成本（缺省侧价格不参与计算）
+formatTokenCost(
+  { inputPerMTokens: 3, outputPerMTokens: 15 },
+  1_000_000,
+  1_000_000,
+) // '$18.00'
+
+// 价格档位：按 input/output 已知价的均价划档
+pricingTier({ inputPerMTokens: 0 }) // 'free'
+pricingTier({ inputPerMTokens: 0.3 }) // 'economy'
+pricingTier({ inputPerMTokens: 5 }) // 'standard'
+pricingTier({ inputPerMTokens: 12 }) // 'premium'
+```
+
+- `ModelPricing`：`inputPerMTokens` / `outputPerMTokens`（$/1M token，缺省视为未知不参与计算）+ 可选 `currency`（默认 `'$'`）
+- 档位阈值（$/1M 均价）：`0` → free、`<1` → economy、`<10` → standard、`≥10` → premium；价格全未知返回中性 `standard`
+- 数字格式固定 en-US（千分位分组）；档位标签的本地化翻译由消费方按 tier → `t()` 映射
