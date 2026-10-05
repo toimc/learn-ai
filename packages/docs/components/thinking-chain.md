@@ -44,6 +44,8 @@ interface ThinkingStep {
 - **外层总折叠**：头部 = 标题 + 总耗时 + 步骤数；点击展开步骤列表
 - **步骤行**：状态图标 + title + 状态标签 + duration；有 content 的步骤可单独展开
 
+头部标题的取值优先级：显式 `title` prop 始终优先（含 `streaming` 流式期间）；未传时，流式显示「正在思考…」（i18n `thinking.thinking`），非流式显示「思考过程」（i18n `thinking.title`）。
+
 步骤状态图标：
 
 | status | 图标 | 说明 |

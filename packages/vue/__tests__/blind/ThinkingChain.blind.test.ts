@@ -119,7 +119,8 @@ describe('ThinkingChain（契约：docs/components/thinking-chain.md）', () => 
   // 但 streaming=true 时头部标题固定显示 i18n「Thinking…」，显式传入的 title 被忽略。
   // 实测（2026-10-05）：streaming 下 title prop 不生效；非 streaming 下生效。
   // 按文档契约本测试应为绿，暂 skip 待实现方裁决。
-  it.skip('streaming 下显式 title 仍应作为头部标题（文档：title 仅缺省走 i18n）', () => {
+  // 已裁决为实现 bug 并修复：显式 title 始终优先（含流式），仅缺省时流式走「正在思考…」
+  it('streaming 下显式 title 仍应作为头部标题（文档：title 仅缺省走 i18n）', () => {
     const w = mountChain({
       steps: [stepComplete],
       title: 'Reasoning plan',

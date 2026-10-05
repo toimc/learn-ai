@@ -46,11 +46,11 @@ function toggleExpand() {
   isExpanded.value = !isExpanded.value
 }
 
-// 头部文案：流式 → 正在思考…；否则标题（props 优先，i18n 兜底）
-const headerLabel = computed(() =>
-  props.streaming
-    ? t('thinking.thinking')
-    : (props.title ?? t('thinking.title')),
+// 头部文案：显式 title 始终优先（含流式），缺省时流式 → 正在思考…、非流式 → i18n 标题
+const headerLabel = computed(
+  () =>
+    props.title ??
+    (props.streaming ? t('thinking.thinking') : t('thinking.title')),
 )
 
 const totalMs = computed(
