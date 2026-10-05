@@ -20,9 +20,17 @@ interface ChatAdapter {
 
 ```typescript
 interface StreamChunk {
-  type: 'text' | 'tool_call' | 'thinking' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'done'
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+    toolCallId?: string                  // 工具调用 id（tool_call/tool_result 关联）
+    toolName?: string
+    toolArguments?: Record<string, unknown>
+    toolResult?: unknown
+    toolError?: string
+    duration?: number
+    [key: string]: unknown               // done 帧可回传 usage 等宿主扩展
+  }
 }
 ```
 
@@ -82,6 +90,7 @@ interface ThinkingInfo {
   content: string          // 思考内容
   duration?: number        // 思考耗时（毫秒）
   startTime?: Date         // 思考开始时间
+  active?: boolean         // 思考是否仍在进行（useChat 流式期间维护）
   steps?: ThinkingStep[]   // 结构化多步骤思维链（ThinkingChain 消费，可选渐进增强）
 }
 
@@ -148,7 +157,7 @@ if (chunk.type === 'done') {
 }
 ```
 
-详细用法请参考 [Message 组件文档](../components/message.md#思考过程展示)。
+详细用法请参考 [Message 组件文档](../components/message.md#思考过程)。
 
 ## 实现 OpenAI 兼容适配器
 
@@ -233,6 +242,8 @@ const chat = useChat(adapter, {
   // 可选配置
   initialMessages: [],          // 初始消息列表
   maxHistory: 100,              // 最大消息数
+  maxContextTokens: 8000,       // 上下文窗口（token），超出截断最旧消息；支持 getter 随选中模型变化
+  tokenEstimator: (text) => 0,  // 可注入的 token 估算器，默认 estimateTokens
   onError: (err) => {},         // 错误回调
   onResponse: (chunk) => {},    // 每个 chunk 回调
 })
@@ -245,15 +256,18 @@ const chat = useChat(adapter, {
 | `messages` | `Message[]` | 消息列表（响应式） |
 | `isStreaming` | `boolean` | 是否正在流式输出 |
 | `error` | `Error \| null` | 最近一次错误 |
+| `truncatedCount` | `number` | 因上下文窗口被截断的消息数 |
 | `send` | `(content, attachments?) => Promise<void>` | 发送消息 |
+| `regenerate` | `(messageId?) => Promise<void>` | 重新生成：删除目标 assistant 消息及其后所有消息后重发 |
+| `editMessage` | `(messageId, content) => Promise<void>` | 编辑用户消息：覆盖内容后以新内容重发 |
 | `abort` | `() => void` | 中止当前流式输出 |
 | `clear` | `() => void` | 清空所有消息 |
 
 ## 组件组装
 
-### AI 场景组件总览（v0.x 新增）
+### AI 场景组件总览
 
-18 个 AI 场景组件已全部从 `@toimc/vue` 主入口导出，按能力域分组：
+AI 场景组件均已从 `@toimc/vue` 主入口导出，按能力域分组：
 
 | 能力域 | 组件 | 文档 |
 |---|---|---|

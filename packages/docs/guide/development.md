@@ -36,7 +36,7 @@ pnpm workspace 管理的 Monorepo，包之间用 `workspace:*` 引用，依赖�
 | `pnpm test` | 运行全部测试（Vitest，从根目录覆盖所有包） |
 | `pnpm test:watch` | 测试监听模式 |
 | `pnpm lint` | ESLint 检查 |
-| `pnpm type-check` | vue-tsc 类型检查（core / vue / markdown） |
+| `pnpm type-check` | vue-tsc 类型检查（core / vue / markdown / agents / server） |
 | `pnpm clean` | 清理所有包的 dist |
 
 在 worktree 或全新环境中跑 `pnpm type-check` 前，需先 `pnpm build` 出 `core` 的 dist（类型检查消费构建产物）。
