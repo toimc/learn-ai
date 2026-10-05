@@ -97,6 +97,18 @@ export { ToolConfirmation } from './tool-call'
 // Citation series
 export { InlineCitation, Sources, isSafeHttpUrl } from './citation'
 
+// GenUI series（生成式 UI：schema → 组件注册表 → 动态渲染）
+export {
+  registerGenuiComponent,
+  resolveGenuiComponent,
+  unregisterGenuiComponent,
+  sanitizeGenuiProps,
+  GenUIRenderer,
+  WeatherCard,
+  PlanActions,
+} from './genui'
+export type { GenuiPropValue, GenuiPlan } from './genui'
+
 // Welcome series
 export { Welcome, Prompts } from './welcome'
 export type { PromptItem } from './welcome'

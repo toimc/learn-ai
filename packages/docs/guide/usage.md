@@ -159,6 +159,21 @@ if (chunk.type === 'done') {
 
 详细用法请参考 [Message 组件文档](../components/message.md#思考过程)。
 
+## 生成式 UI（GenUI）
+
+工具在 `tool_result` 返回值上附加 `ui` 字段（`UISchema`：`{ type, props }`），前端经 `isUISchema` 校验 + 组件注册表（封闭白名单）映射渲染为真实 Vue 组件——协议零改动（`metadata.toolResult` 本就是 `unknown`），老工具不带 `ui` 字段不受影响：
+
+```typescript
+import { isUISchema } from '@toimc/core'
+
+const ui = (msg.toolCalls?.[0]?.result as { ui?: unknown })?.ui
+if (msg.toolCalls?.[0]?.status === 'completed' && isUISchema(ui)) {
+  // 交给 GenUIRenderer 渲染（见生成式 UI 指南）
+}
+```
+
+渲染、消毒规则与安全红线详见 [生成式 UI 指南](./genui.md)。
+
 ## 实现 OpenAI 兼容适配器
 
 ```typescript

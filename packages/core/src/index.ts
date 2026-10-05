@@ -41,6 +41,8 @@ export {
 export type { ScaledSize } from './utils/image-compress'
 export { splitAtoms, joinAtoms } from './utils/md-atom'
 export type { MdAtom } from './utils/md-atom'
+export { isUISchema } from './utils/genui'
+export type { UISchema } from './types/genui'
 export {
   truncateContext,
   resolveTokenCount,

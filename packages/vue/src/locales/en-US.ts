@@ -155,4 +155,9 @@ export default {
     expand: 'Expand',
     collapse: 'Collapse',
   },
+  genui: {
+    invalidSchema: 'Invalid UI data format',
+    unsupportedType: 'Unregistered UI component: {type}',
+    adopt: 'Adopt',
+  },
 } satisfies MessageSchema
