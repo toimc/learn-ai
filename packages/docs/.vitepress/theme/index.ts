@@ -58,7 +58,6 @@ import {
   CitationDemoPage,
   ModelMetaDemoPage,
   FeedbackDemoPage,
-  VoiceDemoPage,
   EdgeSearchDemoPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
@@ -141,8 +140,7 @@ export default {
     app.component('CitationDemoPage', CitationDemoPage)
     app.component('ModelMetaDemoPage', ModelMetaDemoPage)
     app.component('FeedbackDemoPage', FeedbackDemoPage)
-    // 语音/端侧搜索演示不依赖 dev-server，Pages 构建保留
-    app.component('VoiceDemoPage', VoiceDemoPage)
+    // 端侧搜索演示不依赖 dev-server，Pages 构建保留
     app.component('EdgeSearchDemoPage', EdgeSearchDemoPage)
     if (!isPagesBuild) {
       const {
