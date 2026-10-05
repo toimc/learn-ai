@@ -84,6 +84,11 @@ function toolScript(city: string): Script {
           temp: [25, 32],
           wind: '东南风 3 级',
           rain: 0.1,
+          // 与真实 get-weather 工具一致的 GenUI 渲染指令，mock 模式也能看到天气卡片
+          ui: {
+            type: 'weather-card',
+            props: { city, temperatureC: 28, description: '多云转晴' },
+          },
         },
         duration: 820,
       },

@@ -32,6 +32,16 @@ describe('buildReply 场景选择', () => {
     expect(String(call!.chunk.metadata?.toolArguments?.city)).toBe('北京')
   })
 
+  it('工具剧本的 toolResult 附带 weather-card GenUI schema', () => {
+    const script = buildReply('查一下北京天气，调用工具')
+    const result = script.find((s) => s.chunk.type === 'tool_result')
+    const ui = (result!.chunk.metadata?.toolResult as { ui?: unknown }).ui
+    expect(ui).toEqual({
+      type: 'weather-card',
+      props: { city: '北京', temperatureC: 28, description: '多云转晴' },
+    })
+  })
+
   it('命中错误场景：包含 error 块且其后无正文', () => {
     const seq = types('触发一次错误')
     const errorIdx = seq.indexOf('error')
