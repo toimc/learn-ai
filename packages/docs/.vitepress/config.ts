@@ -206,7 +206,6 @@ export default defineConfig({
               text: 'ConversationScrollBtn',
               link: '/components/conversation-scroll-btn',
             },
-            { text: 'ChatWindow（旧版）', link: '/components/chat-window' },
           ],
         },
         {
@@ -223,11 +222,6 @@ export default defineConfig({
             },
             { text: 'MessageFeedback', link: '/components/message-feedback' },
             { text: 'BranchPicker', link: '/components/branch-picker' },
-            { text: 'MessageList（旧版）', link: '/components/message-list' },
-            {
-              text: 'MessageBubble（旧版）',
-              link: '/components/message-bubble',
-            },
           ],
         },
         {
@@ -255,7 +249,6 @@ export default defineConfig({
             },
             { text: 'Attachments', link: '/components/attachments' },
             { text: 'ImageLightbox', link: '/components/image-lightbox' },
-            { text: 'InputArea（旧版）', link: '/components/input-area' },
           ],
         },
         {

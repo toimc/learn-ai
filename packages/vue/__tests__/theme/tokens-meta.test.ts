@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, dirname, basename, relative, extname } from 'node:path'
+import { join, dirname, relative, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { tokensMeta } from '../../src/theme/tokens-meta'
 import type { TokenLayer, TokenType } from '../../src/theme/tokens-meta'
@@ -198,14 +198,6 @@ describe('tokensMeta 与 tokens.css 默认值一致（对账）', () => {
 })
 
 describe('反漂移：全仓 --ai-chat-* 引用必须在定义集合内或有 fallback', () => {
-  // 已被标记 @deprecated 的旧组件（见 vue/src/index.ts）—— 用旧令牌名 + fallback，
-  // 本阶段不重构，从反漂移扫描里排除
-  const DEPRECATED_FILES = new Set([
-    'ChatWindow.vue',
-    'MessageList.vue',
-    'MessageBubble.vue',
-    'InputArea.vue',
-  ])
   const SKIP_SEGMENTS = new Set(['node_modules', 'dist', '.git', '.claude'])
 
   // 构造"已定义"集合 = tokensMeta 所有 key + tokens.css 所有 :root/[data-theme] 定义
@@ -235,8 +227,6 @@ describe('反漂移：全仓 --ai-chat-* 引用必须在定义集合内或有 fa
 
   function* scan() {
     for (const file of walk(join(REPO_ROOT, 'packages'))) {
-      const name = basename(file)
-      if (DEPRECATED_FILES.has(name)) continue
       if (file.endsWith('.test.ts')) continue // 测试本身含大量 token 字符串
       // 跳过 docs/.vitepress/theme/style.css：那是主动定义旧令牌（非 var() 引用）
       if (file.includes(join('docs', '.vitepress'))) continue

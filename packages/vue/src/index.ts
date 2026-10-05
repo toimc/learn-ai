@@ -108,16 +108,6 @@ export { ImageLightbox } from './preview'
 export { ProviderSettingsDialog } from './provider'
 export type { ProviderOption, ProviderFormPayload } from './provider'
 
-// Old components (deprecated, will be removed in v1.0.0)
-/** @deprecated Use Conversation + ConversationContent instead */
-export { default as ChatWindow } from './deprecated/ChatWindow.vue'
-/** @deprecated Use ConversationContent with v-for directly instead */
-export { default as MessageList } from './deprecated/MessageList.vue'
-/** @deprecated Use Message + MessageContent instead */
-export { default as MessageBubble } from './deprecated/MessageBubble.vue'
-/** @deprecated Use PromptInput instead */
-export { default as InputArea } from './deprecated/InputArea.vue'
-
 // 主题系统
 export { useTheme, resolvedTheme, componentTheme } from './composables/useTheme'
 export type {

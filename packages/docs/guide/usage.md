@@ -270,28 +270,37 @@ const chat = useChat(adapter, {
 
 ```vue
 <template>
-  <ChatWindow>
+  <Conversation>
     <!-- 消息列表 -->
-    <MessageList v-slot="{ message }" :messages="chat.messages">
-      <MessageBubble :message="message">
-        <MarkdownRenderer :content="message.content" />
-      </MessageBubble>
-    </MessageList>
+    <ConversationContent>
+      <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+        <MessageContent
+          :content="msg.role === 'assistant' ? msg.content : undefined"
+          :streaming="chat.isStreaming"
+        >
+          <template v-if="msg.role !== 'assistant'">{{ msg.content }}</template>
+        </MessageContent>
+      </Message>
+    </ConversationContent>
 
     <!-- 输入区域 -->
-    <template #footer>
-      <PromptInput
-        :disabled="chat.isStreaming"
-        @send="(payload) => chat.send(payload.text)"
-        @abort="chat.abort"
-      >
-        <PromptInputBody>
-          <PromptInputTextarea />
-          <PromptInputSubmit />
-        </PromptInputBody>
-      </PromptInput>
-    </template>
-  </ChatWindow>
+    <PromptInput
+      :disabled="chat.isStreaming"
+      @send="(payload) => chat.send(payload.text)"
+      @abort="chat.abort"
+    >
+      <PromptInputBody>
+        <PromptInputTextarea />
+      </PromptInputBody>
+      <template #footer>
+        <PromptInputFooter>
+          <template #hint>
+            <PromptInputSubmit />
+          </template>
+        </PromptInputFooter>
+      </template>
+    </PromptInput>
+  </Conversation>
 </template>
 ```
 

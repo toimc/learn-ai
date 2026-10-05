@@ -2,11 +2,6 @@ import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 
 import {
-  // Old components (deprecated)
-  ChatWindow,
-  MessageList,
-  MessageBubble,
-  InputArea,
   StreamText,
   Button as AiButton,
   // Conversation series
@@ -80,11 +75,7 @@ const isPagesBuild = import.meta.env.DOCS_TARGET === 'pages'
 export default {
   extends: DefaultTheme,
   async enhanceApp({ app }) {
-    // Old components (backward compat)
-    app.component('ChatWindow', ChatWindow)
-    app.component('MessageList', MessageList)
-    app.component('MessageBubble', MessageBubble)
-    app.component('InputArea', InputArea)
+    // Shared
     app.component('StreamText', StreamText)
     app.component('Button', AiButton)
 

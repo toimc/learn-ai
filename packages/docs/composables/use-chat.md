@@ -32,13 +32,18 @@ const errorInfo = ref('')
       状态: {{ chat.isStreaming ? '流式中...' : '空闲' }}
       <span v-if="chat.error" style="color: #ef4444"> | 错误: {{ chat.error.message }}</span>
     </div>
-    <ChatWindow style="height: 300px">
-      <MessageList v-slot="{ message }" :messages="chat.messages">
-        <MessageBubble :message="message">
-          <MarkdownRenderer :content="message.content" />
-        </MessageBubble>
-      </MessageList>
-      <template #footer>
+    <div style="height: 300px; display: flex">
+      <Conversation style="flex: 1">
+        <ConversationContent>
+          <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+            <MessageContent
+              :content="msg.role === 'assistant' ? msg.content : undefined"
+              :streaming="chat.isStreaming"
+            >
+              <template v-if="msg.role !== 'assistant'">{{ msg.content }}</template>
+            </MessageContent>
+          </Message>
+        </ConversationContent>
         <PromptInput
           :disabled="chat.isStreaming"
           send-key="enter"
@@ -47,11 +52,17 @@ const errorInfo = ref('')
         >
           <PromptInputBody>
             <PromptInputTextarea />
-            <PromptInputSubmit />
           </PromptInputBody>
+          <template #footer>
+            <PromptInputFooter>
+              <template #hint>
+                <PromptInputSubmit />
+              </template>
+            </PromptInputFooter>
+          </template>
         </PromptInput>
-      </template>
-    </ChatWindow>
+      </Conversation>
+    </div>
     <div style="margin-top: 8px; display: flex; gap: 8px">
       <Button size="small" type="secondary" @click="chat.clear">清空消息</Button>
       <span style="font-size: 14px; color: #666; line-height: 32px">消息数: {{ chat.messages.length }}</span>

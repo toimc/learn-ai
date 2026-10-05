@@ -33,18 +33,25 @@ import '@toimc/markdown/katex.css'
 
 ```vue
 <script setup lang="ts">
+import { provide } from 'vue'
 import { useChat } from '@toimc/core'
 import type { ChatAdapter } from '@toimc/core'
 import {
-  ChatWindow,
-  MessageList,
-  MessageBubble,
+  Conversation,
+  ConversationContent,
+  Message,
+  MessageContent,
   PromptInput,
   PromptInputBody,
   PromptInputTextarea,
+  PromptInputFooter,
   PromptInputSubmit,
+  markdownRendererKey,
 } from '@toimc/vue'
 import { MarkdownRenderer } from '@toimc/markdown'
+
+// AI 消息的 content prop 走 Markdown 渲染，需注入渲染器
+provide(markdownRendererKey, MarkdownRenderer)
 
 // 1. 实现 ChatAdapter 接口
 const adapter: ChatAdapter = {
@@ -72,25 +79,35 @@ const chat = useChat(adapter)
 
 <template>
   <!-- 3. 组装组件 -->
-  <ChatWindow>
-    <MessageList v-slot="{ message }" :messages="chat.messages">
-      <MessageBubble :message="message">
-        <MarkdownRenderer :content="message.content" />
-      </MessageBubble>
-    </MessageList>
-    <template #footer>
-      <PromptInput
-        :disabled="chat.isStreaming"
-        @send="(payload) => chat.send(payload.text)"
-        @abort="chat.abort"
-      >
-        <PromptInputBody>
-          <PromptInputTextarea />
-          <PromptInputSubmit />
-        </PromptInputBody>
-      </PromptInput>
-    </template>
-  </ChatWindow>
+  <Conversation>
+    <ConversationContent>
+      <Message v-for="msg in chat.messages" :key="msg.id" :from="msg.role">
+        <MessageContent
+          :content="msg.role === 'assistant' ? msg.content : undefined"
+          :streaming="chat.isStreaming"
+        >
+          <template v-if="msg.role !== 'assistant'">{{ msg.content }}</template>
+        </MessageContent>
+      </Message>
+    </ConversationContent>
+
+    <PromptInput
+      :disabled="chat.isStreaming"
+      @send="(payload) => chat.send(payload.text)"
+      @abort="chat.abort"
+    >
+      <PromptInputBody>
+        <PromptInputTextarea />
+      </PromptInputBody>
+      <template #footer>
+        <PromptInputFooter>
+          <template #hint>
+            <PromptInputSubmit />
+          </template>
+        </PromptInputFooter>
+      </template>
+    </PromptInput>
+  </Conversation>
 </template>
 ```
 

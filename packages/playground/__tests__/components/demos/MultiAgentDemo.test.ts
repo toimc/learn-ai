@@ -23,7 +23,7 @@ async function submit(w: Awaited<ReturnType<typeof mountDemo>>, text: string) {
   await nextTick()
 }
 
-const PRESET_1 = 'InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？'
+const PRESET_1 = 'PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？'
 const PRESET_2 = '主题定制有哪些方式？CSS 变量覆盖和预设怎么选？'
 
 /** 最小合法委托结果：两阶段 */

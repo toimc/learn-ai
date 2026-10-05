@@ -158,12 +158,14 @@ const content = '# 标题\n\n这是一段 **加粗** 和 _斜体_ 文字。\n\n�
 
 ## 在消息中使用
 
-通常与 `MessageBubble` 配合使用：
+通常与 `Message` / `MessageContent` 配合使用——AI 消息走 `content` prop（需注入 `markdownRendererKey`），或在插槽中直接渲染：
 
 ```vue
-<MessageBubble :message="message">
-  <MarkdownRenderer :content="message.content" />
-</MessageBubble>
+<Message from="assistant">
+  <MessageContent>
+    <MarkdownRenderer :content="message.content" />
+  </MessageContent>
+</Message>
 ```
 
 ## API

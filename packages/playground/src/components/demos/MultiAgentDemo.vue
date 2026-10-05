@@ -46,7 +46,7 @@ const PATTERN_PREFIXES: Record<Pattern, string> = {
 
 /** 预置示例问题（spec 16 §3.6 原文）：面向中文文档的查询载荷，不进 i18n 字典 */
 const PRESET_QUESTIONS = [
-  'InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？',
+  'PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？',
   '主题定制有哪些方式？CSS 变量覆盖和预设怎么选？',
   '多会话管理的数据存在哪里？怎么持久化？',
 ] as const
