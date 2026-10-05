@@ -167,7 +167,6 @@ export default defineConfig({
           { text: '模型元数据演示', link: '/model-meta-demo' },
           { text: '反馈与操作演示', link: '/feedback-demo' },
           { text: '多模态输入演示', link: '/multimodal-demo' },
-          { text: '语音演示', link: '/voice-demo' },
           { text: '浏览器端语义搜索', link: '/edge-search-demo' },
         ],
       },

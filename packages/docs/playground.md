@@ -11,7 +11,7 @@ title: Playground
 
 RAG 引用链路（思维链多步骤 + 正文角标 + 来源列表 + 工具审批）见 [RAG 引用演示](/citation-demo)，纯前端自包含 mock，无需启动 dev-server。模型品牌图标 / 厂商分组 / 定价格式化 / 工具参数 diff 见 [模型元数据演示](/model-meta-demo)；欢迎页提示词 + 消息操作四件 + 分支翻页 + 输入内联建议见 [反馈与操作演示](/feedback-demo)。
 
-生成式 UI（天气卡片 / 方案采纳按钮组，工具回复渲染为真实组件，需 dev-server）见 [生成式 UI 演示](/genui-demo)；语音输入麦克风 + 消息朗读 + 流式自动朗读（浏览器原生 Web Speech API，无需服务）见 [语音演示](/voice-demo)。
+生成式 UI（天气卡片 / 方案采纳按钮组，工具回复渲染为真实组件，需 dev-server）见 [生成式 UI 演示](/genui-demo)。
 
 浏览器端语义搜索（Transformers.js 在浏览器里跑 bge-small-zh 向量检索，WebGPU 优先 / WASM 回退 / 关键字兜底，零 API 调用）见[浏览器端语义搜索](/edge-search-demo)，同样无需启动任何服务——与服务端方案的[向量检索演示](/vector-search-demo)互为对照。
 
@@ -30,6 +30,7 @@ RAG 引用链路（思维链多步骤 + 正文角标 + 来源列表 + 工具审�
 - **发送 / 中止**：输入框 **Enter 直接发送**、Shift+Enter 换行（问答场景对齐主流 AI 聊天习惯；`PromptInput` 组件默认 `alt-enter` 键位，本页按场景传 `send-key="enter"`）；发送按钮在输入区右下（Footer 右侧），流式输出中可中止。
 - **多模态附件**：工具栏「上传图片 / 上传附件」按钮选择文件，也可直接在输入框**粘贴**（⌘V/Ctrl+V）或**拖拽**文件进来；发送前经 mock 上传（模拟 800ms 延迟），附件随消息一并展示。超限（数量/大小）会 Toast 提示拒绝原因。输入行由 `PromptInputBody` 包裹（Textarea 占满宽度、弹性增高、发送按钮靠右）。独立的多模态输入演示（含 `send` 事件 payload 实时展示）见 [多模态输入演示](/multimodal-demo)；SSE 链路（dev-server 会话）发送时带 `dataUrl` 的图片附件会自动组装为 OpenAI 兼容 parts 数组（`toWireContent`，见[多模态发送指南](/guide/multimodal)）。
 - **多会话**：侧边栏新建 / 切换 / 重命名 / 删除会话；移动端为抽屉式。
+- **语音输入与朗读**：输入区麦克风按钮（仅 Chrome/Edge 显示，特性检测驱动）点击录音、实时字幕跟随，说完识别文本落输入框确认再发送；回复操作行喇叭按钮逐句朗读，朗读中再点打断；顶栏「自动朗读」开关开启后流式回复凑满一句读一句（localStorage 记住偏好，默认关），发送新消息自动打断旧朗读。浏览器原生 Web Speech API 零依赖，接线细节见[语音指南](/guide/speech)。
 - **⌘K / Ctrl+K**：新建对话（已接入全局快捷键，捕获阶段拦截避免被站点搜索抢占）。
 - **明暗主题**：顶部 ☀/🌙 切换，由 [`useTheme`](/composables/use-theme) 驱动，状态持久化。
 - **消息布局**：顶部布局按钮在「统一对齐」与「IM 左右分列」（用户右、AI 左）间切换；宽屏消息区自动放宽，由 [`useLayoutConfig`](/composables/use-layout-config) 驱动。

@@ -89,16 +89,9 @@ const zhCN = {
     inputPlaceholder: '问问天气，如：北京天气怎么样',
     quickAsk: '北京天气怎么样',
   },
-  voiceDemo: {
-    title: '语音输入与朗读',
-    description:
-      '浏览器原生 Web Speech API，零依赖：麦克风按钮（仅 Chrome/Edge）单句录音实时字幕，说完落输入框确认再发送；回复上的喇叭按钮逐句朗读，自动朗读开关把流式回复喂进朗读队列（localStorage 持久化，默认关）。',
-    autoSpeak: '自动朗读',
-    autoSpeakOn: '开',
-    autoSpeakOff: '关',
-    micUnsupported:
-      '当前浏览器不支持语音识别——麦克风按钮自动隐藏，其余功能不受影响',
-    inputPlaceholder: '打字，或点麦克风说话…',
+  speech: {
+    autoSpeakOn: '自动朗读：开（点击关闭）',
+    autoSpeakOff: '自动朗读：关（点击开启）',
   },
   thinkingDemo: {
     simulate: '模拟一次流式思考',
@@ -505,16 +498,9 @@ const enUS: typeof zhCN = {
     inputPlaceholder: 'Ask about the weather, e.g. 北京天气怎么样',
     quickAsk: '北京天气怎么样',
   },
-  voiceDemo: {
-    title: 'Speech Input & Read-aloud',
-    description:
-      'Browser-native Web Speech API, zero dependencies: the mic button (Chrome/Edge only) records a single sentence with live transcript, and the final text lands in the input box for confirmation; the speaker button on each reply reads it aloud sentence by sentence, and the auto-read toggle streams replies into the TTS queue (persisted in localStorage, off by default).',
-    autoSpeak: 'Auto read-aloud',
-    autoSpeakOn: 'On',
-    autoSpeakOff: 'Off',
-    micUnsupported:
-      'This browser does not support speech recognition — the mic button is hidden and everything else still works',
-    inputPlaceholder: 'Type, or click the mic and speak…',
+  speech: {
+    autoSpeakOn: 'Auto read-aloud: on (click to turn off)',
+    autoSpeakOff: 'Auto read-aloud: off (click to turn on)',
   },
   thinkingDemo: {
     simulate: 'Simulate streaming thinking',
