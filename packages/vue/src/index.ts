@@ -136,3 +136,11 @@ export type { MessageLayout, MessageAlign } from './composables/layout-types'
 
 // Clipboard composable（core copyText 的响应式包装）
 export { useClipboard } from './composables/useClipboard'
+
+// 图片压缩工具（多模态发送链路：File → JPEG dataUrl，url 管预览 / dataUrl 管发送）
+export { compressImageToDataUrl } from './utils/compress-image'
+export type {
+  CompressImageDeps,
+  CompressImageOptions,
+  DrawableImageSource,
+} from './utils/compress-image'
