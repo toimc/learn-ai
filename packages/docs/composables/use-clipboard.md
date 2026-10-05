@@ -2,6 +2,43 @@
 
 剪贴板复制的响应式包装。内部调用 `@toimc/core` 的 `copyText`（安全上下文优先 `navigator.clipboard`，失败或不可用时降级 `textarea` + `execCommand`），在成功后维护 `copied` 状态并在延时后自动复位——适合「复制成功 ✓」这类瞬时反馈 UI。
 
+## 适用场景
+
+| 场景 | 说明 |
+|------|------|
+| 复制按钮的瞬时反馈 | 点复制后按钮变 ✓、1.5s 自动复位，复位窗口内重复复制会重置计时 |
+| 代码块 / 分享链接复制 | 任何需要把一段文本送进剪贴板并给用户确认反馈的宿主交互 |
+| 非安全上下文兜底 | http 环境 `navigator.clipboard` 不可用时自动降级 `execCommand`，调用方无感 |
+
+**典型消费组件**：[MessageActionCopy](/components/message-actions)（预设复制操作；其内部直接用 core 的 `copyText` 实现同款 `copied` 回显——自建复制按钮时用本 composable 可少写状态与定时器逻辑）。
+
+## 代码演示
+
+<script setup lang="ts">
+import { useClipboard } from '@toimc/vue'
+
+const { copied, copy } = useClipboard()
+</script>
+
+点击复制，按钮回显 ✓ 约 1.5 秒后自动复位：
+
+<DemoContainer>
+  <button
+    type="button"
+    style="
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--ai-chat-color-border);
+      background: var(--ai-chat-color-bg-primary);
+      color: var(--ai-chat-color-text-primary);
+      cursor: pointer;
+    "
+    @click="copy('AI Chat UI')"
+  >
+    {{ copied ? '已复制 ✓' : '复制文本' }}
+  </button>
+</DemoContainer>
+
 ## 函数签名
 
 ```typescript

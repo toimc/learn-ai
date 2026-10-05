@@ -2,6 +2,16 @@
 
 结构化布局配置 composable：把响应式宽度、消息对齐等布局参数映射为 CSS 变量与组件 props，统一喂给 [`Conversation`](/components/conversation)。
 
+## 适用场景
+
+| 场景 | 说明 |
+|------|------|
+| 可配置的布局面板 | 用户在设置面板拖动宽度 / 选择对齐方式，`vars` 响应式重算，界面即时生效 |
+| 响应式宽度策略 | 内容最大宽度、消息气泡上限、输入框高度等收敛为一份结构化配置，避免散落的 style |
+| 布局与主题解耦 | 尺寸走 CSS 变量（喂 `customTheme`）、结构走 `layoutProps`（喂 `layout` / `messageAlign`），两条通道不混写 |
+
+**典型消费组件**：[Conversation](/components/conversation)——`vars` 喂给其 `customTheme`，`layoutProps` 喂给 `layout` / `messageAlign` Props。
+
 ## 签名
 
 ```ts

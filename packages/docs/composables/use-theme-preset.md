@@ -2,6 +2,16 @@
 
 把主题**预设**与**自定义 CSS 变量**应用到指定容器（以 inline style 写入，优先级最高，覆盖 `:root` 默认与暗色翻转）。`Conversation` 组件内部用它实现 `theme` / `customTheme` 两个 Props，你也可以直接调用。
 
+## 适用场景
+
+| 场景 | 说明 |
+|------|------|
+| 多套主题预设切换 | 内置 default / purple / green / warm 四套预设，改 accent 原始层即整体换肤 |
+| 宿主精确覆盖令牌 | 自定义 CSS 变量字典以 inline style 写入，无需 `!important` 即压过默认值 |
+| 会话级换肤 | 每个会话容器独立应用不同预设，互不影响宿主页面 |
+
+**典型消费组件**：[Conversation](/components/conversation)（内部用它实现 `theme` / `customTheme` Props，是全组件唯一的 inline-style 写入点）。参考消费方：playground 的主题配置器 `ThemeBuilder`。
+
 ## 函数签名
 
 ```typescript

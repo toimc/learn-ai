@@ -2,6 +2,17 @@
 
 主题（明暗）运行时切换 composable。**模块级单例**——全应用共享同一份主题状态，自动持久化到 `localStorage` 并写入 `document.documentElement` 的 `data-theme`，驱动 `[data-theme='dark']` 令牌翻转。
 
+## 适用场景
+
+| 场景 | 说明 |
+|------|------|
+| 全站明暗切换 | 顶栏放一个切换按钮，调 `toggleTheme()` 即驱动整站 `--ai-chat-*` 令牌翻转 |
+| 跟随系统 + 记忆选择 | `resolvedTheme` 联动 `prefers-color-scheme`，用户显式选择持久化到 localStorage |
+| SSR 安全的主题注入 | 配合文档站 head 内联脚本做首屏防闪（本站即此方案） |
+| 组件内隔离主题 | `target: 'component'` 时写入组件根子树，不影响宿主 `<html>` |
+
+**典型消费组件**：无直接消费（主题经 CSS 变量与 `data-theme` 生效，全组件隐式受益）。参考消费方：playground 的 `PlaygroundDemo`、主题配置器 `ThemeBuilder`。
+
 ## 函数签名
 
 ```typescript

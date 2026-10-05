@@ -2,6 +2,17 @@
 
 核心 composable，管理聊天状态和消息流。
 
+## 适用场景
+
+| 场景 | 说明 |
+|------|------|
+| 接入任意后端 | 实现一个 `ChatAdapter`（mock / SSE / WebSocket 均可），useChat 负责其余全部状态管理，UI 层不写后端代码 |
+| 流式对话界面 | `for await` 消费 `StreamChunk`，text / tool_call / thinking / error 分类落到响应式状态，配合 StreamText 等组件即得打字机效果 |
+| 可中断的请求 | `stop()` 基于 AbortSignal 中断适配器流，中断不算错误、不残留错误消息 |
+| 多会话应用 | 每个会话各自实例化一个 useChat，切换会话即切换状态集合 |
+
+**典型消费组件**：无——useChat 是**应用层** composable，组件库不消费它；它产出的 `messages` / `streaming` / `error` 等状态由宿主传入 [Conversation](/components/conversation) / [Message](/components/message) 系列组件渲染。参考消费方：playground 的 `PlaygroundDemo`、`MockServerDemo`、`MultiAgentDemo`、`WorkflowDemo` 演示页。
+
 ## 函数签名
 
 ```typescript
