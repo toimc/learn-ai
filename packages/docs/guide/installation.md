@@ -40,7 +40,7 @@ import '@toimc/vue/style.css'
 
 ## peerDependencies
 
-`@toimc/vue` 需要 Vue 3.5+ 作为 peer dependency，请确保项目中已安装：
+`@toimc/vue` 与 `@toimc/core` 需要 Vue 3.5+ 作为 peer dependency（core 的 reactive 状态与宿主共享同一 Vue 实例），请确保项目中已安装：
 
 ```bash
 pnpm add vue@^3.5.0

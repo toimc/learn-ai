@@ -35,7 +35,7 @@
 ```
 ai-chat-ui/
 ├── packages/
-│   ├── core/                  # @toimc/core — 核心类型与 composables（零外部依赖）
+│   ├── core/                  # @toimc/core — 核心类型与 composables（零 dependencies，peer 依赖 vue）
 │   │   ├── src/types/         # Message, StreamChunk, ChatAdapter, ToolCallInfo
 │   │   ├── src/composables/   # useChat（流式消费 + tool_call 处理）
 │   │   ├── src/utils/         # generateId, createUserMessage, createAssistantMessage
@@ -108,7 +108,7 @@ flowchart TB
         DEV["@toimc/dev-server<br/>dev 服务（8787）<br/>mock 剧本 + Mastra Agent（env 门控）<br/>Studio 宿主（4111）"]
     end
 
-    CORE["@toimc/core<br/>核心类型与 composables<br/>Message / StreamChunk / ChatAdapter / useChat<br/>零外部依赖"]
+    CORE["@toimc/core<br/>核心类型与 composables<br/>Message / StreamChunk / ChatAdapter / useChat<br/>零 dependencies · peer vue"]
 
     VUE --> CORE
     MD --> VUE

@@ -32,7 +32,7 @@
 
 ## 包与依赖关系
 
-- `packages/core`：`@toimc/core`，核心类型、`ChatAdapter`、`useChat` 和工具函数；零外部依赖，不依赖其他工作区包。
+- `packages/core`：`@toimc/core`，核心类型、`ChatAdapter`、`useChat` 和工具函数；零 dependencies（peer 依赖 vue，构建 external），不依赖其他工作区包。
 - `packages/vue`：`@toimc/vue`，Vue 组件、composables、Design Token；依赖 `core`，可选依赖 `markdown`，peer 依赖 Vue。
 - `packages/markdown`：`@toimc/markdown`，Markdown、代码高亮、公式和 Mermaid 渲染；依赖 `core`、`vue`。
 - `packages/agents`：`@toimc/agents`，服务端模型适配层（多协议适配器 + 可选 `/mastra` 子路径导出）；零外部依赖纯逻辑层。
