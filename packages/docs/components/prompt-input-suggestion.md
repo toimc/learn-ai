@@ -2,59 +2,6 @@
 
 输入框内联建议浮层：输入 `/`、`@` 等触发字符唤起菜单，键入内容即过滤候选，键盘 ↑↓ 导航、Enter 选中、Esc 关闭。适合斜杠命令面板与 @提及选人两类场景。
 
-**受控设计**：组件零内部输入状态——`text` / `caret` / `triggers` 全部由宿主传入，菜单开关由光标处的触发词解析结果派生。不依赖 PromptInput 上下文，可与任何 `<textarea>`（或 `PromptInputTextarea`）搭配：
-
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { PromptInputSuggestion } from '@toimc/vue'
-import type { SuggestionTrigger } from '@toimc/vue'
-
-const text = ref('')
-const caret = ref(0)
-const anchor = ref<HTMLElement | null>(null)
-
-const triggers: SuggestionTrigger[] = [
-  {
-    char: '/',
-    items: [
-      { key: 'h1', label: '标题 1', description: '大标题' },
-      { key: 'h2', label: '标题 2', description: '中标题' },
-      { key: 'table', label: '表格', description: '3×3 带表头' },
-    ],
-  },
-  { char: '@', items: [{ key: 'jo', label: 'John' }] },
-]
-
-// 宿主负责把光标位置喂给组件（textarea 原生 selectionchange 事件）
-function syncCaret(e: Event) {
-  caret.value = (e.target as HTMLTextAreaElement).selectionStart
-}
-
-function onSelect(_item: unknown, nextText: string) {
-  text.value = nextText
-}
-</script>
-
-<template>
-  <div ref="anchor" style="position: relative">
-    <textarea
-      v-model="text"
-      @selectionchange="syncCaret"
-      @keyup="syncCaret"
-      @click="syncCaret"
-    />
-    <PromptInputSuggestion
-      :text="text"
-      :caret="caret"
-      :triggers="triggers"
-      :anchor="anchor"
-      @select="onSelect"
-    />
-  </div>
-</template>
-```
-
 ## 代码演示
 
 <script setup lang="ts">
@@ -129,6 +76,59 @@ function syncCaret(e: Event) {
     {{ picked }} · 当前文本：{{ text || '（空）' }}
   </p>
 </DemoContainer>
+
+**受控设计**：组件零内部输入状态——`text` / `caret` / `triggers` 全部由宿主传入，菜单开关由光标处的触发词解析结果派生。不依赖 PromptInput 上下文，可与任何 `<textarea>`（或 `PromptInputTextarea`）搭配：
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { PromptInputSuggestion } from '@toimc/vue'
+import type { SuggestionTrigger } from '@toimc/vue'
+
+const text = ref('')
+const caret = ref(0)
+const anchor = ref<HTMLElement | null>(null)
+
+const triggers: SuggestionTrigger[] = [
+  {
+    char: '/',
+    items: [
+      { key: 'h1', label: '标题 1', description: '大标题' },
+      { key: 'h2', label: '标题 2', description: '中标题' },
+      { key: 'table', label: '表格', description: '3×3 带表头' },
+    ],
+  },
+  { char: '@', items: [{ key: 'jo', label: 'John' }] },
+]
+
+// 宿主负责把光标位置喂给组件（textarea 原生 selectionchange 事件）
+function syncCaret(e: Event) {
+  caret.value = (e.target as HTMLTextAreaElement).selectionStart
+}
+
+function onSelect(_item: unknown, nextText: string) {
+  text.value = nextText
+}
+</script>
+
+<template>
+  <div ref="anchor" style="position: relative">
+    <textarea
+      v-model="text"
+      @selectionchange="syncCaret"
+      @keyup="syncCaret"
+      @click="syncCaret"
+    />
+    <PromptInputSuggestion
+      :text="text"
+      :caret="caret"
+      :triggers="triggers"
+      :anchor="anchor"
+      @select="onSelect"
+    />
+  </div>
+</template>
+```
 
 ## 触发与过滤规则
 

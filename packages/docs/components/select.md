@@ -4,7 +4,7 @@
 
 Input、Select、Radio、Button 是 `@toimc/vue` 的四个基础表单原语——构建表单与设置类界面的原子件。视觉语言对齐原子 CSS 体系的设计（subtle 边框、focus ring、统一控件高度、快速 transition），但全部以本库 `--ai-chat-*` 设计令牌实现，未引入任何原子 CSS 框架，暗色主题随语义令牌自动适配。
 
-## 基础用法
+## 代码演示
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -13,7 +13,9 @@ import { Select } from '@toimc/vue'
 const model = ref('gpt-4o-mini')
 </script>
 
-`v-model` 绑定选中项的 `value`，选项写在默认插槽里：
+### 单选
+
+`v-model` 绑定选中项的 `value`，选项写在默认插槽里。最适合设置表单里的枚举型短列表（如模型、语言）：
 
 <DemoContainer>
   <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
@@ -25,6 +27,39 @@ const model = ref('gpt-4o-mini')
     <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">model = {{ model || '（空）' }}</span>
   </div>
 </DemoContainer>
+
+### 校验失败态与禁用
+
+`invalid` 在 `select` 元素上渲染 error 色边框与 `aria-invalid="true"`；`disabled` 降低透明度且切换不更新 `v-model`。适合表单校验回显与只读场景：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
+    <Select invalid model-value="">
+      <option value="" disabled>请选择（invalid 态）</option>
+      <option value="a">选项 A</option>
+    </Select>
+    <Select disabled model-value="a">
+      <option value="a">禁用状态</option>
+    </Select>
+  </div>
+</DemoContainer>
+
+### 尺寸
+
+`size="sm"`（32px）用于紧凑区，默认 `md`（36px），与 [Input](/components/input) 同一高度体系：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
+    <Select size="sm" model-value="a">
+      <option value="a">小尺寸 sm（32px）</option>
+    </Select>
+    <Select model-value="a">
+      <option value="a">默认 md（36px）</option>
+    </Select>
+  </div>
+</DemoContainer>
+
+## 基础用法
 
 在宿主应用中：
 
@@ -52,37 +87,6 @@ const model = ref('gpt-4o-mini')
   <option value="gpt-4o">GPT-4o</option>
 </Select>
 ```
-
-## 校验失败态与禁用
-
-`invalid` 在 `select` 元素上渲染 error 色边框与 `aria-invalid="true"`；`disabled` 降低透明度且切换不更新 `v-model`：
-
-<DemoContainer>
-  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
-    <Select invalid model-value="">
-      <option value="" disabled>请选择（invalid 态）</option>
-      <option value="a">选项 A</option>
-    </Select>
-    <Select disabled model-value="a">
-      <option value="a">禁用状态</option>
-    </Select>
-  </div>
-</DemoContainer>
-
-## 尺寸
-
-`size="sm"`（32px）用于紧凑区，默认 `md`（36px），与 [Input](/components/input) 同一高度体系：
-
-<DemoContainer>
-  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px">
-    <Select size="sm" model-value="a">
-      <option value="a">小尺寸 sm（32px）</option>
-    </Select>
-    <Select model-value="a">
-      <option value="a">默认 md（36px）</option>
-    </Select>
-  </div>
-</DemoContainer>
 
 ## 自绘 chevron 行为
 

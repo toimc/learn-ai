@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { ModelIcon } from '@toimc/vue'
 
-const models = [
+const vendorModels = [
   'gpt-4o',
   'claude-sonnet-4',
   'gemini-2.0-flash',
@@ -16,16 +16,23 @@ const models = [
   'glm-4.6',
   'llama-3.1',
   'kimi-k2',
+]
+
+const unknownModels = [
   'unknown-model',
+  'internal-llm',
+  'my-proxy-chat-v2',
 ]
 </script>
 
-按模型 id 自动识别厂商；未识别的 id 走兜底图标：
+### 已知厂商
+
+输入模型 id 自动识别厂商并渲染品牌内联 SVG。最适合模型选择器、会话标题、用量报表等需要一眼区分服务商的位置：
 
 <DemoContainer>
   <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
     <div
-      v-for="m in models"
+      v-for="m in vendorModels"
       :key="m"
       style="display: flex; align-items: center; gap: 8px"
     >
@@ -39,6 +46,23 @@ const models = [
       <span style="font-size: 12px; color: var(--ai-chat-color-text-muted)"
         >16 / 24 / 32 px</span
       >
+    </div>
+  </div>
+</DemoContainer>
+
+### 未识别兜底
+
+识别不出的 id 降级为首字母圆形（主题色背景），不打断布局。适合私有网关、自建模型等无品牌特征的 id：
+
+<DemoContainer>
+  <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+    <div
+      v-for="m in unknownModels"
+      :key="m"
+      style="display: flex; align-items: center; gap: 8px"
+    >
+      <ModelIcon :model="m" :size="22" />
+      <span style="font-size: 12px; font-family: monospace">{{ m }}</span>
     </div>
   </div>
 </DemoContainer>

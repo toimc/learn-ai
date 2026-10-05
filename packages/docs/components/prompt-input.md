@@ -14,6 +14,197 @@
 - **PromptInputHeader** — 顶部附件预览区域
 - **PromptInputSuggestion** — 输入内联建议浮层（`/`、`@` 触发唤起，↑↓/Enter/Esc 键盘交互；受控设计，详见 [PromptInputSuggestion](./prompt-input-suggestion.md)）
 
+## 代码演示
+
+<script setup lang="ts">
+import { onUnmounted, ref } from 'vue'
+import type { Attachment } from '@toimc/core'
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputUploadButton,
+  PromptInputAttachments,
+  PromptInputSubmit,
+} from '@toimc/vue'
+
+const sentLog = ref<{ text: string; attachments: number }[]>([])
+
+async function fakeUpload(files: File[]): Promise<Attachment[]> {
+  // 模拟宿主上传接口：600ms 延迟期间附件项显示呼吸遮罩
+  await new Promise((resolve) => setTimeout(resolve, 600))
+  return files.map((f, i) => ({
+    id: `up-${Date.now()}-${i}`,
+    name: f.name,
+    mediaType: f.type || 'application/octet-stream',
+    size: f.size,
+    url: f.type.startsWith('image/') ? URL.createObjectURL(f) : undefined,
+  }))
+}
+
+function onSendWithUpload(payload: { text: string; attachments?: Attachment[] }) {
+  sentLog.value = [
+    {
+      text: payload.text || '（空文本）',
+      attachments: payload.attachments?.length ?? 0,
+    },
+    ...sentLog.value,
+  ].slice(0, 3)
+}
+
+const streaming = ref(false)
+const replyText = ref('')
+const FULL_REPLY =
+  '收到。这是一段模拟的流式回复——真实场景由适配器 yield 的 text chunk 逐块追加；流式期间输入区右下角的发送按钮切换为停止方块，点击可随时中断。'
+
+let replyTimer: ReturnType<typeof setInterval> | undefined
+
+function onSendStream(payload: { text: string }) {
+  replyText.value = ''
+  streaming.value = true
+  replyTimer = setInterval(() => {
+    replyText.value = FULL_REPLY.slice(0, replyText.value.length + 2)
+    if (replyText.value.length >= FULL_REPLY.length) stopStreaming(true)
+  }, 50)
+}
+
+function stopStreaming(finished = false) {
+  streaming.value = false
+  if (replyTimer) {
+    clearInterval(replyTimer)
+    replyTimer = undefined
+  }
+  if (!finished && replyText.value) replyText.value += '（已中断）'
+}
+
+// 流式期间点击停止方块：捕获阶段拦截，不再触发内部 submit
+function onStopClick(e: MouseEvent) {
+  if (!streaming.value) return
+  e.preventDefault()
+  e.stopPropagation()
+  stopStreaming()
+}
+
+onUnmounted(() => {
+  if (replyTimer) clearInterval(replyTimer)
+})
+</script>
+
+### 空态
+
+对话入口的首屏形态：只有占位文本与发送按钮，聚焦即输入（默认键位 `Alt+Enter` 发送、`Enter` 换行）：
+
+<DemoContainer>
+  <PromptInput placeholder="给 AI Chat UI 发送消息…">
+    <PromptInputBody>
+      <PromptInputTextarea />
+    </PromptInputBody>
+    <template #footer>
+      <PromptInputFooter>
+        <template #hint>
+          <PromptInputSubmit />
+        </template>
+      </PromptInputFooter>
+    </template>
+  </PromptInput>
+</DemoContainer>
+
+### 输入中（附件预览与发送）
+
+完整输入区：键入多行文本观察弹性增高；附件有上传按钮 / 粘贴 / 拖拽三个入口（`multiple`，至多 3 个），发送走 `beforeSend` 上传钩子——上传期间附件项呈呼吸遮罩，完成后 `send` 事件携带上传产物：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <PromptInput
+      multiple
+      :max-files="3"
+      :before-send="fakeUpload"
+      @send="onSendWithUpload"
+    >
+      <PromptInputAttachments />
+      <PromptInputBody>
+        <PromptInputTextarea />
+      </PromptInputBody>
+      <template #footer>
+        <PromptInputFooter>
+          <template #tools>
+            <PromptInputTools>
+              <PromptInputUploadButton kind="image" />
+              <PromptInputUploadButton kind="file" />
+            </PromptInputTools>
+          </template>
+          <template #hint>
+            <PromptInputSubmit />
+          </template>
+        </PromptInputFooter>
+      </template>
+    </PromptInput>
+    <p
+      v-if="sentLog.length"
+      style="margin: 0; font-size: 12px; color: var(--ai-chat-color-text-muted)"
+    >
+      最近发送：
+      <span v-for="(s, i) in sentLog" :key="i">
+        「{{ s.text }}」（附件 {{ s.attachments }} 个）{{ i < sentLog.length - 1 ? '；' : '' }}
+      </span>
+    </p>
+  </div>
+</DemoContainer>
+
+### 流式中（发送 / 停止切换）
+
+发送后进入模拟流式回复，右下角按钮切换为停止方块，点击随时中断：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <PromptInput @send="onSendStream">
+      <PromptInputBody>
+        <PromptInputTextarea />
+      </PromptInputBody>
+      <template #footer>
+        <PromptInputFooter>
+          <template #hint>
+            <span style="display: inline-flex" @click.capture="onStopClick">
+              <PromptInputSubmit>
+                <svg v-if="streaming" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6.5" y="6.5" width="11" height="11" rx="2" />
+                </svg>
+                <svg
+                  v-else
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+              </PromptInputSubmit>
+            </span>
+          </template>
+        </PromptInputFooter>
+      </template>
+    </PromptInput>
+    <p
+      v-if="streaming || replyText"
+      style="
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--ai-chat-color-text-primary);
+      "
+    >
+      <strong style="color: var(--ai-chat-color-accent)">AI</strong>
+      {{ replyText }}{{ streaming ? '▌' : '' }}
+    </p>
+  </div>
+</DemoContainer>
+
+真实接线中，按钮由 `PromptInput` 输入上下文的 `status` 驱动、在发送与停止间自动切换（停止点击发出 `abort` 事件交宿主中断流）；本演示以默认插槽自绘两态图标模拟该切换。
+
 ## 基础用法
 
 ```vue

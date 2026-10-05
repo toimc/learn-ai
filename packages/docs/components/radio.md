@@ -4,16 +4,19 @@
 
 Input、Select、Radio、Button 是 `@toimc/vue` 的四个基础表单原语——构建表单与设置类界面的原子件。视觉语言对齐原子 CSS 体系的设计（subtle 边框、focus ring、统一控件高度、快速 transition），但全部以本库 `--ai-chat-*` 设计令牌实现，未引入任何原子 CSS 框架，暗色主题随语义令牌自动适配。
 
-## 基础用法
+## 代码演示
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Radio } from '@toimc/vue'
 
 const providerType = ref('openai-compat')
+const outputStyle = ref('balanced')
 </script>
 
-分组用法：多枚 Radio 绑定**同一个** `v-model`，各自传不同的 `value` 与相同的 `name`：
+### 横排分组
+
+多枚 Radio 绑定**同一个** `v-model`，各自传不同的 `value` 与相同的 `name`。最适合两三个互斥选项并排（如服务类型切换）：
 
 <DemoContainer>
   <div style="display: flex; flex-direction: column; gap: 12px">
@@ -24,6 +27,46 @@ const providerType = ref('openai-compat')
     <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">providerType = {{ providerType || '（空）' }}</span>
   </div>
 </DemoContainer>
+
+### 纵排列表
+
+选项纵向排列。适合选项较多、或后续要挂说明文字的设置项：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <Radio v-model="outputStyle" value="concise" label="简洁" name="demo-output-style" />
+      <Radio v-model="outputStyle" value="balanced" label="均衡" name="demo-output-style" />
+      <Radio v-model="outputStyle" value="detailed" label="详尽" name="demo-output-style" />
+    </div>
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">outputStyle = {{ outputStyle || '（空）' }}</span>
+  </div>
+</DemoContainer>
+
+### 键盘可达
+
+原生 `<input type="radio">` 仅视觉隐藏（1px 裁剪），**保留 Tab 聚焦与读屏语义**；键盘聚焦时 ring 落在相邻的自绘圆环上（accent 边框 + `--ai-chat-control-ring`）；同组传相同 `name` 后方向键在组内切换（原生行为，零 JS）。用 Tab 移入、方向键切换试试：
+
+<DemoContainer>
+  <div style="display: flex; gap: 24px; align-items: center">
+    <Radio v-model="providerType" value="openai-compat" label="OpenAI 兼容" name="demo-provider-type" />
+    <Radio v-model="providerType" value="anthropic" label="Anthropic" name="demo-provider-type" />
+  </div>
+</DemoContainer>
+
+### 无 label 与禁用
+
+不传 `label` 时只渲染圆环（可配合外部文本布局）；`disabled` 降低整枚透明度且 change 不更新 `v-model`：
+
+<DemoContainer>
+  <div style="display: flex; gap: 24px; align-items: center">
+    <Radio v-model="providerType" value="openai-compat" name="demo-provider-type" />
+    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">← 无 label</span>
+    <Radio v-model="providerType" value="anthropic" label="禁用项" name="demo-provider-type" disabled />
+  </div>
+</DemoContainer>
+
+## 基础用法
 
 在宿主应用中（配合 `fieldset` / `legend` 提供分组语义）：
 
@@ -53,33 +96,6 @@ const providerType = ref('openai-compat')
 | `name` | 透传原生 radio 的 name：同组多枚传相同值，浏览器据此用方向键在组内移动焦点 |
 
 选中行为：change 时 emit `update:modelValue` 载荷为**自身 value** 的字符串；再点已选中的项不重复 emit（对齐原生 radio 行为）。
-
-## 键盘可达
-
-- 原生 `<input type="radio">` 仅视觉隐藏（1px 裁剪），**保留 Tab 聚焦与读屏语义**，不是 `display: none`
-- 键盘聚焦（`:focus-visible`）时 ring 落在**相邻的自绘圆环**上：accent 边框 + `--ai-chat-control-ring`（3px 低透明度阴影）
-- 同组传相同 `name` 后，方向键在组内切换选项（原生行为，零 JS）
-
-用 Tab 移入、方向键切换试试：
-
-<DemoContainer>
-  <div style="display: flex; gap: 24px; align-items: center">
-    <Radio v-model="providerType" value="openai-compat" label="OpenAI 兼容" name="demo-provider-type" />
-    <Radio v-model="providerType" value="anthropic" label="Anthropic" name="demo-provider-type" />
-  </div>
-</DemoContainer>
-
-## 无 label 与禁用
-
-不传 `label` 时只渲染圆环（可配合外部文本布局）；`disabled` 降低整枚透明度且 change 不更新 `v-model`：
-
-<DemoContainer>
-  <div style="display: flex; gap: 24px; align-items: center">
-    <Radio v-model="providerType" value="openai-compat" name="demo-provider-type" />
-    <span style="font-size: 13px; color: var(--ai-chat-color-text-secondary)">← 无 label</span>
-    <Radio v-model="providerType" value="anthropic" label="禁用项" name="demo-provider-type" disabled />
-  </div>
-</DemoContainer>
 
 ## 视觉要点
 
