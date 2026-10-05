@@ -11,7 +11,7 @@
 消息域扩展组件（独立页面）：
 
 - [MessageFeedback](./message-feedback.md) — 消息 👍/👎 反馈与点踩评论
-- 预设操作按钮四件（Copy / Retry / Edit / Feedback）— 见 [message-actions](./message-actions.md)
+- 预设操作四件（见 [message-actions](./message-actions.md)）：**MessageActionCopy** 复制回显 / **MessageActionRetry** 重试 / **MessageActionEdit** 行内编辑 / **MessageActionFeedback** 紧凑反馈
 - [BranchPicker](./branch-picker.md) — 消息分支版本翻页
 
 ## 基础用法
