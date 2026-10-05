@@ -97,7 +97,7 @@ const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
    .ai-chat-conversation { border-radius: 16px; }
    ```
 
-2. **库样式不会反向污染宿主**：组件库自己写的规则永远压不过宿主样式；同时全局 `*` box-sizing reset 已收敛为只作用于组件库根子树（`ai-chat-base` 层内的根作用域选择器），宿主文档中除聊天窗口外没有任何元素被组件库规则命中。
+2. **库样式不会反向污染宿主**：组件库自己写的规则永远压不过宿主样式；同时全局 `*` box-sizing reset 已收敛为只作用于组件库根子树（`ai-chat-base` 层内以 `.ai-chat-conversation` 为根的作用域选择器），宿主文档中除聊天窗口外没有任何元素被组件库规则命中。
 
 ::: tip 何时用 @layer 覆盖、何时用变量？
 调颜色/圆角等令牌时优先[覆盖 CSS 变量](#三档配置方式)；需要改结构型样式（边框、间距、布局）时直接写未分层 CSS 规则覆盖即可，两者都不需要 `!important`。

@@ -55,11 +55,6 @@ export default {
     rightLabel: 'Response B',
     buttonLabel: 'Like this',
   },
-  inputArea: {
-    placeholder: 'Type a message...',
-    send: 'Send',
-    stop: 'Stop',
-  },
   markdown: {
     rendering: 'Rendering diagram…',
     renderFailed: 'Failed to render diagram: ',

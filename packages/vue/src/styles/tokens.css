@@ -195,10 +195,10 @@
 
 /* ===== 组件根作用域基础（收敛自全局 * reset，防止污染宿主） ===== */
 @layer ai-chat-base {
-  .ai-chat-window,
-  .ai-chat-window *,
-  .ai-chat-window *::before,
-  .ai-chat-window *::after {
+  .ai-chat-conversation,
+  .ai-chat-conversation *,
+  .ai-chat-conversation *::before,
+  .ai-chat-conversation *::after {
     box-sizing: border-box;
   }
 }

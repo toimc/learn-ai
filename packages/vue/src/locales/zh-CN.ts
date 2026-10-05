@@ -54,11 +54,6 @@ const zhCN = {
     rightLabel: '回复 B',
     buttonLabel: '喜欢这个',
   },
-  inputArea: {
-    placeholder: '输入消息...',
-    send: '发送',
-    stop: '停止',
-  },
   markdown: {
     rendering: '图表渲染中…',
     renderFailed: '图表渲染失败：',
