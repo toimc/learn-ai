@@ -29,6 +29,8 @@ export type { ModelVendor, VendorInfo } from './utils/model-vendor'
 export { formatPerMillion, formatTokenCost, pricingTier } from './utils/pricing'
 export type { ModelPricing } from './utils/pricing'
 export { copyText } from './utils/clipboard'
+export { splitAtoms, joinAtoms } from './utils/md-atom'
+export type { MdAtom } from './utils/md-atom'
 export {
   truncateContext,
   resolveTokenCount,

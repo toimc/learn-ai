@@ -43,3 +43,6 @@ export { formatPerMillion, formatTokenCost, pricingTier } from './pricing'
 export type { ModelPricing } from './pricing'
 
 export { copyText } from './clipboard'
+
+export { splitAtoms, joinAtoms } from './md-atom'
+export type { MdAtom } from './md-atom'

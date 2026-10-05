@@ -347,3 +347,25 @@ const ok = await copyText('要复制的文本')
 - 降级链：安全上下文（HTTPS/localhost）优先 `navigator.clipboard.writeText`，失败或不可用时降级 `textarea + document.execCommand('copy')`
 - 空字符串、非浏览器环境（SSR）、全链路失败均返回 `false`，不抛异常
 - 需要响应式 `copied` 状态时用 vue 层的 `useClipboard` composable（内部基于 `copyText`）
+
+### markdown 原子化切分
+
+```typescript
+import { splitAtoms, joinAtoms } from '@toimc/core'
+
+const atoms = splitAtoms(md)
+// [
+//   { type: 'frontmatter', raw: '---\ntitle: t\n---\n', editable: false },
+//   { type: 'text',        raw: '\n# 标题\n\n',        editable: true },
+//   { type: 'math-block',  raw: '$$\nE=mc^2\n$$\n',     editable: false },
+//   { type: 'fence',       raw: '```js\ncode\n```\n',   editable: false },
+//   ...
+// ]
+
+joinAtoms(atoms) === md // 恒等：字节级往返保真
+```
+
+- `MdAtom.type`：`frontmatter`（字节 0 起的 `---` 块）/ `math-block`（`$$..$$`）/ `html-block`（`<details>` `<div>` `<table>` 等原生块）/ `fence`（``` 围栏）/ `text`（其余）
+- `editable: false` 的结构块在编辑器场景整块直通，不可逐字编辑
+- 红线保证：`joinAtoms(splitAtoms(md)) === md` 对任意输入成立（含 CRLF、段间空白、未闭合 fence/标签兜底），可直接用于编辑器往返
+- 围栏内的 `$$`、`<div>` 等行一律视为代码内容，不会误识别为原子
