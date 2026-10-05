@@ -160,7 +160,8 @@ interface StreamChunk {
 ```typescript
 interface Attachment {
   id: string
-  url?: string // 图片/可下载文件的访问地址
+  url?: string // 图片/可下载文件的访问地址（本地预览，模型读不到）
+  dataUrl?: string // 模型可读的 base64 数据 URL，随消息发送给多模态模型
   name: string
   mediaType: string // MIME 类型，如 'image/png'
   size?: number

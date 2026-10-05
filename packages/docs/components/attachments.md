@@ -211,6 +211,26 @@ const listFiles = ref<AttachmentData[]>([
 </Attachments>
 ```
 
+## 附件数据模型（Attachment）
+
+`Attachment` 类型来自 `@toimc/core`，展示组件只消费 `url` / `name` / `mediaType` / `size`：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | `string` | 唯一标识（必填） |
+| name | `string` | 文件名（必填） |
+| mediaType | `string` | MIME 类型（必填） |
+| size | `number` | 文件字节大小 |
+| url | `string` | **本地预览地址**（通常是 `URL.createObjectURL` 产出的 `blob:` 地址），只给浏览器渲染用 |
+| dataUrl | `string` | **模型可读的 base64 数据 URL**（`data:image/jpeg;base64,...`），随消息发送给多模态模型 |
+
+两个字段职责分离，不要混用：
+
+- `url` 是浏览器本地地址，模型服务端**读不到**——只管预览；
+- `dataUrl` 是图片内容本身（经 canvas 压缩后的 base64），模型真正"看到"的是它。
+
+如何从 `File` 生成 `dataUrl`，见指南 [多模态发送](/guide/multimodal)。
+
 ## API
 
 ### Attachments

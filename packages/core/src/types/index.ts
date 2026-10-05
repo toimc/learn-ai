@@ -1,6 +1,9 @@
 export interface Attachment {
   id: string
+  /** 本地预览地址（blob:），只给浏览器渲染用，模型读不到 */
   url?: string
+  /** 模型可读的 base64 数据 URL（data:image/jpeg;base64,...），随消息发送给多模态模型 */
+  dataUrl?: string
   name: string
   mediaType: string
   size?: number
