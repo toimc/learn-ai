@@ -153,11 +153,126 @@ createChatGateway({
   basePath: '/api', // 路由前缀，默认 '/api'
   cors: true, // 默认开
   logging: true, // hono/logger 请求日志，默认关
-  auth: { tokens: [process.env.GATEWAY_TOKEN!] }, // Bearer 认证，默认关（/health 不受影响）
+  auth: { tokens: [process.env.GATEWAY_TOKEN!] }, // 静态 Bearer 白名单，默认关（/health 不受影响）
+  identity: { store, jwtSecret }, // 用户态认证与治理（见下节），默认关
   rateLimit: { windowMs: 60_000, max: 30 }, // 内存限流，默认关
   defaultModel: 'gpt-5-mini', // 请求不带 model 时的缺省
 })
 ```
+
+## 多用户：认证与配额（identity 模式）
+
+静态 `auth.tokens` 白名单解决"谁能连"，用户态 `identity` 解决"陌生人能不能安全地用"：注册登录、API Key 签发、每日配额、会话隔离、用量记账五件套，`userId` 贯穿认证 → 配额 → 隔离 → 记账四站。
+
+```ts
+import { createChatGateway } from '@toimc/server'
+
+const app = createChatGateway({
+  models,
+  identity: {
+    store,                       // IdentityStore 端口实现（见下）
+    jwtSecret: process.env.AUTH_JWT_SECRET!,
+    freeDailyQuota: 20,          // 免费用户每日对话数，默认 20
+    proDailyQuota: 200,          // pro 用户，默认 200
+    accessTokenTtlSeconds: 900,  // access token 有效期，默认 15 分钟
+  },
+})
+```
+
+### IdentityStore 端口与表结构
+
+网关不绑数据库：`identity.store` 是 `IdentityStore` 接口（`createUser / findUserByEmail / insertApiKey / claimThread / incrDailyUsage / insertUsage / listUsage` 等方法）。dev-server 提供 LibSQL 文件库实现（`@libsql/client`，库文件 `.temp/auth.db`），五张表：
+
+```sql
+users(id, email UNIQUE, password_hash, plan('free'|'pro'), created_at)
+api_keys(id, user_id, key_hash UNIQUE, key_prefix, status('active'|'revoked'), created_at)
+  -- key_hash 存 SHA-256：库里永远没有明文 key；key_prefix 存前 16 字符供后台展示「sk-aichat-ab12…」
+thread_owners(thread_id PK, user_id, created_at)          -- conversationId 首次使用即归属
+daily_usage(user_id, day, count, PK(user_id, day))        -- 配额计数：重启不清零
+usage_log(id, user_id, model, input_tokens, output_tokens, estimated, cost_usd, created_at)
+```
+
+密码用 `node:crypto` 的 scrypt 慢哈希（标准库、免原生依赖），存储格式 `scrypt:<salt>:<derived>`。
+
+### 认证路由（挂 basePath 下 /auth）
+
+| 端点 | 鉴权 | 请求 | 成功响应 |
+| --- | --- | --- | --- |
+| `POST /api/auth/register` | 无（IP 限流 5 次/小时） | `{email, password}`（密码 8-128 字符） | `201 {userId, email, accessToken, expiresIn}`；重复邮箱 `409` |
+| `POST /api/auth/login` | 无 | `{email, password}` | `200 {userId, email, accessToken, expiresIn}`；失败一律 `401 {error:'邮箱或密码错误'}` |
+| `POST /api/auth/keys` | Bearer JWT | —— | `201 {keyId, key, keyPrefix}`，明文 key **只此一次** |
+| `DELETE /api/auth/keys/:keyId` | Bearer JWT | —— | `204`；不存在或不属于本人 `404` |
+
+access token 是 HS256 JWT（`sub=userId`），默认 15 分钟过期；注册接口自带 IP 限流（防批量注册）。业务端点（`/api/chat`、`/api/models`）同时接受 **API Key**（`sk-aichat-` 前缀，面向程序）与 **JWT**（面向人）；key 管理只认 JWT——API Key 不应能繁殖 key。
+
+### 每日配额：超额 402，引导付费而非报错
+
+配额中间件挂在识别之后：原子自增当日计数（UTC 自然日，跨日翻页重置），超过 plan 配额返回 **402**（该付费了）而非 429：
+
+```json
+// 402 响应体
+{
+  "error": "今日免费额度已用完，明日重置或升级套餐",
+  "code": "QUOTA_EXCEEDED",
+  "quota": 20,
+  "upgradeUrl": "/pricing"
+}
+```
+
+响应头带 `retry-after`（距下一个 UTC 日零点的秒数）。前端收到 402 不弹红色错误，而是渲染升级卡片——超额是转化时机，不是故障。计数持久化在存储里，**服务重启当日已用次数不归零**。
+
+### 会话隔离：thread 归属与 resource 覆写
+
+`conversationId`（即 mastra 的 thread）首次使用即登记归属（`thread_owners` 表）：**本人复用放行，他人冒用返回 `403 {error:'Forbidden thread', code:'THREAD_FORBIDDEN'}`**——IDOR 防线，客户端传什么都改变不了归属。
+
+`userId` 由服务端在认证后注入请求体的 `body.userId`（客户端传入的同名字段一律丢弃覆写），随 `passthrough` 流向适配器。mastra agent 定义把 `resource` 写成函数即可实现按用户隔离的记忆命名空间：
+
+```ts
+const agents = [{
+  id: 'chat-agent',
+  model: 'deepseek/deepseek-chat',
+  memory: createMemory,
+  // resource 归属只信服务端注入的 userId
+  resource: (p) => (p.userId ? `user:${p.userId}` : 'ai-chat'),
+}]
+```
+
+### 用量记账：onComplete 里落 usage_log
+
+适配器在流收尾的 `done` 帧 `metadata.usage` 回传真实 token 用量（`{inputTokens, outputTokens}`；mock 与 mastra 适配器均已实现），网关累积进 `ChatCompletionResult.usage`：
+
+```ts
+createChatGateway({
+  models,
+  chat: {
+    onComplete(result) {
+      // result.usage: { inputTokens, outputTokens } | undefined
+      // undefined 时可按 core 的 estimateTokens 估算兜底（dev-server 即如此，标记 estimated=true）
+      await store.insertUsage({
+        userId: result.body.userId!,
+        model: result.model,
+        inputTokens: result.usage?.inputTokens ?? null,
+        outputTokens: result.usage?.outputTokens ?? null,
+        estimated: !result.usage,
+        createdAt: new Date().toISOString(),
+      })
+    },
+  },
+})
+```
+
+`usage_log` 是后续计费、熔断、成本报表的唯一数据源；`cost_usd` 列已预留（成本熔断与 prompt caching 为后续计划）。
+
+### dev-server 环境变量
+
+dev-server（8787 演示服务）用 env 门控用户态，缺省全部保持现状：
+
+| env | 作用 | 默认 |
+| --- | --- | --- |
+| `AUTH_MODE` | `static`（现状白名单）/ `user`（用户态） | `static` |
+| `AUTH_JWT_SECRET` | JWT 签发密钥（user 模式必填，缺省启动报错） | —— |
+| `AUTH_DAILY_QUOTA_FREE` / `AUTH_DAILY_QUOTA_PRO` | 每日配额 | `20` / `200` |
+| `AUTH_DB_URL` | 身份库文件 URL | `.temp/auth.db` |
 
 ## 流收尾钩子 onComplete
 
@@ -168,9 +283,10 @@ createChatGateway({
   models,
   chat: {
     onComplete(result) {
-      // result.body        原始请求体（conversationId 等透传字段在内）
+      // result.body        原始请求体（conversationId 等透传字段在内；identity 模式含服务端注入的 userId）
       // result.model       本轮使用的模型 id
       // result.assistant   { id, content, thinking?, toolCalls?, createdAt }
+      // result.usage       适配器 done 帧回传的真实 token 用量 {inputTokens, outputTokens}，未回传为 undefined
       // result.durationMs  耗时；result.aborted 客户端是否中止
       await saveMessage(result.body.conversationId!, result.assistant)
     },

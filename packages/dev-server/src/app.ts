@@ -2,10 +2,15 @@ import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hono } from 'hono'
 import { createMastraGateway } from '@toimc/server/mastra'
+import { estimateTokens } from '@toimc/core'
 import { ModelRegistry } from '@toimc/agents'
+import type { MastraAgentDefinition } from '@toimc/server/mastra'
+import type { ChatCompletionResult } from '@toimc/server'
+import type { IdentityStore } from '@toimc/server'
 import { buildAgentDefinitions } from './agents'
 import { readDevServerEnv } from './env'
 import { textContent } from './message-content'
+import { createIdentityStore } from './identity/store'
 import { loadContext7Tools } from './mcp/context7'
 import { createMockAdapter } from './mock/mock-adapter'
 import { openApiSpec } from './openapi'
@@ -64,8 +69,27 @@ function landingPage(env: ReturnType<typeof readDevServerEnv>): string {
 
 export async function createDevApp(
   env = readDevServerEnv(),
-  options: { providersPersist?: boolean } = {},
+  options: {
+    providersPersist?: boolean
+    /** identity 存储注入（测试接临时库）；缺省按 env.auth.dbUrl 自建 */
+    identityStore?: IdentityStore
+    /** 配额时钟注入（测试跨日重置用） */
+    now?: () => Date
+  } = {},
 ) {
+  // 用户体系门控（19-01）：AUTH_MODE=user 启用；密钥缺省启动即报错优于静默裸奔。
+  // 旧调用方可能传不带 auth 的 partial env（缺省按 static 兼容）
+  const auth = env.auth
+  const identity =
+    auth?.mode === 'user'
+      ? (options.identityStore ?? (await createIdentityStore(auth.dbUrl)))
+      : null
+  if (identity && !auth.jwtSecret) {
+    throw new Error(
+      'AUTH_MODE=user 需要 AUTH_JWT_SECRET 环境变量（JWT 签发密钥不能缺省）',
+    )
+  }
+
   const conversations = createConversationsRoutes()
 
   const registry = new ModelRegistry()
@@ -95,16 +119,39 @@ export async function createDevApp(
   })
   if (providersPersistPath) await providers.restore()
 
+  // 用户态 resource 归属覆写（19-01 IDOR 防线）：memory.resource 一律由
+  // 服务端注入的 userId 决定（user:{userId}），未认证回退演示缺省 'ai-chat'
+  const userResource = (passthrough: Record<string, unknown>): string =>
+    typeof passthrough.userId === 'string' && passthrough.userId
+      ? `user:${passthrough.userId}`
+      : 'ai-chat'
+  const agentDefs: MastraAgentDefinition[] = env.mastra
+    ? buildAgentDefinitions(env.mastra, await loadContext7Tools(env))
+    : []
+  const agents = identity
+    ? agentDefs.map((def) => ({ ...def, resource: userResource }))
+    : agentDefs
+
   const { app } = await createMastraGateway({
     models: registry,
-    // context7 工具（env 门控 + 失败降级）只挂 docs-agent：外部库文档查询
-    agents: env.mastra
-      ? buildAgentDefinitions(env.mastra, await loadContext7Tools(env))
-      : [],
-    ...(env.token ? { auth: { tokens: [env.token] } } : {}),
+    agents,
+    // 静态白名单只在 static 模式生效；用户态由 identity 接管认证
+    ...(!identity && env.token ? { auth: { tokens: [env.token] } } : {}),
+    ...(identity
+      ? {
+          identity: {
+            store: identity,
+            jwtSecret: auth.jwtSecret,
+            freeDailyQuota: auth.freeDailyQuota,
+            proDailyQuota: auth.proDailyQuota,
+            ...(options.now ? { now: options.now } : {}),
+          },
+        }
+      : {}),
     chat: {
       // 流结束后把这一轮对话写回服务端会话历史（切走再切回仍在）
       onComplete(result) {
+        if (identity) recordUsage(identity, result)
         const convId = result.body.conversationId
         if (!convId) return
         const lastUser = [...result.body.messages]
@@ -139,3 +186,26 @@ export async function createDevApp(
 }
 
 export type DevApp = Awaited<ReturnType<typeof createDevApp>>
+
+/**
+ * 用量记账（19-02 onComplete 钩子）：provider 真实 usage 优先（适配器 done 帧
+ * 回传，mock/mastra 均带）；缺席时按 core 的 estimateTokens 估算兜底并标记
+ * estimated。usage_log 是后续计费/成本报表的唯一数据源。
+ */
+function recordUsage(store: IdentityStore, result: ChatCompletionResult): void {
+  const userId = result.body.userId
+  if (!userId) return
+  const usage = result.usage
+  void store.insertUsage({
+    userId,
+    model: result.model,
+    inputTokens: usage
+      ? usage.inputTokens
+      : estimateTokens(JSON.stringify(result.body.messages)),
+    outputTokens: usage
+      ? usage.outputTokens
+      : estimateTokens(result.assistant.content),
+    estimated: !usage,
+    createdAt: new Date().toISOString(),
+  })
+}

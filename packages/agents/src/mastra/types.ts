@@ -18,13 +18,17 @@ export interface MastraModelConfig {
   tools?: Record<string, unknown>
   /** Memory 实例（@mastra/memory）；不传则无记忆 */
   memory?: unknown
-  /** memory.resource，默认 'ai-chat' */
-  resource?: string
+  /**
+   * memory.resource，默认 'ai-chat'；函数形态按请求 passthrough 计算
+   * （多用户治理：宿主传 `(p) => p.userId ? \`user:\${p.userId}\` : 'ai-chat'`
+   * 实现服务端归属覆写，见 @toimc/server identity 模式）
+   */
+  resource?: string | ((passthrough: Record<string, unknown>) => string)
 }
 
 export interface MastraAdapterOptions {
-  /** memory.resource，默认 'ai-chat' */
-  resource?: string
+  /** memory.resource，默认 'ai-chat'；函数形态见 MastraModelConfig.resource */
+  resource?: string | ((passthrough: Record<string, unknown>) => string)
   /** chat() 返回的 model 标识；缺省 'mastra-agent'（工厂默认传配置 id） */
   modelId?: string
 }
