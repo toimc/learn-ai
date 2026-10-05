@@ -154,6 +154,10 @@ const zhCN = {
     prevImage: '上一张',
     nextImage: '下一张',
   },
+  codeBlock: {
+    expand: '展开',
+    collapse: '收起',
+  },
 }
 
 export type MessageSchema = typeof zhCN

@@ -156,4 +156,8 @@ export default {
     prevImage: 'Previous image',
     nextImage: 'Next image',
   },
+  codeBlock: {
+    expand: 'Expand',
+    collapse: 'Collapse',
+  },
 } satisfies MessageSchema
