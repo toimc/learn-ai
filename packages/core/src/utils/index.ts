@@ -30,3 +30,11 @@ export function createAssistantMessage(
     createdAt: new Date(),
   }
 }
+
+export {
+  detectModelVendor,
+  groupModelsByVendor,
+  VENDOR_ORDER,
+  VENDOR_LABELS,
+} from './model-vendor'
+export type { ModelVendor, VendorInfo } from './model-vendor'

@@ -20,6 +20,13 @@ export { useChat } from './composables'
 export { generateId, createUserMessage, createAssistantMessage } from './utils'
 export { estimateTokens } from './utils/estimate-tokens'
 export {
+  detectModelVendor,
+  groupModelsByVendor,
+  VENDOR_ORDER,
+  VENDOR_LABELS,
+} from './utils/model-vendor'
+export type { ModelVendor, VendorInfo } from './utils/model-vendor'
+export {
   truncateContext,
   resolveTokenCount,
 } from './composables/context-window'

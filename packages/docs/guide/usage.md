@@ -277,3 +277,28 @@ const chat = useChat(adapter, {
   </ChatWindow>
 </template>
 ```
+
+## Core 工具函数
+
+`@toimc/core` 除 `useChat` 等组合式 API 外，还提供一组与 UI 无关的纯函数工具，可直接从包入口导入。
+
+### 模型厂家识别
+
+```typescript
+import { detectModelVendor, groupModelsByVendor } from '@toimc/core'
+
+// 模型 id → 厂商信息（斜杠前缀如 openrouter 形态会先取末段再匹配）
+detectModelVendor('deepseek-chat')
+// { vendor: 'deepseek', label: 'DeepSeek', matchedBy: '^deepseek-' }
+detectModelVendor('anthropic/claude-sonnet-4-5')
+// { vendor: 'anthropic', label: 'Anthropic', matchedBy: '^claude-|^anthropic\\.claude-' }
+
+// 批量分组：返回含全部厂商键的 Record，组内保持输入顺序，未命中归 unknown
+groupModelsByVendor(['gpt-4o', 'deepseek-chat', 'mystery'])
+// { openai: ['gpt-4o'], deepseek: ['deepseek-chat'], unknown: ['mystery'], ... }
+```
+
+- `ModelVendor` 枚举：`openai / anthropic / google / zhipu / qwen / deepseek / mistral / meta / cohere / yi / xai / moonshot / doubao / minimax / wenxin / unknown`
+- `VendorInfo.label` 为品牌名（zh/en 同形，如 `'DeepSeek'`）；`unknown` 的 label 为空串，本地化文案由调用方注入
+- `matchedBy` 为命中的正则 source（调试用），未命中时缺省
+- 另导出 `VENDOR_ORDER`（展示顺序）与 `VENDOR_LABELS`（厂商名映射）
