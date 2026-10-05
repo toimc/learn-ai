@@ -28,7 +28,7 @@
 
 ## C 级：永不删除（红线，与 SKILL.md 一致）
 
-`.git`、`.env*`、`node_modules`、`~/.claude/{plugins,skills,learnings-backups,backups,settings*,CLAUDE.md,plans,tasks,session-env}`、`~/.claude/projects/*/memory/`
+`.git`、`.env*`、`node_modules`、`~/.claude/{plugins,skills,learnings-backups,backups,settings*,CLAUDE.md,plans,tasks,session-env}`；`~/.claude/projects/*/memory/` 不进任何批量删除路径——其内容的压缩与清理走 [memory-rules.md](memory-rules.md) 的逐条确认流程
 
 ## projects 清理的特别保护
 
