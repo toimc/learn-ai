@@ -17,6 +17,7 @@ const mockOnlyNav: DefaultTheme.NavItem[] = [
       { text: 'Mock 演示', link: '/mock-server-demo' },
       { text: '多 Agent 演示', link: '/multi-agent-demo' },
       { text: 'Workflow 演示', link: '/workflow-demo' },
+      { text: '生成式 UI 演示', link: '/genui-demo' },
       { text: '接口文档', link: '/mock-api' },
     ],
   },
@@ -33,6 +34,7 @@ export default defineConfig({
         'mock-server-demo.md',
         'multi-agent-demo.md',
         'workflow-demo.md',
+        'genui-demo.md',
         'mock-api.md',
       ]
     : [],
@@ -47,6 +49,7 @@ export default defineConfig({
           '/mock-server-demo',
           '/multi-agent-demo',
           '/workflow-demo',
+          '/genui-demo',
           '/mock-api',
         ]
       : []),
@@ -110,6 +113,9 @@ export default defineConfig({
               { text: '主题定制', link: '/guide/theming' },
               { text: '国际化', link: '/guide/i18n' },
               { text: '引用与来源', link: '/guide/citations' },
+              { text: '生成式 UI', link: '/guide/genui' },
+              { text: '多模态发送', link: '/guide/multimodal' },
+              { text: '语音输入与输出', link: '/guide/speech' },
             ],
           },
           {
@@ -161,6 +167,8 @@ export default defineConfig({
           { text: '模型元数据演示', link: '/model-meta-demo' },
           { text: '反馈与操作演示', link: '/feedback-demo' },
           { text: '多模态输入演示', link: '/multimodal-demo' },
+          { text: '语音演示', link: '/voice-demo' },
+          { text: '浏览器端语义搜索', link: '/edge-search-demo' },
         ],
       },
       ...(isPages ? [] : mockOnlyNav),
@@ -178,6 +186,9 @@ export default defineConfig({
             { text: '主题定制', link: '/guide/theming' },
             { text: '国际化', link: '/guide/i18n' },
             { text: '引用与来源', link: '/guide/citations' },
+            { text: '生成式 UI', link: '/guide/genui' },
+            { text: '多模态发送', link: '/guide/multimodal' },
+            { text: '语音输入与输出', link: '/guide/speech' },
             { text: '主题配置器', link: '/theme-builder' },
           ],
         },
@@ -236,6 +247,10 @@ export default defineConfig({
             { text: 'ThinkingChain', link: '/components/thinking-chain' },
             { text: 'ToolCall', link: '/components/tool-call' },
             { text: 'ToolConfirmation', link: '/components/tool-confirmation' },
+            {
+              text: 'GenUIRenderer 生成式 UI 渲染器',
+              link: '/components/genui-renderer',
+            },
           ],
         },
         {
