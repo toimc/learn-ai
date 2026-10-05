@@ -1,5 +1,14 @@
 # @toimc/server
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [cd470f7]
+- Updated dependencies [c25f7b2]
+  - @toimc/agents@0.2.0
+  - @toimc/core@0.0.2
+
 ## 0.1.0
 
 ### Minor Changes

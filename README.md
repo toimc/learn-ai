@@ -424,11 +424,11 @@ pnpm test:e2e:report   # 查看HTML报告
 
 | 包              | 版本  | 状态                                                                        |
 | --------------- | ----- | --------------------------------------------------------------------------- |
-| @toimc/core     | 0.0.1 | ChatAdapter + useChat + ToolCallInfo                                        |
-| @toimc/vue      | 0.0.1 | 57 个 Vue 3 组件 + Design Token（样式经 `@toimc/vue/style.css` 引入）       |
-| @toimc/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@toimc/markdown/katex.css` 可选引入）；Mermaid 图表为可选依赖（构建外置 + 动态加载，缺失时图表块降级为错误占位，不影响其余渲染） |
-| @toimc/agents   | 0.0.1 | 多模型适配层（OpenAI 兼容 / Anthropic / mock）+ `/mastra` 可选子路径        |
-| @toimc/server   | 0.0.1 | Hono 聊天网关 + `/mastra` 可选子路径                                        |
+| @toimc/core     | 0.0.2 | ChatAdapter + useChat + ToolCallInfo                                        |
+| @toimc/vue      | 0.0.2 | 57 个 Vue 3 组件 + Design Token（样式经 `@toimc/vue/style.css` 引入）       |
+| @toimc/markdown | 0.0.2 | Markdown + Shiki + KaTeX（公式样式经 `@toimc/markdown/katex.css` 可选引入）；Mermaid 图表为可选依赖（构建外置 + 动态加载，缺失时图表块降级为错误占位，不影响其余渲染） |
+| @toimc/agents   | 0.2.0 | 多模型适配层（OpenAI 兼容 / Anthropic / mock）+ `/mastra` 可选子路径        |
+| @toimc/server   | 0.1.1 | Hono 聊天网关 + `/mastra` 可选子路径                                        |
 | @toimc/docs     | 私有  | VitePress 文档站 + Playground                                               |
 
 ## License
