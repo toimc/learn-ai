@@ -9,6 +9,7 @@ export { default as VectorSearchDemoPage } from './components/VectorSearchDemoPa
 export { default as MockApiPage } from './components/MockApiPage.vue'
 export { default as CitationDemoPage } from './components/CitationDemoPage.vue'
 export { default as ModelMetaDemoPage } from './components/ModelMetaDemoPage.vue'
+export { default as FeedbackDemoPage } from './components/FeedbackDemoPage.vue'
 export { default as MultimodalInputDemo } from './components/demos/MultimodalInputDemo.vue'
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'
 export { default as MessageShowcaseDemo } from './components/demos/MessageShowcaseDemo.vue'
@@ -18,6 +19,7 @@ export { default as ComparisonFlowDemo } from './components/demos/ComparisonFlow
 export { default as AttachmentsMessageDemo } from './components/demos/AttachmentsMessageDemo.vue'
 export { default as CitationDemo } from './components/demos/CitationDemo.vue'
 export { default as ModelMetaDemo } from './components/demos/ModelMetaDemo.vue'
+export { default as FeedbackDemo } from './components/demos/FeedbackDemo.vue'
 export { mockAdapter } from './mock/mock-adapter'
 export { mockMessages } from './mock/mock-messages'
 export {

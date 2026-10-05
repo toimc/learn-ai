@@ -137,6 +137,7 @@ export default defineConfig({
           { text: '完整 Playground', link: '/playground' },
           { text: 'RAG 引用演示', link: '/citation-demo' },
           { text: '模型元数据演示', link: '/model-meta-demo' },
+          { text: '反馈与操作演示', link: '/feedback-demo' },
         ],
       },
       ...(isPages ? [] : mockOnlyNav),
