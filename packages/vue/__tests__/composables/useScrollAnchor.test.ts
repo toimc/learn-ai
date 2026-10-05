@@ -241,3 +241,176 @@ describe('useScrollAnchor ResizeObserver 自动跟随', () => {
     expect(el.scrollTop).toBe(100)
   })
 })
+
+describe('useScrollAnchor unreadCount 未读计数', () => {
+  it('初始值为 0（未见内容变化前不计未读）', () => {
+    const anchor = useScrollAnchor()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+
+  it('正常：离底时内容高度增加，逐次递增计数', () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+    expect(anchor.isAtBottom.value).toBe(false)
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 1400,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(1)
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 1800,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(2)
+  })
+
+  it('正常：贴底时内容高度增加不计数且保持跟随', async () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 600,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+    expect(anchor.isAtBottom.value).toBe(true)
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 1400,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    await nextFrame()
+
+    expect(anchor.unreadCount.value).toBe(0)
+    expect(el.scrollTop).toBe(1400)
+  })
+
+  it('正常：scrollToBottom 调用后计数立即清零', () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 1400,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(1)
+
+    anchor.scrollToBottom()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+
+  it('正常：手动滚回贴底（scroll 事件判定贴底）计数清零', () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 1400,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(1)
+
+    // 手动滚到距底 10px（< 阈值 50）→ 判定贴底并清零
+    Object.defineProperty(el, 'scrollTop', {
+      value: 990,
+      writable: true,
+      configurable: true,
+    })
+    el.dispatchEvent(new Event('scroll'))
+    expect(anchor.isAtBottom.value).toBe(true)
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+
+  it('边界：内容高度不变时触发 ResizeObserver 不计数', () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+
+  it('边界：内容高度收缩时离底不计数', () => {
+    const anchor = useScrollAnchor()
+    const el = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 800,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+
+  it('正常：重新绑定容器时计数清零且以新容器当前高度为基线', () => {
+    const anchor = useScrollAnchor()
+    const first = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(first)
+    first.dispatchEvent(new Event('scroll'))
+    Object.defineProperty(first, 'scrollHeight', {
+      value: 1400,
+      writable: true,
+      configurable: true,
+    })
+    MockResizeObserver.instances[0].trigger()
+    expect(anchor.unreadCount.value).toBe(1)
+
+    const second = makeScrollEl({
+      scrollTop: 100,
+      scrollHeight: 1000,
+      clientHeight: 400,
+    })
+    anchor.bindContainer(second)
+    expect(anchor.unreadCount.value).toBe(0)
+
+    // 新容器高度未变时触发回调，不应把绑定时高度误判为新增
+    second.dispatchEvent(new Event('scroll'))
+    MockResizeObserver.instances[1].trigger()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+})

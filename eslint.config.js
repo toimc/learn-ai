@@ -68,6 +68,8 @@ export default tseslint.config(
       '**/*.d.ts',
       // mastra CLI 构建产物目录（与 dist 同性质的生成代码）
       '**/.mastra/**',
+      // 参考组件库克隆（只读调研素材，不参与 lint）
+      'demos/**',
       // 遗留 worktree 内含重复 tsconfig，会触发 tsconfigRootDir 解析错误
       '.claude/worktrees/**',
     ],

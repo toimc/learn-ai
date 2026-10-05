@@ -20,6 +20,7 @@ const zhCN = {
   conversation: {
     emptyTitle: '有什么可以帮你的？',
     emptyDescription: '选择一个话题开始，或直接输入你的问题',
+    scrollUnread: '{count} 条新消息',
   },
   message: {
     you: '你',
@@ -30,6 +31,20 @@ const zhCN = {
     parameters: '参数',
     result: '结果',
     error: '错误',
+    statusPending: '准备中',
+    statusCalling: '运行中',
+    statusAwaitingApproval: '等待确认',
+    statusCompleted: '已完成',
+    statusDenied: '已拒绝',
+    statusError: '失败',
+  },
+  citation: {
+    source: '来源',
+    sources: '来源 {count} 条',
+    viewSource: '查看来源',
+    prevSource: '上一个来源',
+    nextSource: '下一个来源',
+    openLink: '打开链接',
   },
   attachments: {
     empty: '暂无附件',
@@ -52,6 +67,59 @@ const zhCN = {
     title: '思考过程',
     thoughtFor: '已思考 {duration} 秒',
     thinking: '正在思考…',
+    stepCount: '{count} 个步骤',
+    stepPending: '等待中',
+    stepActive: '进行中',
+    stepComplete: '完成',
+    stepError: '失败',
+  },
+  welcome: {
+    title: '有什么可以帮你的？',
+    description: '选择一个话题开始，或直接输入你的问题',
+  },
+  prompts: {
+    title: '试试这样问',
+  },
+  feedback: {
+    like: '点赞',
+    dislike: '点踩',
+    commentHint: '帮助我们改进',
+    commentPlaceholder: '告诉我们哪里可以做得更好…',
+    submit: '提交',
+    cancel: '取消',
+  },
+  confirmation: {
+    title: '需要确认操作',
+    description: 'AI 请求执行以下工具，请确认：',
+    approve: '允许',
+    reject: '拒绝',
+    denied: '已拒绝',
+    awaiting: '等待确认…',
+  },
+  branchPicker: {
+    prev: '上一个版本',
+    next: '下一个版本',
+    label: '版本 {current}/{total}',
+  },
+  jsonDiff: {
+    oldLabel: '修改前',
+    newLabel: '修改后',
+    identical: '内容相同',
+    changedOnly: '仅显示差异',
+  },
+  modelIcon: {
+    unknown: '未知模型',
+  },
+  messageActions: {
+    copy: '复制',
+    retry: '重新生成',
+    edit: '编辑',
+    saveEdit: '保存并重发',
+    cancelEdit: '取消',
+    editPlaceholder: '编辑消息内容…',
+  },
+  suggestion: {
+    empty: '无匹配项',
   },
   provider: {
     title: 'Provider 设置',
@@ -85,6 +153,10 @@ const zhCN = {
     previewTitle: '图片预览',
     prevImage: '上一张',
     nextImage: '下一张',
+  },
+  codeBlock: {
+    expand: '展开',
+    collapse: '收起',
   },
 }
 

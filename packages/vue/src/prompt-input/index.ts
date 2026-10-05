@@ -8,3 +8,6 @@ export { default as PromptInputUploadButton } from './PromptInputUploadButton.vu
 export { default as PromptInputAttachments } from './PromptInputAttachments.vue'
 export { default as PromptInputSubmit } from './PromptInputSubmit.vue'
 export { default as PromptInputHeader } from './PromptInputHeader.vue'
+export { default as PromptInputSuggestion } from './PromptInputSuggestion.vue'
+export { parseSuggestion, filterSuggestions } from './suggestions'
+export type { SuggestionItem, SuggestionTrigger } from './suggestions'

@@ -11,6 +11,8 @@ export { default as Radio } from './shared/Radio.vue'
 export { default as Shimmer } from './shared/Shimmer.vue'
 export { default as Toast } from './shared/Toast.vue'
 export { default as LanguageToggle } from './shared/LanguageToggle.vue'
+export { default as ModelIcon } from './shared/ModelIcon.vue'
+export { default as JsonDiffView } from './shared/JsonDiffView.vue'
 
 // Conversation series
 export {
@@ -36,7 +38,20 @@ export {
   MessageAction,
   MessageAttachments,
   ThinkingBlock,
+  MessageFeedback,
+  BranchPicker,
 } from './message'
+
+// Message preset actions
+export {
+  MessageActionCopy,
+  MessageActionRetry,
+  MessageActionEdit,
+  MessageActionFeedback,
+} from './message/actions'
+
+// Thinking series
+export { ThinkingChain } from './thinking'
 
 // PromptInput series
 export {
@@ -50,7 +65,11 @@ export {
   PromptInputHeader,
   PromptInputUploadButton,
   PromptInputAttachments,
+  PromptInputSuggestion,
+  parseSuggestion,
+  filterSuggestions,
 } from './prompt-input'
+export type { SuggestionItem, SuggestionTrigger } from './prompt-input'
 
 // Comparison series
 export { ComparisonMessage } from './comparison'
@@ -73,6 +92,14 @@ export {
   ToolCallInput,
   ToolCallOutput,
 } from './tool-call'
+export { ToolConfirmation } from './tool-call'
+
+// Citation series
+export { InlineCitation, Sources, isSafeHttpUrl } from './citation'
+
+// Welcome series
+export { Welcome, Prompts } from './welcome'
+export type { PromptItem } from './welcome'
 
 // Preview series
 export { ImageLightbox } from './preview'
@@ -116,3 +143,6 @@ export type {
   LayoutConfigResult,
 } from './composables/useLayoutConfig'
 export type { MessageLayout, MessageAlign } from './composables/layout-types'
+
+// Clipboard composable（core copyText 的响应式包装）
+export { useClipboard } from './composables/useClipboard'

@@ -21,6 +21,7 @@ export default {
   conversation: {
     emptyTitle: 'How can I help you?',
     emptyDescription: 'Pick a topic to get started, or type your question',
+    scrollUnread: '{count} new messages',
   },
   message: {
     you: 'You',
@@ -31,6 +32,20 @@ export default {
     parameters: 'Parameters',
     result: 'Result',
     error: 'Error',
+    statusPending: 'Pending',
+    statusCalling: 'Running',
+    statusAwaitingApproval: 'Awaiting approval',
+    statusCompleted: 'Completed',
+    statusDenied: 'Denied',
+    statusError: 'Failed',
+  },
+  citation: {
+    source: 'Source',
+    sources: '{count} sources',
+    viewSource: 'View source',
+    prevSource: 'Previous source',
+    nextSource: 'Next source',
+    openLink: 'Open link',
   },
   attachments: {
     empty: 'No attachments',
@@ -53,6 +68,59 @@ export default {
     title: 'Thinking Process',
     thoughtFor: 'Thought for {duration}s',
     thinking: 'Thinking…',
+    stepCount: '{count} steps',
+    stepPending: 'Pending',
+    stepActive: 'In progress',
+    stepComplete: 'Done',
+    stepError: 'Failed',
+  },
+  welcome: {
+    title: 'How can I help you?',
+    description: 'Pick a topic to get started, or type your question',
+  },
+  prompts: {
+    title: 'Try asking',
+  },
+  feedback: {
+    like: 'Like',
+    dislike: 'Dislike',
+    commentHint: 'Help us improve',
+    commentPlaceholder: 'Tell us what could be better…',
+    submit: 'Submit',
+    cancel: 'Cancel',
+  },
+  confirmation: {
+    title: 'Confirmation required',
+    description: 'The AI requests to run the following tool. Please confirm:',
+    approve: 'Allow',
+    reject: 'Deny',
+    denied: 'Denied',
+    awaiting: 'Awaiting confirmation…',
+  },
+  branchPicker: {
+    prev: 'Previous version',
+    next: 'Next version',
+    label: 'Version {current}/{total}',
+  },
+  jsonDiff: {
+    oldLabel: 'Before',
+    newLabel: 'After',
+    identical: 'Identical content',
+    changedOnly: 'Changed only',
+  },
+  modelIcon: {
+    unknown: 'Unknown model',
+  },
+  messageActions: {
+    copy: 'Copy',
+    retry: 'Regenerate',
+    edit: 'Edit',
+    saveEdit: 'Save & resend',
+    cancelEdit: 'Cancel',
+    editPlaceholder: 'Edit message…',
+  },
+  suggestion: {
+    empty: 'No matches',
   },
   provider: {
     title: 'Provider Settings',
@@ -87,5 +155,9 @@ export default {
     previewTitle: 'Image preview',
     prevImage: 'Previous image',
     nextImage: 'Next image',
+  },
+  codeBlock: {
+    expand: 'Expand',
+    collapse: 'Collapse',
   },
 } satisfies MessageSchema

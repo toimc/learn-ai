@@ -98,6 +98,7 @@ export default defineConfig({
               { text: '使用指南', link: '/guide/usage' },
               { text: '主题定制', link: '/guide/theming' },
               { text: '国际化', link: '/guide/i18n' },
+              { text: '引用与来源', link: '/guide/citations' },
             ],
           },
           {
@@ -131,7 +132,15 @@ export default defineConfig({
           { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
         ],
       },
-      { text: 'Playground', link: '/playground' },
+      {
+        text: 'Playground',
+        items: [
+          { text: '完整 Playground', link: '/playground' },
+          { text: 'RAG 引用演示', link: '/citation-demo' },
+          { text: '模型元数据演示', link: '/model-meta-demo' },
+          { text: '反馈与操作演示', link: '/feedback-demo' },
+        ],
+      },
       ...(isPages ? [] : mockOnlyNav),
       { text: '主题配置器', link: '/theme-builder' },
     ],
@@ -146,6 +155,7 @@ export default defineConfig({
             { text: '使用指南', link: '/guide/usage' },
             { text: '主题定制', link: '/guide/theming' },
             { text: '国际化', link: '/guide/i18n' },
+            { text: '引用与来源', link: '/guide/citations' },
             { text: '主题配置器', link: '/theme-builder' },
           ],
         },
@@ -171,7 +181,13 @@ export default defineConfig({
       '/components/': [
         {
           text: '对话容器',
-          items: [{ text: 'Conversation', link: '/components/conversation' }],
+          items: [
+            { text: 'Conversation', link: '/components/conversation' },
+            {
+              text: 'ConversationScrollBtn',
+              link: '/components/conversation-scroll-btn',
+            },
+          ],
         },
         {
           text: '消息组件',
@@ -181,15 +197,57 @@ export default defineConfig({
               text: 'ComparisonMessage',
               link: '/components/comparison-message',
             },
+            {
+              text: 'MessageActions 预设操作',
+              link: '/components/message-actions',
+            },
+            { text: 'MessageFeedback', link: '/components/message-feedback' },
+            { text: 'BranchPicker', link: '/components/branch-picker' },
+          ],
+        },
+        {
+          text: '引用组件',
+          items: [
+            { text: 'InlineCitation', link: '/components/inline-citation' },
+            { text: 'Sources', link: '/components/sources' },
+          ],
+        },
+        {
+          text: '思维链',
+          items: [
+            { text: 'ThinkingChain', link: '/components/thinking-chain' },
           ],
         },
         {
           text: '输入组件',
-          items: [{ text: 'PromptInput', link: '/components/prompt-input' }],
+          items: [
+            { text: 'PromptInput', link: '/components/prompt-input' },
+            {
+              text: 'PromptInputSuggestion',
+              link: '/components/prompt-input-suggestion',
+            },
+          ],
         },
         {
           text: '工具调用',
-          items: [{ text: 'ToolCall', link: '/components/tool-call' }],
+          items: [
+            { text: 'ToolCall', link: '/components/tool-call' },
+            { text: 'ToolConfirmation', link: '/components/tool-confirmation' },
+          ],
+        },
+        {
+          text: '欢迎页',
+          items: [
+            { text: 'Welcome', link: '/components/welcome' },
+            { text: 'Prompts', link: '/components/prompts' },
+          ],
+        },
+        {
+          text: '模型元数据',
+          items: [
+            { text: 'ModelIcon', link: '/components/model-icon' },
+            { text: 'JsonDiffView', link: '/components/json-diff-view' },
+          ],
         },
         {
           text: '附件组件',

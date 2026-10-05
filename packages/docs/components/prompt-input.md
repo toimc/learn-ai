@@ -1,6 +1,6 @@
 # PromptInput 系列
 
-可组合的富输入系统，包含 10 个子组件：
+可组合的富输入系统，包含 11 个子组件：
 
 - **PromptInput** — 外层容器，provide 输入上下文
 - **PromptInputBody** — 输入行容器（Textarea 占满整行；横向内边距在此层统一提供）
@@ -12,6 +12,7 @@
 - **PromptInputUploadButton** — 图片/附件上传入口（触发文件选择管道）
 - **PromptInputAttachments** — 待发送附件预览列表（图片缩略图 + Lightbox 兜底预览）
 - **PromptInputHeader** — 顶部附件预览区域
+- **PromptInputSuggestion** — 输入内联建议浮层（`/`、`@` 触发唤起，↑↓/Enter/Esc 键盘交互；受控设计，详见 [PromptInputSuggestion](./prompt-input-suggestion.md)）
 
 ## 基础用法
 

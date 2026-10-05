@@ -2,7 +2,10 @@ export type {
   Message,
   Attachment,
   ToolCallInfo,
+  ToolCallStatus,
   ThinkingInfo,
+  ThinkingStep,
+  MessageSource,
   ComparisonPayload,
   StreamChunk,
   ChatAdapter,
@@ -16,6 +19,18 @@ export type {
 export { useChat } from './composables'
 export { generateId, createUserMessage, createAssistantMessage } from './utils'
 export { estimateTokens } from './utils/estimate-tokens'
+export {
+  detectModelVendor,
+  groupModelsByVendor,
+  VENDOR_ORDER,
+  VENDOR_LABELS,
+} from './utils/model-vendor'
+export type { ModelVendor, VendorInfo } from './utils/model-vendor'
+export { formatPerMillion, formatTokenCost, pricingTier } from './utils/pricing'
+export type { ModelPricing } from './utils/pricing'
+export { copyText } from './utils/clipboard'
+export { splitAtoms, joinAtoms } from './utils/md-atom'
+export type { MdAtom } from './utils/md-atom'
 export {
   truncateContext,
   resolveTokenCount,

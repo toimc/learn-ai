@@ -8,6 +8,12 @@
 - **MessageAction** — 单个操作按钮
 - **MessageAttachments** — 附件容器
 
+消息域扩展组件（独立页面）：
+
+- [MessageFeedback](./message-feedback.md) — 消息 👍/👎 反馈与点踩评论
+- 预设操作四件（见 [message-actions](./message-actions.md)）：**MessageActionCopy** 复制回显 / **MessageActionRetry** 重试 / **MessageActionEdit** 行内编辑 / **MessageActionFeedback** 紧凑反馈
+- [BranchPicker](./branch-picker.md) — 消息分支版本翻页（分支数据约定 `Message.metadata.branches`）
+
 ## 基础用法
 
 用户消息直接走默认插槽；AI 消息传 `content` prop 走 Markdown 渲染（需在应用入口 `app.provide(markdownRendererKey, MarkdownRenderer)`）。`MessageActions` 默认透明，hover 到消息时浮现：

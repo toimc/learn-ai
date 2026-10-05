@@ -75,6 +75,93 @@ const zhCN = {
     replay: '重播',
     userQuestion: 'Vue 3 的响应式系统为什么用 Proxy 重写？',
   },
+  citationDemo: {
+    simulate: '模拟 RAG 检索链路',
+    replay: '重播链路',
+    userQuestion: 'InlineCitation 和 Sources 怎么配合展示 RAG 引用？',
+    hintIdle: '点击按钮模拟一次带思维链与引用来源的 RAG 回答',
+    hintRunning: '检索链路推进中：active / complete / error 状态依次呈现…',
+    hintDone: '完成：思维链自动折叠，正文角标悬浮可预览，来源列表可展开',
+    stepParse: '解析意图',
+    stepVector: '向量检索',
+    stepRerank: '混合重排',
+    stepFallback: '关键词降级重排',
+    toolTitle: '工具审批（ToolConfirmation）',
+    toolDesc:
+      'AI 要把本次回答写回知识库（覆盖同名文档），等待人工确认：点允许 / 拒绝观察状态流转。',
+    toolReason: '该操作会覆盖知识库同名文档，且不可自动撤销',
+    approved:
+      '✓ 已允许 kb_write —— 审批结果回传后端后，工具状态推进为 calling（见 ToolCall 六态）',
+    approvedHint: '审批结果：已允许。真实场景由宿主回传后端后推进工具状态。',
+    rejectedHint:
+      '审批结果：已拒绝。组件转为只读「已拒绝」态，工具名与参数保留可回溯。',
+    resetApproval: '重置审批演示',
+  },
+  modelMetaDemo: {
+    iconTitle: 'ModelIcon 品牌图标（15 家厂商 + 未知兜底）',
+    iconDesc:
+      '输入模型 id，内部经 detectModelVendor 识别厂商渲染品牌 SVG；识别不出时降级为首字母圆形。',
+    groupTitle: 'detectModelVendor 分组',
+    groupDesc:
+      '同一批模型 id 按厂商归类：路由型 id（openrouter/anthropic/…）自动取末段识别，识别不出的进 unknown 组。',
+    unknownVendor: '未知厂商',
+    pricingTitle: '定价格式化（$/1M · mock 演示价）',
+    pricingDesc:
+      'formatPerMillion 展示单价、pricingTier 划档（免费 / 经济 / 标准 / 旗舰）、formatTokenCost 试算一次对话（12K 输入 + 3K 输出）的成本。',
+    pricingNote: '价格为演示用 mock 数据，非各厂商实时报价。',
+    colModel: '模型',
+    colInput: '输入单价',
+    colOutput: '输出单价',
+    colTier: '档位',
+    colCost: '一次对话成本',
+    tierFree: '免费',
+    tierEconomy: '经济',
+    tierStandard: '标准',
+    tierPremium: '旗舰',
+    diffTitle: 'JsonDiffView 工具参数对比',
+    diffDesc:
+      '同一工具两次调用的参数前后对照：删除行红、新增行绿、修改行左红右绿并做字符级高亮。',
+  },
+  feedbackDemo: {
+    welcomeDesc: '选择一个提示词填入下方输入框，或直接输入你的问题',
+    welcomeExtra: "输入框支持 / 命令与 {'@'} 引用 · AI 内容支持点赞点踩与评论",
+    promptWeekly: '写一份周报',
+    promptWeeklyDesc: '按进展 / 风险 / 计划分节',
+    promptExplain: '解释这段代码',
+    promptExplainDesc: '逐行说明作用与设计意图',
+    promptBrainstorm: '头脑风暴',
+    promptBrainstormDesc: '围绕主题展开多个方向',
+    promptPolish: '润色文案',
+    promptPolishDesc: '口语化、去 AI 味',
+    inputPlaceholder:
+      "输入 / 唤起命令菜单，{'@'} 引用文档；发送后更新下方提问…",
+    inputHint: 'PromptInputSuggestion：↑↓ 导航 · Enter 选中 · Esc 关闭',
+    send: '发送',
+    convTitle: '消息操作与分支',
+    convDesc:
+      '用户消息支持原位编辑（铅笔）；AI 消息支持复制、重新生成（追加新分支）与点赞点踩评论。',
+    logTitle: '事件日志（宿主侧上报演示）',
+    logEmpty:
+      '尚未触发任何事件——试试点踩后提交评论、点重新生成、或编辑用户消息。',
+    logSent: '已发送：{text}',
+    logRegenerated: '已重新生成（切换到第 {n} 版）',
+    logEdited: '已编辑用户消息：{text}',
+    logUp: '反馈：点赞 👍',
+    logDown: '反馈：点踩 👎（可展开评论框）',
+    logCleared: '反馈：已取消',
+    logComment: '评论已提交：{text}',
+    cmdSummary: '/总结',
+    cmdSummaryDesc: '提炼当前对话要点',
+    cmdTranslate: '/翻译',
+    cmdTranslateDesc: '翻译成英文',
+    cmdTable: '/表格',
+    cmdTableDesc: '把上一条回答转为表格',
+    cmdPolish: '/优化',
+    cmdPolishDesc: '润色输入框文案',
+    atDocs: "{'@'}组件文档",
+    atGuide: "{'@'}接入指南",
+    atFaq: "{'@'}常见问题",
+  },
   mockServer: {
     title: 'Mock 服务端演示',
     description:
@@ -340,6 +427,101 @@ const enUS: typeof zhCN = {
     simulate: 'Simulate streaming thinking',
     replay: 'Replay',
     userQuestion: 'Why was Vue 3 reactivity rewritten with Proxy?',
+  },
+  citationDemo: {
+    simulate: 'Simulate RAG retrieval chain',
+    replay: 'Replay chain',
+    userQuestion:
+      'How do InlineCitation and Sources work together for RAG citations?',
+    hintIdle:
+      'Click to simulate a RAG answer with a thinking chain and cited sources',
+    hintRunning:
+      'Chain running: active / complete / error states appear in turn…',
+    hintDone:
+      'Done: chain auto-collapses, hover the inline markers, expand the sources list',
+    stepParse: 'Parse intent',
+    stepVector: 'Vector search',
+    stepRerank: 'Hybrid rerank',
+    stepFallback: 'Keyword fallback rerank',
+    toolTitle: 'Tool approval (ToolConfirmation)',
+    toolDesc:
+      'The agent wants to write this answer back to the knowledge base (overwriting the same-name doc) and is awaiting human approval — click approve / reject to see the state flow.',
+    toolReason:
+      'This overwrites a same-name doc in the knowledge base and cannot be auto-undone',
+    approved:
+      '✓ kb_write approved — after the host reports the approval, the tool advances to calling (see ToolCall six states)',
+    approvedHint:
+      'Approval result: approved. In production the host reports it to the backend, which advances the tool state.',
+    rejectedHint:
+      'Approval result: rejected. The component switches to the read-only "denied" state; tool name and args stay reviewable.',
+    resetApproval: 'Reset approval demo',
+  },
+  modelMetaDemo: {
+    iconTitle: 'ModelIcon brand icons (15 vendors + unknown fallback)',
+    iconDesc:
+      'Pass a model id — detectModelVendor identifies the vendor and renders the brand SVG; unknown ids fall back to a first-letter circle.',
+    groupTitle: 'detectModelVendor grouping',
+    groupDesc:
+      'A mixed pool of model ids grouped by vendor: route-style ids (openrouter/anthropic/…) match on the last segment; unmatched ones go to unknown.',
+    unknownVendor: 'Unknown vendor',
+    pricingTitle: 'Pricing formatting ($/1M · mock prices)',
+    pricingDesc:
+      'formatPerMillion for unit prices, pricingTier for tiers (free / economy / standard / premium), and formatTokenCost estimates one turn (12K in + 3K out).',
+    pricingNote: 'Prices are mock demo data, not live vendor quotes.',
+    colModel: 'Model',
+    colInput: 'Input',
+    colOutput: 'Output',
+    colTier: 'Tier',
+    colCost: 'Cost per turn',
+    tierFree: 'Free',
+    tierEconomy: 'Economy',
+    tierStandard: 'Standard',
+    tierPremium: 'Premium',
+    diffTitle: 'JsonDiffView tool-args diff',
+    diffDesc:
+      'Args of two invocations of the same tool side by side: deleted rows red, added rows green, modified rows red-left/green-right with char-level highlights.',
+  },
+  feedbackDemo: {
+    welcomeDesc:
+      'Pick a prompt to fill the input below, or just type your question',
+    welcomeExtra:
+      "Input supports / commands and {'@'} mentions · AI messages support voting and comments",
+    promptWeekly: 'Write a weekly report',
+    promptWeeklyDesc: 'Progress / risks / plan sections',
+    promptExplain: 'Explain this code',
+    promptExplainDesc: 'Line by line, with design intent',
+    promptBrainstorm: 'Brainstorm',
+    promptBrainstormDesc: 'Expand a topic into directions',
+    promptPolish: 'Polish copy',
+    promptPolishDesc: 'Conversational, less AI-flavored',
+    inputPlaceholder:
+      "Type / for commands or {'@'} to mention docs; sending updates the question below…",
+    inputHint: 'PromptInputSuggestion: ↑↓ navigate · Enter select · Esc close',
+    send: 'Send',
+    convTitle: 'Message actions and branches',
+    convDesc:
+      'The user message edits in place (pencil); the AI message supports copy, regenerate (appends a branch), and vote + comment.',
+    logTitle: 'Event log (host-side reporting demo)',
+    logEmpty:
+      'No events yet — try a thumbs-down with a comment, regenerate, or edit the user message.',
+    logSent: 'Sent: {text}',
+    logRegenerated: 'Regenerated (switched to version {n})',
+    logEdited: 'Edited user message: {text}',
+    logUp: 'Feedback: thumbs up 👍',
+    logDown: 'Feedback: thumbs down 👎 (comment box available)',
+    logCleared: 'Feedback: cleared',
+    logComment: 'Comment submitted: {text}',
+    cmdSummary: '/summary',
+    cmdSummaryDesc: 'Summarize the conversation so far',
+    cmdTranslate: '/translate',
+    cmdTranslateDesc: 'Translate into English',
+    cmdTable: '/table',
+    cmdTableDesc: 'Turn the last answer into a table',
+    cmdPolish: '/polish',
+    cmdPolishDesc: 'Polish the draft in the input',
+    atDocs: "{'@'}component docs",
+    atGuide: "{'@'}integration guide",
+    atFaq: "{'@'}FAQ",
   },
   mockServer: {
     title: 'Mock Server Demo',

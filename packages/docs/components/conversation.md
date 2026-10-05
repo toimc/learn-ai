@@ -242,6 +242,12 @@ const chat = useChat(adapter)
 
 ### ConversationScrollBtn
 
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| badge | `number` | — | 未读角标数字；缺省读取滚动上下文的 `unreadCount`，显式传 `0` 强制隐藏角标 |
+
 | 事件名 | 说明 |
 |--------|------|
 | click | 用户点击回到底部按钮 |
+
+未读角标：用户离底期间内容高度每增加一次计数 +1（贴底恒为 0），点击按钮或手动滚回贴底即清零；角标 `aria-label` 走 i18n `conversation.scrollUnread`。「新消息」以内容高度增加近似，无法区分消息新增与流式文本追加，精确计数请传 `badge` 覆盖。详见 [ConversationScrollBtn](/components/conversation-scroll-btn)。
