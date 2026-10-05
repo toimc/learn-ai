@@ -19,11 +19,13 @@ import {
   MessageContent,
   MessageActions,
   MessageAction,
+  MessageActionSpeak,
   PromptInput,
   PromptInputBody,
   PromptInputTextarea,
   PromptInputSubmit,
   PromptInputUploadButton,
+  PromptInputMicButton,
   PromptInputAttachments,
   PromptInputFooter,
   PromptInputTools,
@@ -33,6 +35,7 @@ import {
   ThinkingBlock,
   ProviderSettingsDialog,
   useLayoutConfig,
+  useSpeechOutput,
   useTheme,
 } from '@toimc/vue'
 import type { ProviderFormPayload, ProviderOption } from '@toimc/vue'
@@ -130,6 +133,15 @@ function resolveChatMaxContextTokens(): number {
   return contextWindowMap.value[key] || contextWindowMap.value.default || 0
 }
 
+// —— 语音输出（自动朗读）：enabled 是模块级共享开关（localStorage 持久化，默认关）；
+// 流式回复经 onResponse 凑满一句入朗读队列，发送前打断旧朗读（新回复让位）
+const {
+  enabled: autoSpeak,
+  feedChunk: feedSpeechChunk,
+  stop: stopSpeaking,
+  toggle: toggleAutoSpeak,
+} = useSpeechOutput()
+
 // 初始消息由会话加载逻辑统一注入（见下方 conversations 定义后），避免双重数据
 // adapter 分发闭包：发送时才解析当前会话（带 model → 真实模型 SSE，否则本地 mock）
 const chat = useChat(
@@ -137,7 +149,12 @@ const chat = useChat(
     getConversation: () =>
       conversations.value.find((c) => c.id === activeConversationId.value),
   }),
-  { maxContextTokens: resolveChatMaxContextTokens },
+  {
+    maxContextTokens: resolveChatMaxContextTokens,
+    onResponse(chunk) {
+      if (chunk.type === 'text') feedSpeechChunk(chunk.content)
+    },
+  },
 )
 
 const sidebarOpen = ref(false)
@@ -608,6 +625,8 @@ async function mockUpload(files: File[]): Promise<Attachment[]> {
 }
 
 function onSend(payload: { text: string; attachments?: Attachment[] }) {
+  // 新回复进来，旧朗读让位
+  stopSpeaking()
   // 清上一轮错误提示：错误经 notice 展示（useChat 的 error chunk 不进消息气泡）
   if (chat.error) notice.value = null
   chat.send(payload.text, payload.attachments)
@@ -1019,6 +1038,32 @@ watch(() => chat.messages.length, scrollToBottom)
         </div>
         <div class="pg-header-actions">
           <button
+            class="pg-btn-icon pg-speak-toggle"
+            :class="{ on: autoSpeak }"
+            :aria-pressed="autoSpeak"
+            :title="
+              autoSpeak
+                ? t('pg.speech.autoSpeakOn')
+                : t('pg.speech.autoSpeakOff')
+            "
+            @click="toggleAutoSpeak"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+          </button>
+          <button
             class="pg-btn-icon"
             :title="
               layoutMode === 'stacked'
@@ -1243,6 +1288,7 @@ watch(() => chat.messages.length, scrollToBottom)
                     />
                   </svg>
                 </MessageAction>
+                <MessageActionSpeak :text="msg.content" />
                 <MessageAction
                   :title="t('pg.actions.regenerate')"
                   :disabled="chat.isStreaming"
@@ -1343,6 +1389,7 @@ watch(() => chat.messages.length, scrollToBottom)
                   <PromptInputTools>
                     <PromptInputUploadButton kind="image" />
                     <PromptInputUploadButton kind="file" />
+                    <PromptInputMicButton />
                     <PromptInputButton :title="t('pg.tools.webSearch')">
                       <svg
                         viewBox="0 0 24 24"
@@ -1920,6 +1967,16 @@ watch(() => chat.messages.length, scrollToBottom)
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ===== 自动朗读开关（顶栏，开启时 accent 高亮） ===== */
+.pg-speak-toggle.on {
+  color: var(--ai-chat-color-accent);
+}
+
+.pg-speak-toggle.on:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--ai-chat-color-accent);
 }
 
 /* ===== Welcome Screen ===== */

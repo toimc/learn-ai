@@ -100,6 +100,10 @@ const zhCN = {
       '当前浏览器不支持语音识别——麦克风按钮自动隐藏，其余功能不受影响',
     inputPlaceholder: '打字，或点麦克风说话…',
   },
+  speech: {
+    autoSpeakOn: '自动朗读：开（点击关闭）',
+    autoSpeakOff: '自动朗读：关（点击开启）',
+  },
   thinkingDemo: {
     simulate: '模拟一次流式思考',
     replay: '重播',
@@ -515,6 +519,10 @@ const enUS: typeof zhCN = {
     micUnsupported:
       'This browser does not support speech recognition — the mic button is hidden and everything else still works',
     inputPlaceholder: 'Type, or click the mic and speak…',
+  },
+  speech: {
+    autoSpeakOn: 'Auto read-aloud: on (click to turn off)',
+    autoSpeakOff: 'Auto read-aloud: off (click to turn on)',
   },
   thinkingDemo: {
     simulate: 'Simulate streaming thinking',
