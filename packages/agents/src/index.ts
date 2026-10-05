@@ -1,4 +1,5 @@
 export type {
+  ChatContentPart,
   ChatMessage,
   ChatRequest,
   ChatResponse,

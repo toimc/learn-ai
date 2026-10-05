@@ -182,6 +182,26 @@ createChatGateway({
 
 `POST /api/chat` 请求体 `{ messages, model?, ...rest }`——`messages`/`model` 之外的任意字段（如 `speed`、`conversationId`）会整体透传给适配器的 `ChatRequest.passthrough`，网关不解释。响应为 SSE：每帧 `event: chunk` + `data: <StreamChunk JSON>`，`done` 收尾，出错时以 `error` chunk 收尾保持可解析。完整接口说明见[接口文档](/mock-api)。
 
+### 多模态消息（content parts）
+
+user 消息的 `content` 除字符串外还接受 OpenAI 兼容 parts 数组（`ChatContentPart`，从 `@toimc/agents` 导出）——`text` 管正文，`image_url` 管图片（base64 data URL 或 https URL）：
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "这个报错怎么解决" },
+        { "type": "image_url", "image_url": { "url": "data:image/png;base64,..." } }
+      ]
+    }
+  ]
+}
+```
+
+各适配器的处理：OpenAI 兼容适配器原样透传（GLM-4V / OpenAI vision 原生形态）；`@toimc/agents/mastra` 在适配器边界把 `image_url` 转成 AI SDK 的 `image` part（Mastra 底层是 AI SDK 消息模型，不接受 OpenAI 方言）；无视觉能力的 mock 剧本提取 `text` 匹配（图片忽略，行为可预期）。会话历史持久化同样只落提取后的文本，base64 附件不进存储。
+
 ## 部署
 
 网关只导出 fetch 风格的 Hono app，运行时自选：

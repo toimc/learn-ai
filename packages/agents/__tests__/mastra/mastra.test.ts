@@ -537,6 +537,83 @@ describe('MastraAdapter.chatStream 边界与交错', () => {
   })
 })
 
+describe('多模态 parts 透传（18-02 OpenAI wire 契约 → AI SDK 方言转换）', () => {
+  it('user 消息 content 为 parts 数组：text 原样、image_url 转为 image part', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    await collect(
+      new MastraAdapter(agent).chatStream({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: '这个报错怎么解决' },
+              {
+                type: 'image_url',
+                image_url: { url: 'data:image/png;base64,AAAA' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    // 预期形状：text part 同构透传；image_url（OpenAI wire）→ image（AI SDK UserContent）
+    expect(stream.mock.calls[0][0]).toEqual([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: '这个报错怎么解决' },
+          { type: 'image', image: 'data:image/png;base64,AAAA' },
+        ],
+      },
+    ])
+  })
+
+  it('string content 原样透传，不进数组分支（存量行为不变）', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(stream.mock.calls[0][0]).toEqual([
+      { role: 'user', content: '北京天气' },
+    ])
+  })
+
+  it('未知 part 形态（wire 不可信输入）静默丢弃，不污染模型输入', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    await collect(
+      new MastraAdapter(agent).chatStream({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: '只看图' },
+              { type: 'video', video: 'unsupported' },
+            ] as never,
+          },
+        ],
+      }),
+    )
+    expect(stream.mock.calls[0][0]).toEqual([
+      { role: 'user', content: [{ type: 'text', text: '只看图' }] },
+    ])
+  })
+
+  it('system/assistant 收到数组 content 时防御降级为拼接文本（协议上不该出现）', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    await collect(
+      new MastraAdapter(agent).chatStream({
+        messages: [
+          {
+            role: 'system',
+            content: [{ type: 'text', text: '你是演示助手' }] as never,
+          },
+        ],
+      }),
+    )
+    expect(stream.mock.calls[0][0]).toEqual([
+      { role: 'system', content: '你是演示助手' },
+    ])
+  })
+})
+
 describe('createMastraModel', () => {
   it('name/description 缺省回退 id 与空串，provider 固定 mastra，adapter 为 MastraAdapter 实例', async () => {
     const model = await createMastraModel({

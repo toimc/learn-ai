@@ -1,9 +1,17 @@
 import type { StreamChunk } from '@toimc/core'
 
-/** 对话消息（传输与上游请求共用的最小形态，Date 不进线协议） */
+/**
+ * 多模态 content part（OpenAI 兼容 wire 契约，课程 18-02）：
+ * user 消息 content 为数组时，text 管正文、image_url 管 base64/URL 图片。
+ */
+export type ChatContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
+/** 对话消息（传输与上游请求共用的最小形态，Date 不进线协议）；多模态时 content 为 parts 数组 */
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
-  content: string
+  content: string | ChatContentPart[]
 }
 
 /**

@@ -13,21 +13,65 @@ import type {
   MastraModelConfig,
 } from './types'
 
+/** AI SDK UserContent 的 parts 子集（多模态透传的转换目标形态） */
+type AiSdkUserPart =
+  { type: 'text'; text: string } | { type: 'image'; image: string }
+
 /** Mastra ModelMessage 的 system/user/assistant 字面量变体（本包内转换目标） */
 type ModelMessageShape =
   | { role: 'system'; content: string }
-  | { role: 'user'; content: string }
+  | { role: 'user'; content: string | AiSdkUserPart[] }
   | { role: 'assistant'; content: string }
 
 /**
- * ChatMessage.role 是三值联合，无法直接结构命中 ModelMessage 的单字面量成员，
- * 逐条按角色收窄（运行时形状与 system/user/assistant 变体完全一致，零转换成本）。
+ * OpenAI wire parts（text / image_url）→ AI SDK parts（text / image）方言转换。
+ * wire 输入未经 schema 校验，逐字段运行时收窄；未知 part 形态静默丢弃，
+ * 不进模型输入。
+ */
+function toUserParts(parts: unknown): AiSdkUserPart[] {
+  if (!Array.isArray(parts)) return []
+  return parts.flatMap((part): AiSdkUserPart[] => {
+    if (!part || typeof part !== 'object') return []
+    const p = part as Record<string, unknown>
+    if (p.type === 'text' && typeof p.text === 'string') {
+      return [{ type: 'text', text: p.text }]
+    }
+    if (p.type === 'image_url') {
+      const url = (p.image_url as { url?: unknown } | undefined)?.url
+      if (typeof url === 'string') return [{ type: 'image', image: url }]
+    }
+    return []
+  })
+}
+
+/** parts 数组降级为拼接文本（system/assistant 的防御路径，协议上不该出现数组） */
+function textFromParts(parts: unknown[]): string {
+  return parts
+    .filter(
+      (p): p is { text: string } =>
+        !!p &&
+        typeof p === 'object' &&
+        (p as Record<string, unknown>).type === 'text' &&
+        typeof (p as Record<string, unknown>).text === 'string',
+    )
+    .map((p) => p.text)
+    .join('')
+}
+
+/**
+ * ChatMessage → Mastra ModelMessage：string content 零转换直传；
+ * user 的 parts 数组做 OpenAI → AI SDK 方言转换（image_url → image）；
+ * system/assistant 的数组形态（wire 不可信输入）降级拼接文本。
  */
 function toModelMessages(messages: ChatMessage[]): ModelMessageShape[] {
   return messages.map((m): ModelMessageShape => {
-    if (m.role === 'system') return { role: m.role, content: m.content }
-    if (m.role === 'user') return { role: m.role, content: m.content }
-    return { role: 'assistant', content: m.content }
+    if (typeof m.content === 'string') {
+      return { role: m.role, content: m.content }
+    }
+    if (m.role === 'user') {
+      return { role: m.role, content: toUserParts(m.content) }
+    }
+    return { role: m.role, content: textFromParts(m.content) }
   })
 }
 
