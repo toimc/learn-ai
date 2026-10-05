@@ -135,6 +135,7 @@ pnpm changeset      # 创建 changeset（发版流程见 git-flow-worktree.md）
 
 ## CI
 
+- `.github/workflows/ci.yml`：push / PR 到 dev+master 触发常规门禁——build → lint → type-check → test（附 `workflow_dispatch` 手动触发）。
 - `.github/workflows/publish.yml`：tag 触发 npm 发布。
 - `.github/workflows/e2e-tests.yml`：push / PR 触发 Playwright e2e（注意两处历史残留待清理：触发分支 `[main, dev]` 中的 `main` 不存在——仓库实际是 master/dev；paths 过滤器引用的 `playground.config.ts` 不存在）。
 - `.github/workflows/docs-deploy.yml`：文档站部署。
@@ -152,6 +153,7 @@ pnpm changeset      # 创建 changeset（发版流程见 git-flow-worktree.md）
 
 - `$i18n`：组件库国际化规范，创建/修改组件、新增 UI 文案时必读。
 - `$daydayup`：项目自评审与知识沉淀循环（三轴并行审查 → 复核 → 日报到 `docs/daydayup/`），手动 `/daydayup` 或夜间定时触发。
+- `$feature-workflow`：复杂功能三阶段开发工作流（调研 → 需求规格 → 实施计划 → 执行），spec/plan 沉淀到 `docs/superpowers/`。
 - `$dependency-updater`：检查、分类并安全更新依赖；主要版本更新必须先获得用户确认。
 - `$dowhat`：只读汇总当前分支、提交、改动、Issue/PR 和后续事项。
 - `$tidy`：本地垃圾清理与上下文收敛（过程文件、会话垃圾、规则瘦身）。

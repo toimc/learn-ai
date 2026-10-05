@@ -25,7 +25,7 @@ description: 复杂功能三阶段开发工作流（调研→需求规格→实�
 - brainstorming 阶段必须先出设计并获用户批准，再写 spec；未经批准不进入实现
 - spec 自审通过后请用户复核，复核通过才进入 writing-plans
 - 计划写完提供执行选择（subagent-driven / inline），确认后再开工
-- 执行阶段严格遵守 [Git Flow + Worktree 规则](../../../rules/git-flow-worktree.md)：基于 `dev` 开 worktree
+- 执行阶段严格遵守 [Git Flow + Worktree 规则](../../rules/git-flow-worktree.md)：基于 `dev` 开 worktree
 
 ## 当前已沉淀
 
