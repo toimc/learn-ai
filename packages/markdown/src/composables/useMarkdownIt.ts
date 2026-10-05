@@ -44,7 +44,8 @@ export function useMarkdownIt(): InstanceType<typeof MarkdownIt> {
   // 未闭合补齐）。管线串联顺序 = extractCompleteMarkdown（流式完整性，见 useStreamingMarkdown）
   // → guardMathBlocks（公式容错）→ markdown-it。包一层 render 使所有消费点统一生效。
   const rawRender = instance.render.bind(instance)
-  instance.render = (src: string, env?: unknown): string =>
+  type RenderEnv = Parameters<typeof rawRender>[1]
+  instance.render = (src: string, env?: RenderEnv): string =>
     rawRender(guardMathBlocks(src), env)
 
   return instance

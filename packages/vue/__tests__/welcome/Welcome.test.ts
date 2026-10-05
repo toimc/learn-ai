@@ -43,7 +43,7 @@ describe('Welcome 插槽', () => {
       },
     })
     expect(
-      w.get('.ai-chat-welcome__icon [data-test="custom-icon"]').exists(),
+      w.find('.ai-chat-welcome__icon [data-test="custom-icon"]').exists(),
     ).toBe(true)
   })
 

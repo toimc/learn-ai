@@ -83,7 +83,9 @@ describe('MessageFeedback 消息反馈', () => {
     await w.find(`${comment} textarea`).setValue('第一次评论')
     await w.find('.ai-chat-message-feedback__submit').trigger('click')
     await w.find(hint).trigger('click')
-    expect(w.find(`${comment} textarea`).element.value).toBe('')
+    expect(
+      (w.find(`${comment} textarea`).element as HTMLTextAreaElement).value,
+    ).toBe('')
   })
 
   it('边界：空白评论提交不 emit comment', async () => {
@@ -105,7 +107,9 @@ describe('MessageFeedback 消息反馈', () => {
     expect(w.emitted('comment')).toBeUndefined()
     expect(w.find(comment).exists()).toBe(false)
     await w.find(hint).trigger('click')
-    expect(w.find(`${comment} textarea`).element.value).toBe('')
+    expect(
+      (w.find(`${comment} textarea`).element as HTMLTextAreaElement).value,
+    ).toBe('')
   })
 
   it('边界：allowComment=false 时点踩无提示无评论框', async () => {

@@ -90,7 +90,7 @@ describe('ModelIcon 兜底与插槽', () => {
       slots: { default: '<img class="custom" src="x.png" alt="" />' },
     })
     expect(w.find('svg').exists()).toBe(false)
-    expect(w.get('.custom').exists()).toBe(true)
+    expect(w.find('.custom').exists()).toBe(true)
     // 插槽容器仍保留无障碍语义
     expect(w.get('.ai-chat-model-icon--custom').attributes('role')).toBe('img')
     expect(w.get('.ai-chat-model-icon--custom').attributes('aria-label')).toBe(

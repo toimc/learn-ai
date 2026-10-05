@@ -7,6 +7,7 @@ import ConversationContent from '../../src/conversation/ConversationContent.vue'
 function makeAnchor(isAtBottom = true) {
   const anchor: ScrollAnchorContext = {
     isAtBottom: ref(isAtBottom),
+    unreadCount: ref(0),
     scrollToBottom: vi.fn(),
     bindContainer: vi.fn(),
   }

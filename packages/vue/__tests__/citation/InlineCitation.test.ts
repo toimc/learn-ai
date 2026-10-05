@@ -210,12 +210,12 @@ describe('InlineCitation 事件与交互关闭', () => {
       await openCard(w)
       // 焦点从角标移向卡片内导航按钮：不关
       const navNext = w.get('.ai-chat-inline-citation__nav-next')
-      navNext.element.focus()
+      ;(navNext.element as HTMLElement).focus()
       await w.get('.ai-chat-inline-citation').trigger('focusout')
       expect(w.find('.ai-chat-inline-citation__card').exists()).toBe(true)
 
       // 焦点移出到组件外：关
-      navNext.element.blur()
+      ;(navNext.element as HTMLElement).blur()
       await w.get('.ai-chat-inline-citation').trigger('focusout')
       expect(w.find('.ai-chat-inline-citation__card').exists()).toBe(false)
     } finally {
@@ -241,7 +241,9 @@ describe('InlineCitation 事件与交互关闭', () => {
       attachTo: document.body,
     })
     try {
-      w.get('.ai-chat-inline-citation__trigger').element.focus()
+      ;(
+        w.get('.ai-chat-inline-citation__trigger').element as HTMLElement
+      ).focus()
       await openCard(w)
       await w.get('.ai-chat-inline-citation').trigger('mouseleave')
       expect(w.find('.ai-chat-inline-citation__card').exists()).toBe(true)

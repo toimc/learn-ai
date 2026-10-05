@@ -97,7 +97,7 @@ describe('ToolConfirmation 已拒绝态', () => {
     expect(w.get('.ai-chat-tool-confirmation__tool-name').text()).toBe(
       'delete_file',
     )
-    expect(w.get('.ai-chat-tool-confirmation__args').exists()).toBe(true)
+    expect(w.find('.ai-chat-tool-confirmation__args').exists()).toBe(true)
   })
 })
 
