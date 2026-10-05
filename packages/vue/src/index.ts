@@ -156,3 +156,19 @@ export type {
   CompressImageOptions,
   DrawableImageSource,
 } from './utils/compress-image'
+
+// 语音输入/输出（Web Speech API 浏览器原生能力）
+export { useSpeechInput } from './composables/useSpeechInput'
+export type {
+  SpeechInputStatus,
+  UseSpeechInputOptions,
+  UseSpeechInputReturn,
+  SpeechRecognitionLike,
+  SpeechRecognitionEventLike,
+} from './composables/useSpeechInput'
+export { useSpeechOutput, splitSentences } from './composables/useSpeechOutput'
+export type {
+  UseSpeechOutputOptions,
+  UseSpeechOutputReturn,
+  SentenceSplitResult,
+} from './composables/useSpeechOutput'
