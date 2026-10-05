@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject, computed } from 'vue'
+import { aiChatI18n } from '../locales'
 import type { ScrollAnchorContext } from '../composables/useScrollAnchor'
 
+const props = defineProps<{
+  /** 显示未读角标；缺省走 inject 的 unreadCount */
+  badge?: number
+}>()
+
 const anchor = inject<ScrollAnchorContext>('scrollAnchor')
+const { t } = aiChatI18n.global
+
+const badgeCount = computed(() => props.badge ?? anchor?.unreadCount.value ?? 0)
+const badgeLabel = computed(() =>
+  t('conversation.scrollUnread', { count: badgeCount.value }),
+)
 </script>
 
 <template>
@@ -10,6 +22,7 @@ const anchor = inject<ScrollAnchorContext>('scrollAnchor')
     v-if="anchor"
     class="ai-chat-scroll-btn"
     :style="{ visibility: anchor.isAtBottom.value ? 'hidden' : 'visible' }"
+    :aria-label="badgeCount > 0 ? badgeLabel : undefined"
     @click="anchor.scrollToBottom()"
   >
     <svg
@@ -24,6 +37,9 @@ const anchor = inject<ScrollAnchorContext>('scrollAnchor')
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
+    <span v-if="badgeCount > 0" class="ai-chat-scroll-btn__badge">{{
+      badgeCount
+    }}</span>
   </button>
 </template>
 
@@ -53,6 +69,22 @@ const anchor = inject<ScrollAnchorContext>('scrollAnchor')
   .ai-chat-scroll-btn:hover {
     background: var(--ai-chat-hover-neutral);
     color: var(--ai-chat-color-text-primary);
+  }
+
+  .ai-chat-scroll-btn__badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--ai-chat-color-danger-500);
+    color: var(--ai-chat-color-text-on-accent);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: center;
   }
 }
 </style>
