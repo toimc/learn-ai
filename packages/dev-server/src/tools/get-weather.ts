@@ -1,14 +1,6 @@
+import type { UISchema } from '@toimc/core'
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-
-/**
- * GenUI schema 最小结构（课程 18-01）：工具结果的 ui 字段是给前端的渲染指令。
- * core 的 UISchema 类型由 genui 分支统一提供，届时替换本定义为 re-export。
- */
-interface ToolUISchema {
-  type: string
-  props: Record<string, unknown>
-}
 
 /** 天气工具：wttr.in 免费接口，5s 超时保护（对齐课程 17-02 方案） */
 export const getWeatherTool = createTool({
@@ -38,7 +30,7 @@ export const getWeatherTool = createTool({
     const description = current?.weatherDesc?.[0]?.value ?? ''
     // 原始字段是模型生成回复的依据；ui 是前端渲染指令（weather-card），
     // schema 由工具代码确定性生成，两者并存互不干扰（18-01 实现路径一）
-    const ui: ToolUISchema = {
+    const ui: UISchema = {
       type: 'weather-card',
       props: {
         city,
