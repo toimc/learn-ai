@@ -31,6 +31,8 @@ export type { ModelPricing } from './utils/pricing'
 export { copyText } from './utils/clipboard'
 export { splitAtoms, joinAtoms } from './utils/md-atom'
 export type { MdAtom } from './utils/md-atom'
+export { isUISchema } from './utils/genui'
+export type { UISchema } from './types/genui'
 export {
   truncateContext,
   resolveTokenCount,
