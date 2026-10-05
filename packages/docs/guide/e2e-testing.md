@@ -60,17 +60,18 @@ pnpm test:e2e:debug
 
 ## 测试文件说明
 
-- **`playground.spec.ts`**: 基础功能测试（消息发送、会话切换、流式渲染等）
-- **`playground-advanced.spec.ts`**: 高级功能测试（Markdown、代码高亮、主题、国际化等）
-- **`setup.spec.ts`**: 环境验证测试
+- **`playground-core.spec.ts`**: 核心用户流程（8 个用例：发送消息、会话列表切换、创建新对话、流式消息交互、基本 UI 交互、页面性能、移动端 / 桌面端视图）
+- **`playground-simple.spec.ts`**: 页面结构与冒烟验证（14 个用例：应用加载、会话列表与切换、创建新会话、输入框与发送、主题与语言切换、响应式布局、快捷键、页面加载时间、控制台无错误、可访问性与键盘导航）
+- **`global-setup.ts` / `global-teardown.ts`**: 全局装配与清理
+- **`helpers/test-helpers.ts`**: 测试辅助函数（见下文）
 
 ## 常用场景
 
 ### 只运行某个测试文件
 
 ```bash
-pnpm test:e2e playground.spec.ts
-pnpm test:e2e playground-advanced.spec.ts
+pnpm test:e2e playground-core.spec.ts
+pnpm test:e2e playground-simple.spec.ts
 ```
 
 ### 只运行匹配的测试
@@ -90,42 +91,35 @@ pnpm test:e2e --grep "会话"
 pnpm test:e2e:ui
 
 # 调试模式运行特定文件
-pnpm test:e2e:debug playground.spec.ts
+pnpm test:e2e:debug playground-core.spec.ts
 ```
 
 ## 测试覆盖范围
 
-### 基础功能测试（15个用例）
+两个 spec 共 22 个用例，按用户旅程分组：
 
-- 页面加载和渲染
-- 消息发送和接收
-- 会话管理和切换
-- 流式消息渲染
-- UI 交互功能
-- 响应式设计
-- 性能和稳定性
+### 核心用户流程（playground-core，8 个用例）
 
-### 高级功能测试（20个用例）
+- 发送消息并收到回复
+- 会话列表切换与创建新对话
+- 流式消息交互
+- 基本 UI 交互功能
+- 页面性能在可接受范围
+- 移动端 / 桌面端视图适配
 
-- Markdown 渲染
-- 代码高亮
-- 思考过程功能
-- A/B 回复对比
-- 消息操作功能
-- 附件功能
-- 国际化支持
-- 主题定制
-- 键盘快捷键
-- 无障碍支持
+### 页面结构与冒烟（playground-simple，14 个用例）
 
-### 环境验证测试（5个用例）
-
-- Playwright 环境检查
-- 基础功能快速验证
+- 应用正确加载（容器 / 侧边栏 / 主区域）
+- 会话列表、切换、创建
+- 输入框、发送功能与文本输入
+- 主题切换按钮与语言切换功能
+- 响应式布局与快捷键
+- 页面加载时间合理、控制台无错误
+- 基本可访问性支持与键盘导航
 
 ## 测试辅助函数
 
-项目提供了 `e2e/helpers/test-helpers.ts`，包含 20+ 个测试辅助函数：
+项目提供了 `e2e/helpers/test-helpers.ts`，包含 20 个测试辅助函数：
 
 - 页面加载等待
 - 消息发送和验证
@@ -141,7 +135,7 @@ pnpm test:e2e:debug playground.spec.ts
 
 - **桌面浏览器**: Chromium、Firefox、WebKit
 - **移动浏览器**: Mobile Chrome、Mobile Safari
-- **并行执行**: 5 个 worker 同时运行
+- **并行策略**: CI 环境 1 个 worker 串行，本地按 CPU 核数默认并行
 
 ### 智能配置
 
@@ -195,10 +189,9 @@ timeout: 60 * 1000  # 改为 60 秒
 
 测试配置已包含 GitHub Actions 工作流（`.github/workflows/e2e-tests.yml`），支持：
 
-- 多浏览器并行测试
+- 按浏览器项目矩阵并行测试
 - 移动端测试支持
-- 自动报告生成
-- PR 注释集成
+- 测试结果与 HTML 报告自动归档为 artifact
 
 ## 延伸阅读
 

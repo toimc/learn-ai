@@ -34,7 +34,7 @@ export interface MastraAgentDefinition {
 
 定义层因此保持纯配置对象（不 import 任何 Mastra 类型），实例化收敛到装配层——「新增 agent = 一个定义文件 + 注册表一行」的架构不被记忆破坏。
 
-当前两个挂记忆的 agent 配置完全一致，都是**最小形态**：
+当前两个挂记忆的 agent（`chat-agent` 与 `docs-agent`）配置完全一致，都是**最小形态**——`orchestrator-agent` 刻意不配 memory，编排演示按次协作，会话上下文由 thread 携带即可：
 
 ```ts
 // packages/dev-server/src/agents/docs-agent.ts

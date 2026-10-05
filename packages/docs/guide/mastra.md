@@ -118,15 +118,15 @@ model: myLanguageModel
 
 ## dev-server：本仓库的完整示例
 
-本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent` 与 `docs-agent`（组件库助手，挂 `search_docs` 文档检索工具；配置 `EMBEDDING_MODEL` 后检索升级为「语义 + 关键词」混合；配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具），缺省时是纯 mock 模式（零 mastra 依赖启动）。
+本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent`、`docs-agent` 与 `orchestrator-agent` 三个 agent（`docs-agent` 是组件库助手，挂 `search_docs` 文档检索工具，配置 `EMBEDDING_MODEL` 后检索升级为「语义 + 关键词」混合，配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具；`orchestrator-agent` 是多 Agent 编排演示，经 `orchestrate` 工具调度检索员/起草员/审查员子 agent，支持委托/并行/流水线三种协作形态），缺省时是纯 mock 模式（零 mastra 依赖启动）。
 
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
-| `MASTRA_MODEL`         | 存在才注册 `chat-agent` 与 `docs-agent`；缺省时行为与纯 mock 完全一致  | `deepseek/deepseek-chat`              |
+| `MASTRA_MODEL`         | 存在才注册 `chat-agent` / `docs-agent` / `orchestrator-agent`；缺省时行为与纯 mock 完全一致  | `deepseek/deepseek-chat`              |
 | `MASTRA_MODEL_URL`     | 可选；OpenAI 兼容自定义端点，传入后 `model` 走 `{ id, url }` 对象形态  | `https://your-gateway.example.com/v1` |
 | `MASTRA_MODEL_API_KEY` | 可选；自定义端点的 key（**url 场景必传**：Mastra url 场景不自动读 provider env） | `sk-xxx`                              |
 | `MASTRA_MODEL_NAME`    | 可选；模型列表展示名，缺省 `Chat Agent`                                | `DeepSeek Agent`                      |
-| `MASTRA_SUB_MODEL`     | 可选；检索等轻量角色的次级模型（researcher 子 agent 用它，演示"按角色选模型"） | `deepseek/deepseek-chat`              |
+| `MASTRA_SUB_MODEL`     | 可选；检索等轻量角色的次级模型（orchestrator 的 researcher 子 agent 用它，演示"按角色选模型"） | `deepseek/deepseek-chat`              |
 | `EMBEDDING_MODEL`      | 可选；存在即启用 `search_docs` 语义检索路（裸模型名走本地 Ollama，含 `provider/` 前缀走云端端点） | `bge-m3`                              |
 | `EMBEDDING_MODEL_URL`  | 可选；embedding 的 OpenAI 兼容端点，缺省 `http://localhost:11434/v1`（本地 Ollama） | `http://localhost:11434/v1`           |
 | `EMBEDDING_MODEL_API_KEY` | 可选；embedding 端点 key，本地 Ollama 缺省占位 `ollama`             | `sk-xxx`                              |

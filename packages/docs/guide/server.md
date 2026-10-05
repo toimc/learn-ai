@@ -118,14 +118,14 @@ agent 构建失败（`@mastra/core` 未装、模型配置非法）时整体抛�
 
 ### 运行时注册 vs 环境变量注册
 
-`MASTRA_MODEL` 是**启动时**经环境变量注册（id 固定 `chat-agent`）；dev-server 还提供**运行时**注册：浏览器把表单配置 `POST /api/providers` 上来，服务端即刻组装注册（id 递增 `custom-{n}`，进程内存计数）。两条路径写进**同一个 registry**，并存不冲突，`GET /api/models` 里都可见：
+`MASTRA_MODEL` 是**启动时**经环境变量注册（id 固定 `chat-agent`）；dev-server 还提供**运行时**注册：浏览器把表单配置 `POST /api/providers` 上来，服务端即刻组装注册（id 递增 `custom-{n}`；`PUT /api/providers/:id` 原位更新沿用原 id）。两条路径写进**同一个 registry**，并存不冲突，`GET /api/models` 里都可见：
 
 |          | 环境变量注册                               | 运行时注册（API）                                                           |
 | -------- | ------------------------------------------ | --------------------------------------------------------------------------- |
-| 触发时机 | 进程启动（`readDevServerEnv` 探测）        | 请求到达（`POST /api/providers`）                                           |
-| 模型 id  | `chat-agent`                               | `custom-{n}` 递增（重启归零）                                               |
+| 触发时机 | 进程启动（`readDevServerEnv` 探测）        | 请求到达（`POST` 创建 / `PUT` 原位更新）                                    |
+| 模型 id  | `chat-agent`                               | `custom-{n}` 递增（注册表落盘 `.temp/providers.json`，git 忽略；重启经 `restore()` 恢复且 id 沿用、自增序号抬高防撞） |
 | 配置来源 | `MASTRA_MODEL` / `MASTRA_MODEL_URL` 等 env | 请求体（`ProviderFormPayload`：name / provider / baseURL / apiKey / model） |
-| 密钥去向 | 环境变量                                   | 服务端内存：不落盘、不进日志、不进任何 GET 响应                             |
+| 密钥去向 | 环境变量                                   | 服务端内存 + `.temp/providers.json` 本地落盘（git 忽略）：不进日志、`GET /api/providers` 只回脱敏视图（不含 key，`baseURL` 供编辑预填） |
 | 注销     | 无（进程级）                               | `DELETE /api/providers/:id`                                                 |
 
 组装逻辑在 `registerRuntimeProvider`（`packages/dev-server/src/routes/providers.ts`），按协议类型走 `createMastraModel` 的两种 `model` 形态：
@@ -141,7 +141,7 @@ model: `anthropic/${payload.model}`
 
 两条路径注册的模型都自动挂上 `get_time` / `get_weather` 两个演示工具与同一个 LibSQL 记忆（`file:.temp/dev-server.db`），因此运行时注册的模型天然支持工具调用与会话记忆。注册**不做上游连通性校验**（惰性连接）：首次对话才真连上游，密钥错误 / 端点不通等失败按既有路径以 `error` chunk 呈现，SSE 流仍完整可解析。
 
-三端点契约（POST 校验失败 400、成功 201、DELETE 404、响应脱敏）见[接口文档](/mock-api#provider-运行时注册)；前端表单组件见 [ProviderSettingsDialog](/components/provider-settings-dialog)，端到端体验在 [Playground](/playground)。
+四端点契约（POST 校验失败 400、成功 201，PUT / DELETE 目标不存在 404，GET 响应脱敏）见[接口文档](/mock-api#provider-运行时注册)；前端表单组件见 [ProviderSettingsDialog](/components/provider-settings-dialog)，端到端体验在 [Playground](/playground)。
 
 ## 中间件选项
 

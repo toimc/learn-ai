@@ -34,7 +34,7 @@
 - `globals: true`：`describe` / `it` / `expect` 无需 import
 - `environment: 'jsdom'`：全局 DOM 环境
 - `include: ['packages/*/__tests__/**/*.{test,spec}.{ts,tsx}']`：测试文件统一放各包 `__tests__/` 目录（与 `src` 平级，内部镜像 src 目录结构），禁止与源码混放（见 `.claude/rules/project-structure.md`）
-- `@toimc/core` 别名指向 `packages/core/src/index.ts`：包 exports 指向 dist 产物，测试内的值导入统一走源码解析
+- `@toimc/core` / `@toimc/agents`（含 `/mastra` 子路径）/ `@toimc/server`（含 `/mastra` 子路径）别名指向各自 `src/index.ts`：包 exports 指向 dist 产物，测试内的值导入统一走源码解析；子路径别名须列在主入口之前（alias 前缀匹配，先到先得）
 
 ### 根级 tests/setup.ts
 
@@ -229,7 +229,7 @@ corepack pnpm vitest run --coverage \
   --coverage.thresholds.functions=0 --coverage.thresholds.lines=0
 ```
 
-报告按文件列出未覆盖行号（`Uncovered Line #s` 列），直接对着源码补用例。2026-08 全量补测后的基线：**61 个测试文件 / 483 个用例，三包语句 96.6% / 分支 90.7% / 函数 95.2% / 行 98.2%**——新改动不应让这个基线回退。
+报告按文件列出未覆盖行号（`Uncovered Line #s` 列），直接对着源码补用例。2026-08 全量补测时三包（core/vue/markdown）基线为 61 个测试文件 / 483 个用例，语句 96.6% / 分支 90.7% / 函数 95.2% / 行 98.2%；此后随 agents / server / dev-server 测试补齐，全仓已增至 **144 个测试文件 / 1388 个用例**——新改动不应让 `pnpm test` 全绿与覆盖率基线回退。
 
 ## 延伸阅读
 

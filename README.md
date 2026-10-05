@@ -5,7 +5,7 @@
 ## 特性
 
 - **Provider 抽象层**：组件与 AI 后端完全解耦，通过 `ChatAdapter` 接口适配任何后端
-- **33 个可组合组件**：Conversation / Message / Comparison / PromptInput / Attachment / ToolCall / Shared 七大系列
+- **57 个可组合组件**：Conversation / Message / Thinking / PromptInput / Comparison / Attachment / ToolCall / Citation / Welcome / Preview / Provider / Shared 十二个能力域
 - **Design Token 体系**：三层 CSS Variables（原始→语义→组件），暗色/亮色双主题
 - **样式隔离**：全部库样式收在 `@layer` 级联层内，不污染宿主；宿主一行未分层 CSS 即可覆盖任意组件样式，无需 `!important`
 - **ToolCall 可视化**：原生支持 AI 工具调用（function call）的参数、结果和状态展示
@@ -25,7 +25,7 @@
 | 框架     | Vue 3                    | ^3.5        |
 | 语言     | TypeScript               | ^6.0        |
 | 构建     | Vite                     | ^8.0        |
-| 包管理   | pnpm workspace           | ^9.0        |
+| 包管理   | pnpm workspace           | ^11.0       |
 | 单元测试 | Vitest + @vue/test-utils | ^4.1 / ^2.4 |
 | E2E测试  | Playwright               | ^1.62       |
 | 文档站   | VitePress                | ^1.6        |
@@ -41,22 +41,24 @@ ai-chat-ui/
 │   │   ├── src/utils/         # generateId, createUserMessage, createAssistantMessage
 │   │   └── __tests__/         # 测试（镜像 src 结构，各包同）
 │   │
-│   ├── vue/                   # @toimc/vue — 46 个组件导出（含 4 个 deprecated）
+│   ├── vue/                   # @toimc/vue — 57 个组件导出（12 个能力域）
 │   │   └── src/
 │   │       ├── styles/        # tokens.css + animations.css（Design Token 体系）
 │   │       ├── conversation/  # Conversation / Content / Empty / ScrollBtn
-│   │       ├── message/       # Message / Content / Actions / Action / Attachments
-│   │       ├── prompt-input/  # PromptInput / Textarea / Submit / Footer / Tools / Button / Header
+│   │       ├── message/       # Message / Content / Actions / Attachments / ThinkingBlock / Feedback / BranchPicker + 四个预设 Action
+│   │       ├── thinking/      # ThinkingChain（多步骤思考链时间线）
+│   │       ├── prompt-input/  # PromptInput / Textarea / Submit / Footer / Tools / Button / Header / UploadButton / Attachments / Suggestion
 │   │       ├── attachment/    # Attachments / Attachment / Preview / Info / Remove / Empty
-│   │       ├── tool-call/     # ToolCall / Header / Content / Input / Output
-│   │       ├── thinking/      # ThinkingBlock（思考链）
+│   │       ├── tool-call/     # ToolCall / Header / Content / Input / Output / Confirmation
+│   │       ├── citation/      # InlineCitation / Sources（引用溯源）
+│   │       ├── welcome/       # Welcome / Prompts（欢迎引导）
 │   │       ├── comparison/    # ComparisonMessage（A/B 对比）
 │   │       ├── preview/       # ImageLightbox
 │   │       ├── provider/      # ProviderSettingsDialog
-│   │       ├── shared/        # StreamText / Button / Shimmer / Toast / Input / Select / Radio / LanguageToggle
-│   │       ├── composables/   # useScrollAnchor / useTheme / useThemePreset / useMarkdownRenderer
-│   │       ├── deprecated/    # ChatWindow / MessageList / MessageBubble / InputArea（v1.0.0 移除）
-│   │       └── utils/         # media.ts + format.ts
+│   │       ├── shared/        # StreamText / Button / Shimmer / Toast / Input / Select / Radio / LanguageToggle / ModelIcon / JsonDiffView
+│   │       ├── composables/   # useScrollAnchor / useTheme / useThemePreset / useMarkdownRenderer / useClipboard / useLayoutConfig
+│   │       ├── theme/         # presets（主题预设）+ tokens-meta（令牌元数据）
+│   │       └── locales/       # aiChatI18n 双语字典
 │   │
 │   ├── markdown/              # @toimc/markdown — Markdown 渲染
 │   │   └── src/
@@ -71,14 +73,14 @@ ai-chat-ui/
 │   │   └── src/               # createChatGateway / chat·models·health 路由 / auth·rateLimit 中间件 / mastra 子路径（createMastraGateway）
 │   │
 │   ├── dev-server/            # @toimc/dev-server — 私有 dev 服务（8787，pnpm dev 随文档站启动）
-│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent / docs-agent 组件库助手 + 工具 + LibSQL 记忆，MASTRA_MODEL 门控）/ MCP 工具适配（context7 外部库文档，CONTEXT7_API_KEY 门控）/ Studio 宿主（4111，pnpm dev:studio）
+│   │   └── src/               # mock 剧本 / Agent 定义收敛（chat-agent / docs-agent 组件库助手 + orchestrator-agent 多 Agent 编排，MASTRA_MODEL 门控）/ 语义检索管线（EMBEDDING_MODEL 门控）/ MCP 双向（context7 客户端 + weather 宿主）/ Studio 宿主（4111，pnpm dev:studio）
 │   │
 │   ├── playground/            # @toimc/playground — Playground 演示包（私有）
-│   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / sse-adapter 前端适配器
+│   │   └── src/               # PlaygroundDemo / 主题构建器 / 各功能演示组件 / sse-adapter · dispatch-adapter 前端适配器
 │   │
 │   └── docs/                  # @toimc/docs — VitePress 文档站
 │       └── .vitepress/
-│           ├── components/    # PlaygroundDemo（完整 Playground）
+│           ├── components/    # DemoContainer（演示容器）
 │           └── theme/         # 全局组件注册
 ```
 
@@ -91,7 +93,7 @@ ai-chat-ui/
 ```mermaid
 flowchart TB
     subgraph fe["前端组件层 · npm 发布"]
-        VUE["@toimc/vue<br/>46 个组件导出<br/>Design Token / 样式隔离 / i18n"]
+        VUE["@toimc/vue<br/>57 个组件导出<br/>Design Token / 样式隔离 / i18n"]
         MD["@toimc/markdown<br/>流式 Markdown 渲染<br/>Shiki 高亮 / KaTeX 公式 / Mermaid 图表"]
     end
 
@@ -206,10 +208,17 @@ flowchart TB
 pnpm add @toimc/core @toimc/vue @toimc/markdown
 ```
 
+样式经 `@toimc/vue/style.css` 子路径导出，入口引入一次（含 Design Token 与组件样式）：
+
+```ts
+import '@toimc/vue/style.css'
+```
+
 ### 基本用法
 
 ```vue
 <script setup lang="ts">
+import '@toimc/vue/style.css'
 import { useChat } from '@toimc/core'
 import {
   Conversation,
@@ -271,74 +280,24 @@ const chat = useChat(adapter)
 
 ## 组件一览
 
-### Conversation 系列（对话容器）
+57 个组件按 12 个能力域组织，每个组件的完整 API（Props / Events / Slots / 交互示例）见文档站「组件」栏目（`packages/docs/`，`pnpm dev` 本地启动）：
 
-| 组件                  | 说明                          |
-| --------------------- | ----------------------------- |
-| Conversation          | 根容器，provide 滚动上下文    |
-| ConversationContent   | 可滚动消息区，max-width 768px |
-| ConversationEmpty     | 欢迎屏空状态                  |
-| ConversationScrollBtn | 回到底部浮动按钮              |
+| 能力域 | 组件 | 核心能力 |
+| ------ | ---- | -------- |
+| 对话容器 | Conversation、ConversationContent、ConversationEmpty、ConversationScrollBtn | 滚动容器与「回到底部」、消息区、欢迎屏 |
+| 消息渲染 | Message、MessageContent、MessageActions、MessageAction、MessageAttachments、ThinkingBlock、MessageFeedback、BranchPicker、MessageActionCopy · Retry · Edit · Feedback（预设） | 消息项与正文（Markdown / 思考块 / 流式状态）、操作按钮、附件、点赞点踩、分支回复选择、复制/重发/编辑/反馈预设 |
+| 思考链 | ThinkingChain | 多步骤思维链时间线（pending / active / complete / error 分步状态） |
+| 输入系统 | PromptInput、PromptInputBody、PromptInputTextarea、PromptInputFooter、PromptInputTools、PromptInputButton、PromptInputSubmit、PromptInputHeader、PromptInputUploadButton、PromptInputAttachments、PromptInputSuggestion | 自适应输入（sendKey 键位切换、IME 防御）、多模态附件管道（上传/粘贴/拖拽）、建议词触发 |
+| 偏好对比 | ComparisonMessage | A/B 双列对比，点选收集用户偏好后原地固化 |
+| 附件展示 | Attachments、Attachment、AttachmentPreview、AttachmentInfo、AttachmentRemove、AttachmentEmpty | grid / inline / list 布局、图片缩略图、hover 删除 |
+| 工具调用 | ToolCall、ToolCallHeader、ToolCallContent、ToolCallInput、ToolCallOutput、ToolConfirmation | 可折叠面板、参数/结果 JSON、等待审批等 6 态状态机、人工确认交互 |
+| 引用溯源 | InlineCitation、Sources | 行内引用角标（quote 片段）与来源列表（http(s) 白名单外链） |
+| 欢迎引导 | Welcome、Prompts | 首屏欢迎语与推荐提示词模板 |
+| 图片预览 | ImageLightbox | 灯箱预览（Esc 关闭、方向键翻页，可独立使用） |
+| 模型接入 | ProviderSettingsDialog | 自定义模型端点的新增 / 编辑 / 删除表单（存储中立，密钥交宿主） |
+| 通用 | StreamText、Button、Input、Select、Radio、Shimmer、Toast、LanguageToggle、ModelIcon、JsonDiffView | 流式光标、表单原语、轻提示、中英切换、模型厂商图标、JSON diff 视图 |
 
-### Message 系列（消息渲染）
-
-| 组件               | 说明                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| Message            | 消息项，avatar + body 布局                                                                        |
-| MessageContent     | 消息正文容器（`content` 走 Markdown 渲染；`thinking` 显示折叠式思考块；`streaming` 驱动流式状态） |
-| MessageActions     | 操作按钮容器（hover 显示）                                                                        |
-| MessageAction      | 单个操作按钮（30px 方形）                                                                         |
-| MessageAttachments | 附件容器                                                                                          |
-
-### PromptInput 系列（输入系统）
-
-| 组件                | 说明                                                                  |
-| ------------------- | --------------------------------------------------------------------- |
-| PromptInput         | 外层容器，provide 输入上下文，承载多模态附件管道（上传/粘贴/拖拽）    |
-| PromptInputTextarea | 自适应输入框（`sendKey` 切换 Enter / Alt+Enter 发送，IME 组合期防御） |
-| PromptInputSubmit   | 发送/停止切换按钮                                                     |
-| PromptInputBody     | 输入行容器                                                            |
-| PromptInputFooter   | 底部工具栏                                                            |
-| PromptInputTools    | 工具按钮组                                                            |
-| PromptInputButton   | 单个工具按钮                                                          |
-| PromptInputHeader   | 附件预览区域                                                          |
-
-### Comparison 系列（偏好对比）
-
-| 组件              | 说明                                                         |
-| ----------------- | ------------------------------------------------------------ |
-| ComparisonMessage | A/B 双列对比，左右各一「我更喜欢这个回复」按钮，收集用户偏好 |
-
-### Attachment 系列（附件展示）
-
-| 组件              | 说明                                             |
-| ----------------- | ------------------------------------------------ |
-| Attachments       | 容器（grid / inline / list 布局）                |
-| Attachment        | 单附件，provide 数据                             |
-| AttachmentPreview | 图片缩略图 / 文件图标                            |
-| AttachmentInfo    | 文件名 + 类型 + 大小                             |
-| AttachmentRemove  | hover 删除按钮                                   |
-| AttachmentEmpty   | 空状态                                           |
-| ImageLightbox     | 图片灯箱预览（Esc 关闭、方向键翻页，可独立使用） |
-
-### ToolCall 系列（工具调用）
-
-| 组件            | 说明                          |
-| --------------- | ----------------------------- |
-| ToolCall        | 可折叠容器（details/summary） |
-| ToolCallHeader  | 状态图标 + 工具名 + 耗时      |
-| ToolCallContent | 展开内容                      |
-| ToolCallInput   | 格式化参数 JSON               |
-| ToolCallOutput  | 结果或错误                    |
-
-### Shared（通用组件）
-
-| 组件       | 说明                   |
-| ---------- | ---------------------- |
-| StreamText | 流式文本（光标动画）   |
-| Button     | 通用按钮               |
-| Shimmer    | 微光扫过动画           |
-| Toast      | 顶部轻提示（自动关闭） |
+配套 composables（`@toimc/vue` 导出）：`useScrollAnchor`、`useTheme`、`useThemePreset`、`useMarkdownRenderer`、`useClipboard`、`useLayoutConfig`；消息布局（宽窄/对齐）经 `useLayoutConfig` 配置。
 
 ## 核心 API
 
@@ -361,6 +320,7 @@ interface Message {
   attachments?: Attachment[]
   toolCalls?: ToolCallInfo[]
   thinking?: ThinkingInfo // 思考过程（thinking chunk 自动累积，done 时补耗时）
+  sources?: MessageSource[] // RAG / 检索引用来源（InlineCitation / Sources 消费）
   comparison?: ComparisonPayload // A/B 回复对比载荷
   metadata?: Record<string, unknown>
   createdAt: Date
@@ -370,6 +330,8 @@ interface ThinkingInfo {
   content: string
   duration?: number // 思考耗时（毫秒），useChat 在 done 时自动计算
   startTime?: Date
+  active?: boolean // 思考是否仍在进行（流式期间由 useChat 维护）
+  steps?: ThinkingStep[] // 结构化多步骤思维链（ThinkingChain 消费，可选渐进增强）
 }
 
 interface ComparisonPayload {
@@ -385,7 +347,7 @@ interface ToolCallInfo {
   arguments: Record<string, unknown>
   result?: unknown
   error?: string
-  status: 'calling' | 'completed' | 'error'
+  status: 'pending' | 'calling' | 'awaiting-approval' | 'completed' | 'denied' | 'error'
   duration?: number
 }
 
@@ -404,7 +366,7 @@ interface ChatAdapter {
 
 ```bash
 pnpm install        # 安装依赖
-pnpm dev            # 启动文档站 + dev-server（5173 + 8787）
+pnpm dev            # 一键全家桶：文档站 + dev-server + Studio（5173 + 8787 + 4111，Studio 需 MASTRA_MODEL）
 pnpm dev:docs       # 只启动文档站
 pnpm dev:server     # 只启动 dev-server（8787）
 pnpm dev:studio     # 启动 Mastra Studio（4111，需 packages/dev-server/.env 配置 MASTRA_MODEL）
@@ -441,7 +403,7 @@ pnpm test:e2e:headed   # 有头模式（显示浏览器）
 pnpm test:e2e:report   # 查看HTML报告
 ```
 
-详细文档见 [E2E测试README](./e2e/README.md) 和 [快速开始指南](./E2E-QUICKSTART.md)。
+详细文档见 [E2E测试README](./e2e/README.md)，测试体系分层与用例设计见[测试指南](/guide/testing)。
 
 ## 开发工作流
 
@@ -463,8 +425,10 @@ pnpm test:e2e:report   # 查看HTML报告
 | 包              | 版本  | 状态                                                                        |
 | --------------- | ----- | --------------------------------------------------------------------------- |
 | @toimc/core     | 0.0.1 | ChatAdapter + useChat + ToolCallInfo                                        |
-| @toimc/vue      | 0.0.1 | 33 个 Vue 3 组件 + Design Token                                             |
-| @toimc/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@toimc/markdown/katex.css` 可选引入） |
+| @toimc/vue      | 0.0.1 | 57 个 Vue 3 组件 + Design Token（样式经 `@toimc/vue/style.css` 引入）       |
+| @toimc/markdown | 0.0.1 | Markdown + Shiki + KaTeX（公式样式经 `@toimc/markdown/katex.css` 可选引入）；Mermaid 图表为可选依赖（构建外置 + 动态加载，缺失时图表块降级为错误占位，不影响其余渲染） |
+| @toimc/agents   | 0.0.1 | 多模型适配层（OpenAI 兼容 / Anthropic / mock）+ `/mastra` 可选子路径        |
+| @toimc/server   | 0.0.1 | Hono 聊天网关 + `/mastra` 可选子路径                                        |
 | @toimc/docs     | 私有  | VitePress 文档站 + Playground                                               |
 
 ## License
