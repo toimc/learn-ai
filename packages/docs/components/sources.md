@@ -61,13 +61,28 @@ function onSelect(source: MessageSource) {
 }
 </script>
 
-上：折叠列表模式（点击头部开合，来源卡片可自定义插槽）；下：inline 徽标模式，超出 `maxInline` 的来源折叠进 Popover：
+### 折叠列表模式
+
+默认形态：分组标题带计数，点击头部开合，来源卡片可走 `source` 插槽自定义——适合回答末尾的完整引用区：
 
 <DemoContainer>
   <Sources :sources="ragSources" @select="onSelect" />
-  <div
-    style="height: 1px; margin: 16px 0; background: var(--vp-c-divider)"
-  />
+  <p
+    style="
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--ai-chat-color-text-muted);
+    "
+  >
+    最近选中：{{ lastSelected }}
+  </p>
+</DemoContainer>
+
+### inline 徽标模式
+
+`inline` 横排序号徽标，超出 `maxInline`（默认 3）折叠为 `+N` 进 Popover——适合正文下方紧凑引用，不占纵向空间：
+
+<DemoContainer>
   <Sources :sources="ragSources" inline :max-inline="3" @select="onSelect" />
   <p
     style="

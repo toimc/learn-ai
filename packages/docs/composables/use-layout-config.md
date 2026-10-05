@@ -12,6 +12,56 @@
 
 **典型消费组件**：[Conversation](/components/conversation)——`vars` 喂给其 `customTheme`，`layoutProps` 喂给 `layout` / `messageAlign` Props。
 
+## 代码演示
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { Button, Conversation, ConversationContent, Message, useLayoutConfig } from '@toimc/vue'
+
+const layoutMode = ref<'stacked' | 'im'>('stacked')
+const bubbleMax = ref(420)
+
+const LAYOUTS = ['stacked', 'im'] as const
+
+const layout = useLayoutConfig(
+  computed(() => ({
+    layout: layoutMode.value,
+    messageAlign: 'right',
+    messageMaxWidth: bubbleMax.value,
+  })),
+)
+</script>
+
+切换布局模式、拖动气泡上限，`vars` 与 `layoutProps` 响应式重算并即时生效：
+
+<DemoContainer>
+  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px">
+    <Button
+      v-for="m in LAYOUTS"
+      :key="m"
+      size="small"
+      :type="layoutMode === m ? 'primary' : 'secondary'"
+      @click="layoutMode = m"
+    >
+      {{ m }}
+    </Button>
+    <label style="font-size: 12px; color: var(--ai-chat-color-text-muted)">
+      气泡上限 {{ bubbleMax }}px
+      <input v-model.number="bubbleMax" type="range" min="240" max="600" step="20" />
+    </label>
+  </div>
+  <Conversation
+    :layout="layout.layoutProps.value.layout"
+    :message-align="layout.layoutProps.value.messageAlign"
+    :custom-theme="layout.vars.value"
+  >
+    <ConversationContent>
+      <Message from="user">拖动滑块，我的气泡宽度即时变化</Message>
+      <Message from="assistant">宽度走 CSS 变量（vars），布局与对齐走 layoutProps——两条通道各司其职。</Message>
+    </ConversationContent>
+  </Conversation>
+</DemoContainer>
+
 ## 签名
 
 ```ts

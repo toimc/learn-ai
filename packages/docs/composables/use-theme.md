@@ -13,6 +13,35 @@
 
 **典型消费组件**：无直接消费（主题经 CSS 变量与 `data-theme` 生效，全组件隐式受益）。参考消费方：playground 的 `PlaygroundDemo`、主题配置器 `ThemeBuilder`。
 
+## 代码演示
+
+<script setup lang="ts">
+import { useTheme } from '@toimc/vue'
+const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
+
+const MODES = ['light', 'dark', 'system'] as const
+</script>
+
+切换模式观察整站 `--ai-chat-*` 令牌翻转与 `resolvedTheme` 解析（`system` 随系统明暗）：
+
+<DemoContainer>
+  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+    <Button
+      v-for="m in MODES"
+      :key="m"
+      size="small"
+      :type="theme === m ? 'primary' : 'secondary'"
+      @click="setTheme(m)"
+    >
+      {{ m }}
+    </Button>
+    <Button size="small" @click="toggleTheme">toggleTheme()</Button>
+    <span style="font-size: 12px; color: var(--ai-chat-color-text-muted)">
+      theme: {{ theme }} · resolvedTheme: {{ resolvedTheme }}
+    </span>
+  </div>
+</DemoContainer>
+
 ## 函数签名
 
 ```typescript
@@ -66,18 +95,7 @@ export interface UseThemeOptions {
 - **自动应用**：把解析后的明暗写入 `data-theme` 属性，组件令牌自动翻转；写入位置由 `target` 选项决定（默认 `<html>`）。
 - **SSR 安全**：所有 `window` / `localStorage` 访问都有 `typeof window` 守卫，可在 `<script setup>` 中直接调用。
 
-## 示例
-
-点击按钮在亮 / 暗之间切换（会切换整页主题）：
-
-<script setup>
-import { useTheme } from '@toimc/vue'
-const { resolvedTheme, toggleTheme } = useTheme()
-</script>
-
-<Button type="primary" @click="toggleTheme">
-  当前：{{ resolvedTheme === 'dark' ? '🌙 暗色（点击切亮）' : '☀ 亮色（点击切暗）' }}
-</Button>
+## 基础用法
 
 ```vue
 <script setup lang="ts">

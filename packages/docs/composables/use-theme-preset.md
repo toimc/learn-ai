@@ -12,6 +12,62 @@
 
 **典型消费组件**：[Conversation](/components/conversation)（内部用它实现 `theme` / `customTheme` Props，是全组件唯一的 inline-style 写入点）。参考消费方：playground 的主题配置器 `ThemeBuilder`。
 
+## 代码演示
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { Button, useThemePreset } from '@toimc/vue'
+import type { PresetKey } from '@toimc/vue'
+
+const PRESETS: PresetKey[] = ['default', 'purple', 'green', 'warm']
+
+const root = ref<HTMLElement>()
+const preset = ref<PresetKey>('default')
+const useCustom = ref(false)
+
+const customVars = computed(() =>
+  useCustom.value ? { '--ai-chat-color-accent-400': '#f43f5e' } : undefined,
+)
+
+useThemePreset(root, preset, customVars)
+</script>
+
+切换预设或开启自定义变量，容器内（不影响本页其余部分）的 `--ai-chat-*` 令牌即时换肤：
+
+<DemoContainer>
+  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+    <Button
+      v-for="p in PRESETS"
+      :key="p"
+      size="small"
+      :type="preset === p ? 'primary' : 'secondary'"
+      @click="preset = p"
+    >
+      {{ p }}
+    </Button>
+    <Button size="small" :type="useCustom ? 'primary' : 'secondary'" @click="useCustom = !useCustom">
+      自定义 accent
+    </Button>
+  </div>
+  <div
+    ref="root"
+    style="
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid var(--ai-chat-color-border);
+      border-radius: 8px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    "
+  >
+    <Button type="primary">主按钮（accent 随预设变化）</Button>
+    <span style="font-size: 13px; color: var(--ai-chat-color-accent-500)">
+      强调色文本 --ai-chat-color-accent-500
+    </span>
+  </div>
+</DemoContainer>
+
 ## 函数签名
 
 ```typescript

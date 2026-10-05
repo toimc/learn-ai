@@ -5,16 +5,47 @@
 ## 代码演示
 
 <script setup lang="ts">
-import { Welcome } from '@toimc/vue'
+import { ref } from 'vue'
+import { Prompts, Welcome } from '@toimc/vue'
+import type { PromptItem } from '@toimc/vue'
+
+const promptItems: PromptItem[] = [
+  { key: 'weekly', label: '写一份周报', description: '把本周工作整理成结构化周报', icon: '📝' },
+  { key: 'explain', label: '解释这段代码', description: '逐行说明作用与设计意图', icon: '💡' },
+  { key: 'review', label: '审查组件 Props', description: '对照业界组件库检查 API 设计', icon: '🔍' },
+]
+
+const lastPrompt = ref('（尚未选择）')
 </script>
 
-自定义标题 / 描述 / 图标，默认插槽放搜索框或 [Prompts](./prompts.md) 引导内容：
+### 默认图标 + 建议词
+
+不传 `icon` 插槽时渲染默认星形徽标，默认插槽放 [Prompts](./prompts.md) 建议词——产品化首屏引导的最常见组合：
 
 <DemoContainer>
   <Welcome
     title="AI 组件库助手"
     description="问我任何关于组件用法、Props 或最佳实践的问题"
   >
+    <Prompts :items="promptItems" @select="(item) => (lastPrompt = item.label)" />
+    <p
+      style="
+        margin: 12px 0 0;
+        font-size: 12px;
+        color: var(--ai-chat-color-text-muted);
+      "
+    >
+      最近选择：{{ lastPrompt }}
+    </p>
+  </Welcome>
+</DemoContainer>
+
+### 自定义图标 + 附加信息
+
+`icon` 插槽放产品 logo，`extra` 插槽放版本号、声明等附加内容——适合品牌化的开场页：
+
+<DemoContainer>
+  <Welcome description="选择一个话题开始，或直接输入你的问题">
     <template #icon>🤖</template>
     <p
       style="

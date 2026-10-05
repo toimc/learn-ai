@@ -13,6 +13,52 @@
 
 **典型消费组件**：无——useChat 是**应用层** composable，组件库不消费它；它产出的 `messages` / `streaming` / `error` 等状态由宿主传入 [Conversation](/components/conversation) / [Message](/components/message) 系列组件渲染。参考消费方：playground 的 `PlaygroundDemo`、`MockServerDemo`、`MultiAgentDemo`、`WorkflowDemo` 演示页。
 
+## 代码演示
+
+接 mock 适配器发送消息，观察流式状态、消息计数与清空——UI 层零后端代码：
+
+<script setup>
+import { ref } from 'vue'
+import { useChat } from '@toimc/core'
+import { mockAdapter } from '@toimc/playground'
+
+const chat = useChat(mockAdapter)
+const errorInfo = ref('')
+</script>
+
+<DemoContainer>
+  <div>
+    <div style="margin-bottom: 8px; font-size: 14px; color: #666">
+      状态: {{ chat.isStreaming ? '流式中...' : '空闲' }}
+      <span v-if="chat.error" style="color: #ef4444"> | 错误: {{ chat.error.message }}</span>
+    </div>
+    <ChatWindow style="height: 300px">
+      <MessageList v-slot="{ message }" :messages="chat.messages">
+        <MessageBubble :message="message">
+          <MarkdownRenderer :content="message.content" />
+        </MessageBubble>
+      </MessageList>
+      <template #footer>
+        <PromptInput
+          :disabled="chat.isStreaming"
+          send-key="enter"
+          @send="(payload) => chat.send(payload.text)"
+          @abort="chat.abort"
+        >
+          <PromptInputBody>
+            <PromptInputTextarea />
+            <PromptInputSubmit />
+          </PromptInputBody>
+        </PromptInput>
+      </template>
+    </ChatWindow>
+    <div style="margin-top: 8px; display: flex; gap: 8px">
+      <Button size="small" type="secondary" @click="chat.clear">清空消息</Button>
+      <span style="font-size: 14px; color: #666; line-height: 32px">消息数: {{ chat.messages.length }}</span>
+    </div>
+  </div>
+</DemoContainer>
+
 ## 函数签名
 
 ```typescript
@@ -60,50 +106,6 @@ interface ChatAdapter {
 | editMessage | `(messageId: string, content: string) => Promise<void>` | 编辑用户消息（覆盖原消息、删除其后回复并重发） |
 
 > 💡 流式期间 assistant 消息的 `content` / `thinking` / `toolCalls` 均为**实时响应式更新**——每个 chunk 到达即触发界面重渲染，可直接绑定到模板做逐字输出效果。
-
-## 完整示例
-
-<script setup>
-import { ref } from 'vue'
-import { useChat } from '@toimc/core'
-import { mockAdapter } from '@toimc/playground'
-
-const chat = useChat(mockAdapter)
-const errorInfo = ref('')
-</script>
-
-<DemoContainer>
-  <div>
-    <div style="margin-bottom: 8px; font-size: 14px; color: #666">
-      状态: {{ chat.isStreaming ? '流式中...' : '空闲' }}
-      <span v-if="chat.error" style="color: #ef4444"> | 错误: {{ chat.error.message }}</span>
-    </div>
-    <ChatWindow style="height: 300px">
-      <MessageList v-slot="{ message }" :messages="chat.messages">
-        <MessageBubble :message="message">
-          <MarkdownRenderer :content="message.content" />
-        </MessageBubble>
-      </MessageList>
-      <template #footer>
-        <PromptInput
-          :disabled="chat.isStreaming"
-          send-key="enter"
-          @send="(payload) => chat.send(payload.text)"
-          @abort="chat.abort"
-        >
-          <PromptInputBody>
-            <PromptInputTextarea />
-            <PromptInputSubmit />
-          </PromptInputBody>
-        </PromptInput>
-      </template>
-    </ChatWindow>
-    <div style="margin-top: 8px; display: flex; gap: 8px">
-      <Button size="small" type="secondary" @click="chat.clear">清空消息</Button>
-      <span style="font-size: 14px; color: #666; line-height: 32px">消息数: {{ chat.messages.length }}</span>
-    </div>
-  </div>
-</DemoContainer>
 
 ## 相关类型
 

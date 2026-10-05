@@ -2,7 +2,7 @@
 
 轻量提示组件，fixed 定位悬浮于视口，用于操作反馈、错误提示等短暂通知。默认顶部居中弹出，可通过 `placement` 配置为上/下居中或四角；到时自动关闭，`duration` 设为 `0` 则常驻，由宿主控制关闭时机。
 
-## 基础用法
+## 代码演示
 
 用 `v-if` 控制显示，在 `@close` 中清理状态（自动关闭时组件会发出 `close` 事件）：
 
@@ -44,6 +44,10 @@ function showPlacementToast(placement: ToastPlacement) {
 }
 </script>
 
+### 基础显示
+
+点击按钮弹出，3 秒后自动关闭（`@close` 清理 `v-if` 状态）：
+
 <DemoContainer>
   <div>
     <Button size="small" @click="basicVisible = true">显示 Toast</Button>
@@ -51,37 +55,43 @@ function showPlacementToast(placement: ToastPlacement) {
   </div>
 </DemoContainer>
 
-在宿主应用中完整使用：
+### Info 信息提示
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { Toast } from '@toimc/vue'
-
-const visible = ref(false)
-</script>
-
-<template>
-  <Button @click="visible = true">复制</Button>
-  <Toast v-if="visible" message="消息已复制到剪贴板" @close="visible = false" />
-</template>
-```
-
-## 提示类型
-
-四种 `type` 对应不同语义配色：
+中性配色，适合与错误无关的状态告知（如「已切换模型」）：
 
 <DemoContainer>
-  <div style="display: flex; gap: 8px; flex-wrap: wrap">
-    <Button size="small" @click="showToast('info')">Info</Button>
-    <Button size="small" @click="showToast('success')">Success</Button>
-    <Button size="small" @click="showToast('error')">Error</Button>
-    <Button size="small" @click="showToast('warning')">Warning</Button>
-  </div>
-  <Toast v-if="typeVisible" :message="typeMessage" :type="currentType" @close="typeVisible = false" />
+  <Button size="small" @click="showToast('info')">Info</Button>
+  <Toast v-if="typeVisible && currentType === 'info'" :message="typeMessage" type="info" @close="typeVisible = false" />
 </DemoContainer>
 
-## 弹出位置
+### Success 操作成功
+
+success 配色，适合复制、保存、发送等操作的正向反馈：
+
+<DemoContainer>
+  <Button size="small" @click="showToast('success')">Success</Button>
+  <Toast v-if="typeVisible && currentType === 'success'" :message="typeMessage" type="success" @close="typeVisible = false" />
+</DemoContainer>
+
+### Error 操作失败
+
+error 配色且 `role="alert"` 立即播报，适合失败提示引导重试：
+
+<DemoContainer>
+  <Button size="small" @click="showToast('error')">Error</Button>
+  <Toast v-if="typeVisible && currentType === 'error'" :message="typeMessage" type="error" @close="typeVisible = false" />
+</DemoContainer>
+
+### Warning 风险提醒
+
+warning 配色，适合越限、不可逆操作前的提醒：
+
+<DemoContainer>
+  <Button size="small" @click="showToast('warning')">Warning</Button>
+  <Toast v-if="typeVisible && currentType === 'warning'" :message="typeMessage" type="warning" @close="typeVisible = false" />
+</DemoContainer>
+
+### 弹出位置
 
 `placement` 控制弹出位置，默认 `top`（顶部居中）；下方位置从下往上入场，四角紧贴对应角落（16px 边距）：
 
@@ -101,6 +111,22 @@ const visible = ref(false)
     @close="placementVisible = false"
   />
 </DemoContainer>
+
+## 在宿主应用中使用
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Toast } from '@toimc/vue'
+
+const visible = ref(false)
+</script>
+
+<template>
+  <Button @click="visible = true">复制</Button>
+  <Toast v-if="visible" message="消息已复制到剪贴板" @close="visible = false" />
+</template>
+```
 
 ```vue
 <!-- 右下角弹出，类似系统通知 -->
