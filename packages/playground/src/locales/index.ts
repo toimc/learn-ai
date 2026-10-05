@@ -97,6 +97,31 @@ const zhCN = {
       '审批结果：已拒绝。组件转为只读「已拒绝」态，工具名与参数保留可回溯。',
     resetApproval: '重置审批演示',
   },
+  modelMetaDemo: {
+    iconTitle: 'ModelIcon 品牌图标（15 家厂商 + 未知兜底）',
+    iconDesc:
+      '输入模型 id，内部经 detectModelVendor 识别厂商渲染品牌 SVG；识别不出时降级为首字母圆形。',
+    groupTitle: 'detectModelVendor 分组',
+    groupDesc:
+      '同一批模型 id 按厂商归类：路由型 id（openrouter/anthropic/…）自动取末段识别，识别不出的进 unknown 组。',
+    unknownVendor: '未知厂商',
+    pricingTitle: '定价格式化（$/1M · mock 演示价）',
+    pricingDesc:
+      'formatPerMillion 展示单价、pricingTier 划档（免费 / 经济 / 标准 / 旗舰）、formatTokenCost 试算一次对话（12K 输入 + 3K 输出）的成本。',
+    pricingNote: '价格为演示用 mock 数据，非各厂商实时报价。',
+    colModel: '模型',
+    colInput: '输入单价',
+    colOutput: '输出单价',
+    colTier: '档位',
+    colCost: '一次对话成本',
+    tierFree: '免费',
+    tierEconomy: '经济',
+    tierStandard: '标准',
+    tierPremium: '旗舰',
+    diffTitle: 'JsonDiffView 工具参数对比',
+    diffDesc:
+      '同一工具两次调用的参数前后对照：删除行红、新增行绿、修改行左红右绿并做字符级高亮。',
+  },
   mockServer: {
     title: 'Mock 服务端演示',
     description:
@@ -390,6 +415,31 @@ const enUS: typeof zhCN = {
     rejectedHint:
       'Approval result: rejected. The component switches to the read-only "denied" state; tool name and args stay reviewable.',
     resetApproval: 'Reset approval demo',
+  },
+  modelMetaDemo: {
+    iconTitle: 'ModelIcon brand icons (15 vendors + unknown fallback)',
+    iconDesc:
+      'Pass a model id — detectModelVendor identifies the vendor and renders the brand SVG; unknown ids fall back to a first-letter circle.',
+    groupTitle: 'detectModelVendor grouping',
+    groupDesc:
+      'A mixed pool of model ids grouped by vendor: route-style ids (openrouter/anthropic/…) match on the last segment; unmatched ones go to unknown.',
+    unknownVendor: 'Unknown vendor',
+    pricingTitle: 'Pricing formatting ($/1M · mock prices)',
+    pricingDesc:
+      'formatPerMillion for unit prices, pricingTier for tiers (free / economy / standard / premium), and formatTokenCost estimates one turn (12K in + 3K out).',
+    pricingNote: 'Prices are mock demo data, not live vendor quotes.',
+    colModel: 'Model',
+    colInput: 'Input',
+    colOutput: 'Output',
+    colTier: 'Tier',
+    colCost: 'Cost per turn',
+    tierFree: 'Free',
+    tierEconomy: 'Economy',
+    tierStandard: 'Standard',
+    tierPremium: 'Premium',
+    diffTitle: 'JsonDiffView tool-args diff',
+    diffDesc:
+      'Args of two invocations of the same tool side by side: deleted rows red, added rows green, modified rows red-left/green-right with char-level highlights.',
   },
   mockServer: {
     title: 'Mock Server Demo',

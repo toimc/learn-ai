@@ -61,6 +61,7 @@ import {
   ThemeBuilderPage,
   MultimodalDemoPage,
   CitationDemoPage,
+  ModelMetaDemoPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
@@ -144,6 +145,7 @@ export default {
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
     app.component('CitationDemoPage', CitationDemoPage)
+    app.component('ModelMetaDemoPage', ModelMetaDemoPage)
     if (!isPagesBuild) {
       const {
         MockServerDemoPage,
