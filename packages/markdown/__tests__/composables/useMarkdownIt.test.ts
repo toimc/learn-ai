@@ -81,4 +81,32 @@ describe('useMarkdownIt', () => {
     expect(out).not.toContain('ai-chat-mermaid-placeholder')
     expect(out).toContain('const x = 1')
   })
+
+  // T17 formula-guard：md.render 统一经 guardMathBlocks 预处理（extract → guard → markdown-it）
+  it('T17：公式体内的 --- 不再被 Setext 误判为标题', () => {
+    const md = useMarkdownIt()
+    const out = md.render('结论如下：\n$$\na = b\n---\n$$')
+    expect(out).not.toContain('<h2>')
+    expect(out).toContain('katex-display')
+  })
+
+  it('T17：闭合 $$ 同行尾随文字不被 block 规则静默丢弃', () => {
+    const md = useMarkdownIt()
+    const out = md.render('$$\nx = 1\n$$ 后续文字')
+    expect(out).toContain('后续文字')
+  })
+
+  it('T17：未闭合 $$ 段落末补齐，空行后的正文不被吞', () => {
+    const md = useMarkdownIt()
+    const out = md.render('$$\nx = 1\n\n正文段落')
+    expect(out).toContain('katex-display')
+    expect(out).toContain('正文段落')
+  })
+
+  it('T17：紧凑货币 $ 不再误配为行内公式', () => {
+    const md = useMarkdownIt()
+    const out = md.render('费用 $100，补贴$五十元')
+    expect(out).not.toContain('<eq')
+    expect(out).toContain('$100')
+  })
 })

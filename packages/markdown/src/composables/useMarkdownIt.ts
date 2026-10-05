@@ -2,6 +2,7 @@ import MarkdownIt from 'markdown-it'
 import taskLists from 'markdown-it-task-lists'
 import texmath from 'markdown-it-texmath'
 import katex from 'katex'
+import { guardMathBlocks } from '../utils/formula-guard'
 // FR-4（spec 04）：KaTeX 样式不再模块级隐式注入（避免全局 @font-face 污染宿主）。
 // 需要公式渲染样式的宿主按需引入：import '@toimc/markdown/katex.css'
 
@@ -38,6 +39,13 @@ export function useMarkdownIt(): InstanceType<typeof MarkdownIt> {
     }
     return defaultFence(tokens, idx, options, env, self)
   }
+
+  // T17 formula-guard：渲染前公式容错预处理（多行 $$ 重聚合 / Setext 保护 / 货币排除 /
+  // 未闭合补齐）。管线串联顺序 = extractCompleteMarkdown（流式完整性，见 useStreamingMarkdown）
+  // → guardMathBlocks（公式容错）→ markdown-it。包一层 render 使所有消费点统一生效。
+  const rawRender = instance.render.bind(instance)
+  instance.render = (src: string, env?: unknown): string =>
+    rawRender(guardMathBlocks(src), env)
 
   return instance
 }
