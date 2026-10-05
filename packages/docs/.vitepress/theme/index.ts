@@ -58,6 +58,8 @@ import {
   CitationDemoPage,
   ModelMetaDemoPage,
   FeedbackDemoPage,
+  VoiceDemoPage,
+  EdgeSearchDemoPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
@@ -139,6 +141,9 @@ export default {
     app.component('CitationDemoPage', CitationDemoPage)
     app.component('ModelMetaDemoPage', ModelMetaDemoPage)
     app.component('FeedbackDemoPage', FeedbackDemoPage)
+    // 语音/端侧搜索演示不依赖 dev-server，Pages 构建保留
+    app.component('VoiceDemoPage', VoiceDemoPage)
+    app.component('EdgeSearchDemoPage', EdgeSearchDemoPage)
     if (!isPagesBuild) {
       const {
         MockServerDemoPage,
@@ -146,12 +151,15 @@ export default {
         WorkflowDemoPage,
         VectorSearchDemoPage,
         MockApiPage,
+        GenUIDemoPage: GenUIDemoPageLazy,
       } = await import('@toimc/playground')
       app.component('MockServerDemoPage', MockServerDemoPage)
       app.component('MultiAgentDemoPage', MultiAgentDemoPage)
       app.component('WorkflowDemoPage', WorkflowDemoPage)
       app.component('VectorSearchDemoPage', VectorSearchDemoPage)
       app.component('MockApiPage', MockApiPage)
+      // GenUI 实时聊天依赖 dev-server（天气工具）；静态演示部分无法拆包，整体随 mock 页剔除
+      app.component('GenUIDemoPage', GenUIDemoPageLazy)
     }
     // 组件文档内嵌交互演示
     app.component('ConversationLayoutDemo', ConversationLayoutDemo)

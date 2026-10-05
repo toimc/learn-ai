@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { isUISchema } from '@toimc/core'
+import type { ThinkingInfo, ToolCallInfo, UISchema } from '@toimc/core'
 import { useMarkdownRenderer } from '../composables/useMarkdownRenderer'
 import { aiChatI18n } from '../locales'
 import ThinkingBlock from '../thinking/ThinkingBlock.vue'
-import type { ThinkingInfo } from '@toimc/core'
+import GenUIRenderer from '../genui/GenUIRenderer.vue'
+import ToolCall from '../tool-call/ToolCall.vue'
 
 const { t } = aiChatI18n.global
 
@@ -11,9 +14,22 @@ const props = defineProps<{
   content?: string
   thinking?: ThinkingInfo
   streaming?: boolean
+  /**
+   * 工具调用渲染区（opt-in）：不传时行为与旧版完全一致，宿主继续自行组装。
+   * completed 且 result.ui 为合法 UISchema 时优先走 GenUIRenderer（未注册
+   * type 落 #fallback 的 ToolCall 面板）；其余状态一律渲染 ToolCall 面板
+   */
+  toolCalls?: ToolCallInfo[]
 }>()
 
 const renderer = useMarkdownRenderer()
+
+/** completed 的工具调用若带合法 ui schema 则交 GenUI 渲染，否则 null */
+function genuiSchemaOf(tc: ToolCallInfo): UISchema | null {
+  if (tc.status !== 'completed') return null
+  const ui = (tc.result as { ui?: unknown } | undefined)?.ui
+  return isUISchema(ui) ? ui : null
+}
 
 // 计算思考内容的props
 const thinkingProps = computed(() => {
@@ -33,6 +49,19 @@ const thinkingProps = computed(() => {
 
 <template>
   <div class="ai-chat-message-content">
+    <!-- 工具调用渲染区（opt-in：仅在传入 toolCalls 时出现，置于正文前——
+         工具调用时序上先于最终文本，卡片在总结文字之前更贴近实际发生顺序） -->
+    <div v-if="props.toolCalls?.length" class="ai-chat-message-content__tools">
+      <template v-for="tc in props.toolCalls" :key="tc.id">
+        <GenUIRenderer v-if="genuiSchemaOf(tc)" :schema="genuiSchemaOf(tc)">
+          <template #fallback>
+            <ToolCall :data="tc" />
+          </template>
+        </GenUIRenderer>
+        <ToolCall v-else :data="tc" />
+      </template>
+    </div>
+
     <!-- 思考过程展示 -->
     <ThinkingBlock v-if="thinkingProps" v-bind="thinkingProps" />
 
@@ -65,6 +94,14 @@ const thinkingProps = computed(() => {
     line-height: 1.7;
     color: var(--ai-chat-color-text-primary);
     word-wrap: break-word;
+  }
+
+  .ai-chat-message-content__tools {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
   .ai-chat-message-content p {

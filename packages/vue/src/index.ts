@@ -46,6 +46,7 @@ export {
 export {
   MessageActionCopy,
   MessageActionRetry,
+  MessageActionSpeak,
   MessageActionEdit,
   MessageActionFeedback,
 } from './message/actions'
@@ -61,6 +62,7 @@ export {
   PromptInputFooter,
   PromptInputTools,
   PromptInputButton,
+  PromptInputMicButton,
   PromptInputSubmit,
   PromptInputHeader,
   PromptInputUploadButton,

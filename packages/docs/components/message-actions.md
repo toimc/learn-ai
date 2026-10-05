@@ -1,6 +1,6 @@
-# MessageActions 预设操作四件
+# MessageActions 预设操作五件
 
-基于 [MessageAction](./message.md#messageaction)（30px 图标按钮）封装的四个预设操作：复制、重试、编辑、反馈。开箱即用图标与文案（i18n `messageActions.*`），省去每个宿主重复手写 svg 与交互状态。四个组件均渲染 MessageAction 基座，可直接放进 `MessageActions` 行内组合使用。
+基于 [MessageAction](./message.md#messageaction)（30px 图标按钮）封装的五个预设操作：复制、重试、朗读、编辑、反馈。开箱即用图标与文案（i18n `messageActions.*`），省去每个宿主重复手写 svg 与交互状态。五个组件均渲染 MessageAction 基座，可直接放进 `MessageActions` 行内组合使用。
 
 ## 代码演示
 
@@ -12,6 +12,7 @@ import {
   MessageActionEdit,
   MessageActionFeedback,
   MessageActionRetry,
+  MessageActionSpeak,
 } from '@toimc/vue'
 
 type FeedbackValue = 'up' | 'down' | null
@@ -75,6 +76,7 @@ function onFeedback(v: FeedbackValue) {
 import {
   MessageActionCopy,
   MessageActionRetry,
+  MessageActionSpeak,
   MessageActionEdit,
   MessageActionFeedback,
 } from '@toimc/vue'
@@ -131,6 +133,22 @@ Best for：对回答不满意时重新生成。语义对接 `ChatState.regenerat
 | 事件名 | 参数 | 说明 |
 |--------|------|------|
 | retry | — | 点击重试 |
+
+## MessageActionSpeak 朗读
+
+Best for：AI 回答的「读给我听」。内部接 [`useSpeechOutput`](/guide/speech)（`speechSynthesis` 句子级朗读）：点击把 `text` 按句入队朗读，朗读中图标变「喇叭加斜线」、提示变「停止朗读」，再点打断；换一条消息点击会先打断上一条（`speak` 内部先 stop）。流式自动朗读（`feedChunk` + `onResponse`）与消息级手动朗读相互独立，互不干扰。
+
+```vue
+<MessageActionSpeak :text="message.content" />
+```
+
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| text | `string` | — | 待朗读文本（必填，通常传 `message.content`） |
+| tooltip | `string` | i18n `messageActions.speak` | 未朗读时的提示文案 |
+| speakingTooltip | `string` | i18n `messageActions.stopSpeak` | 朗读中的提示文案 |
+
+无自定义事件；朗读开关（`enabled`）只约束流式 `feedChunk`，手动点击不受限。
 
 ## MessageActionEdit 行内编辑
 

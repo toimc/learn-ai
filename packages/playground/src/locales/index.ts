@@ -65,10 +65,40 @@ const zhCN = {
   multimodalDemo: {
     title: '多模态输入',
     description:
-      '三种入口添加附件：点击图标选择、⌘V/Ctrl+V 粘贴、拖拽到输入框；Enter 换行、Alt+Enter 发送。发送前经 mock 上传（800ms），超限（>5 个或 >10MB）会 Toast 拒绝。',
-    payloadTitle: '最近一次 send 事件 payload',
+      '真发送链路：选图 → compressImageToDataUrl（长边 1024 / JPEG 0.85 压缩）→ Attachment.dataUrl → SSE adapter 组装 OpenAI 兼容 parts → dev-server。非图片附件随消息展示；未配 MASTRA_MODEL 时 mock 后端忽略图片照常回文本——优雅降级，链路不报错。',
+    payloadTitle: '最近一次线协议 payload（messages[].content）',
     payloadEmpty: '尚未发送——输入文字、附一张图片，然后按 Alt+Enter 试试',
     reset: '清空',
+    compressedTo: '已压缩至 {kb} KB',
+  },
+  genuiDemo: {
+    title: '生成式 UI（GenUI）',
+    description:
+      '工具回复直接渲染为真实组件：completed 且 result.ui 为合法 UISchema 的工具调用走 GenUIRenderer（组件注册表白名单），未注册 type / 普通工具降级为 ToolCall 面板。下方实时聊天调 dev-server 天气工具（配 MASTRA_MODEL 走真实 agent；mock 剧本回放无 ui 字段，正是降级路径）。',
+    staticTitle: '静态演示：PlanActions 与 adopt 事件',
+    staticDesc:
+      'schema 由工具代码确定性生成；组件只上报「采纳了哪个方案」，执行什么业务由宿主决定。',
+    adopted: '已采纳：{planId}',
+    liveTitle: '实时聊天：天气卡片（MessageContent toolCalls 接线）',
+    liveDesc:
+      '发送「北京天气怎么样」——配 MASTRA_MODEL 时 get_weather 工具附 weather-card UI schema；type 未注册时落 ToolCall 面板。',
+    statusOnline: 'dev-server 在线',
+    statusOffline: 'dev-server 离线',
+    offlineHint:
+      '连不上 dev-server（http://localhost:8787）。在项目根跑 pnpm dev 后重试——上方静态演示不依赖服务。',
+    inputPlaceholder: '问问天气，如：北京天气怎么样',
+    quickAsk: '北京天气怎么样',
+  },
+  voiceDemo: {
+    title: '语音输入与朗读',
+    description:
+      '浏览器原生 Web Speech API，零依赖：麦克风按钮（仅 Chrome/Edge）单句录音实时字幕，说完落输入框确认再发送；回复上的喇叭按钮逐句朗读，自动朗读开关把流式回复喂进朗读队列（localStorage 持久化，默认关）。',
+    autoSpeak: '自动朗读',
+    autoSpeakOn: '开',
+    autoSpeakOff: '关',
+    micUnsupported:
+      '当前浏览器不支持语音识别——麦克风按钮自动隐藏，其余功能不受影响',
+    inputPlaceholder: '打字，或点麦克风说话…',
   },
   thinkingDemo: {
     simulate: '模拟一次流式思考',
@@ -450,11 +480,41 @@ const enUS: typeof zhCN = {
   multimodalDemo: {
     title: 'Multimodal Input',
     description:
-      'Add attachments three ways: click the icons, paste (⌘V/Ctrl+V), or drag files onto the input; Enter for newline, Alt+Enter to send. Mock upload takes 800ms; limits (>5 files or >10MB) are rejected with a toast.',
-    payloadTitle: 'Last send event payload',
+      'Real send pipeline: pick an image → compressImageToDataUrl (long side 1024, JPEG 0.85) → Attachment.dataUrl → SSE adapter assembles OpenAI-compatible parts → dev-server. Non-image attachments ride along as attachments; without MASTRA_MODEL the mock backend ignores the image and still replies with text — graceful degradation.',
+    payloadTitle: 'Last wire payload (messages[].content)',
     payloadEmpty:
       'Nothing sent yet — type something, attach an image, then press Alt+Enter',
     reset: 'Clear',
+    compressedTo: 'compressed {kb} KB',
+  },
+  genuiDemo: {
+    title: 'Generative UI (GenUI)',
+    description:
+      'Tool replies render as real components: a completed tool call whose result.ui is a valid UISchema goes through GenUIRenderer (component registry whitelist); unregistered types / non-GenUI tools fall back to the ToolCall panel. The live chat below calls the dev-server weather tool (needs MASTRA_MODEL for the real agent; the mock script replays without the ui field — exactly the fallback path).',
+    staticTitle: 'Static demo: PlanActions + adopt event',
+    staticDesc:
+      'Schema is generated deterministically by tool code; the component only reports which plan was adopted — what to execute is up to the host.',
+    adopted: 'Adopted: {planId}',
+    liveTitle: 'Live chat: weather card via MessageContent toolCalls',
+    liveDesc:
+      'Send 「北京天气怎么样」 — with MASTRA_MODEL the get_weather tool attaches a weather-card UI schema; type falls back to the ToolCall panel when unregistered.',
+    statusOnline: 'dev-server online',
+    statusOffline: 'dev-server offline',
+    offlineHint:
+      'Cannot reach dev-server (http://localhost:8787). Run pnpm dev at the project root, then retry — the static demo above works without the server.',
+    inputPlaceholder: 'Ask about the weather, e.g. 北京天气怎么样',
+    quickAsk: '北京天气怎么样',
+  },
+  voiceDemo: {
+    title: 'Speech Input & Read-aloud',
+    description:
+      'Browser-native Web Speech API, zero dependencies: the mic button (Chrome/Edge only) records a single sentence with live transcript, and the final text lands in the input box for confirmation; the speaker button on each reply reads it aloud sentence by sentence, and the auto-read toggle streams replies into the TTS queue (persisted in localStorage, off by default).',
+    autoSpeak: 'Auto read-aloud',
+    autoSpeakOn: 'On',
+    autoSpeakOff: 'Off',
+    micUnsupported:
+      'This browser does not support speech recognition — the mic button is hidden and everything else still works',
+    inputPlaceholder: 'Type, or click the mic and speak…',
   },
   thinkingDemo: {
     simulate: 'Simulate streaming thinking',

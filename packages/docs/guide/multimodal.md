@@ -114,6 +114,8 @@ const content = [
 ]
 ```
 
+playground 的 `createSseAdapter`（`packages/playground/src/mock/sse-adapter.ts`）已内置这段组装（`toWireContent`）：带 `dataUrl` 附件的消息在线协议里自动变为 parts 数组，纯文本消息保持字符串不变——接 dev-server 的宿主 demo 直接传 `Attachment` 即可，无需手写映射；服务端 mock 剧本模式会忽略 parts 照常回文本，多模态链路在不支持的后端下优雅降级。
+
 验证方式：发一张报错截图问"这个错误怎么解决"，看模型回复是否引用了图里的具体内容——引用了，链路就通了。
 
 ## blob 预览地址的清理纪律

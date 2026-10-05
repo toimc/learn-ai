@@ -11,7 +11,7 @@
 消息域扩展组件（独立页面）：
 
 - [MessageFeedback](./message-feedback.md) — 消息 👍/👎 反馈与点踩评论
-- 预设操作四件（见 [message-actions](./message-actions.md)）：**MessageActionCopy** 复制回显 / **MessageActionRetry** 重试 / **MessageActionEdit** 行内编辑 / **MessageActionFeedback** 紧凑反馈
+- 预设操作五件（见 [message-actions](./message-actions.md)）：**MessageActionCopy** 复制回显 / **MessageActionRetry** 重试 / **MessageActionSpeak** 朗读 / **MessageActionEdit** 行内编辑 / **MessageActionFeedback** 紧凑反馈
 - [BranchPicker](./branch-picker.md) — 消息分支版本翻页（分支数据约定 `Message.metadata.branches`）
 
 ## 基础用法
@@ -250,6 +250,7 @@ const files: Attachment[] = [
 | content | `string` | — | 消息正文内容（传值后走 Markdown 渲染，不传走默认插槽） |
 | thinking | `ThinkingInfo` | — | 思考过程信息，提供后显示折叠式思考块 |
 | streaming | `boolean` | — | 是否正在流式更新（思考块仅在**思考自身进行中**（`thinking.active` 非 `false`）显示「正在思考…」，正文流式期间思考块保持收起；**正文为空时显示三点跳动指示**（发送→首 token 的空窗反馈），有正文时行尾由 MarkdownRenderer 挂**呼吸光标**） |
+| toolCalls | `ToolCallInfo[]` | — | **opt-in 工具调用渲染区**：传入后消息正文前自动渲染工具调用——`completed` 且 `result.ui` 为合法 [`UISchema`](/guide/genui) 时走 [`GenUIRenderer`](/components/genui-renderer)（type 未注册落回 ToolCall 面板），其余状态渲染 [`ToolCall`](/components/tool-call) 面板；不传时行为与旧版一致（宿主自行组装） |
 
 ```typescript
 interface ThinkingInfo {

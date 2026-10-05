@@ -390,6 +390,27 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 |--------|------|
 | default | 按钮图标/内容 |
 
+### PromptInputMicButton
+
+语音输入按钮（内部接 [`useSpeechInput`](/guide/speech)），放在 PromptInput 工具区即可获得完整语音输入体验。**特性检测驱动显隐**：Chrome/Edge 显示，Firefox 等不支持时整颗按钮不渲染。
+
+```vue
+<PromptInputTools>
+  <PromptInputMicButton />
+  <PromptInputUploadButton kind="image" />
+</PromptInputTools>
+```
+
+行为链路：点击开始录音（按钮 accent 色 + 脉冲动效），识别文本实时显示在按钮上方字幕浮层；再次点击（或单句模式说完自动停）结束录音，**最终识别文本追加进输入框**——语音识别不是 100% 准，落输入框供确认编辑再发送。识别错误（没听到语音 / 麦克风权限被拒）在字幕浮层显示翻译后的人话文案。
+
+| 属性名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| lang | `string` | `'zh-CN'` | 识别语言（BCP-47） |
+
+| 事件名 | 参数 | 说明 |
+|--------|------|------|
+| transcribed | `(text: string)` | 录音结束且识别文本已追加进输入框（无识别结果不触发） |
+
 ### PromptInputFooter
 
 底部工具栏容器，左右分列。无 Props。

@@ -12,6 +12,8 @@ const zhCN = {
     disclaimer: 'AI Chat UI 可能会产生不准确的信息，请注意甄别内容的准确性',
     send: '发送',
     stop: '停止',
+    micStart: '语音输入',
+    micStop: '停止录音',
     previewAttachment: '预览 {name}',
     removeAttachment: '移除 {name}',
     uploading: '上传中',
@@ -108,6 +110,8 @@ const zhCN = {
   messageActions: {
     copy: '复制',
     retry: '重新生成',
+    speak: '朗读',
+    stopSpeak: '停止朗读',
     edit: '编辑',
     saveEdit: '保存并重发',
     cancelEdit: '取消',
@@ -157,6 +161,13 @@ const zhCN = {
     invalidSchema: '界面数据格式无效',
     unsupportedType: '未注册的界面组件：{type}',
     adopt: '采纳',
+  },
+  // 语音错误码翻译组：useSpeechInput 只存机器码（unsupported / 浏览器原生码），
+  // 人话文案在 UI 层（PromptInputMicButton）经本组翻译
+  speechErrors: {
+    unsupported: '当前浏览器不支持语音识别',
+    noSpeech: '没有听到语音，请再试一次',
+    notAllowed: '麦克风权限被拒绝，请在浏览器设置中允许',
   },
 }
 
