@@ -584,6 +584,71 @@ describe('createMastraModel', () => {
   })
 })
 
+describe('MastraAdapter 会话归属与 usage 回传（多用户治理）', () => {
+  it('resource 传函数时按 passthrough 计算：userId 存在则 resource=user:{userId}（服务端覆写约定）', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    const adapter = new MastraAdapter(agent, {
+      resource: (passthrough) =>
+        typeof passthrough.userId === 'string'
+          ? `user:${passthrough.userId}`
+          : 'ai-chat',
+    })
+    await collect(
+      adapter.chatStream(
+        request({ passthrough: { conversationId: 'conv-1', userId: 'u7' } }),
+      ),
+    )
+    expect(stream.mock.calls[0][1]?.memory).toEqual({
+      thread: 'conv-1',
+      resource: 'user:u7',
+    })
+  })
+
+  it('resource 函数 + passthrough 无 userId 时回退 ai-chat（未认证路径不变）', async () => {
+    const { agent, stream } = fakeAgent([textDelta('ok')])
+    const adapter = new MastraAdapter(agent, {
+      resource: (passthrough) =>
+        typeof passthrough.userId === 'string'
+          ? `user:${passthrough.userId}`
+          : 'ai-chat',
+    })
+    await collect(
+      adapter.chatStream(
+        request({ passthrough: { conversationId: 'conv-2' } }),
+      ),
+    )
+    expect(stream.mock.calls[0][1]?.memory?.resource).toBe('ai-chat')
+  })
+
+  it('finish 事件携带 usage 时流收尾补 done 帧并带 metadata.usage（字面量断言）', async () => {
+    const finish = {
+      type: 'finish',
+      payload: {
+        stepResult: { reason: 'stop' },
+        output: { usage: { inputTokens: 5, outputTokens: 7 } },
+      },
+    }
+    const { agent } = fakeAgent([textDelta('你好'), finish])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    const last = chunks[chunks.length - 1]
+    expect(last).toEqual({
+      type: 'done',
+      content: '',
+      metadata: { usage: { inputTokens: 5, outputTokens: 7 } },
+    })
+  })
+
+  it('finish 事件无 usage（或未出现 finish）时不补 done 帧（网关兜底行为不变）', async () => {
+    const noUsage = {
+      type: 'finish',
+      payload: { stepResult: { reason: 'stop' }, output: {} },
+    }
+    const { agent } = fakeAgent([textDelta('ok'), noUsage])
+    const chunks = await collect(new MastraAdapter(agent).chatStream(request()))
+    expect(chunks.some((c) => c.type === 'done')).toBe(false)
+  })
+})
+
 describe('createMastraModel 依赖缺失友好错误', () => {
   it('@mastra/core 加载失败时抛含安装指引的错误，而非裸模块加载错误', async () => {
     // vi.mock 是文件级提升，会让本文件其他用例的动态 import 全部失败；

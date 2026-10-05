@@ -91,7 +91,13 @@ export class MastraAdapter implements IModelAdapter {
       typeof request.passthrough?.conversationId === 'string'
         ? request.passthrough.conversationId
         : `mastra_thread_${generateId()}`
-    return { thread, resource: this.options.resource ?? 'ai-chat' }
+    const resourceOption = this.options.resource
+    // 函数形态按请求计算归属（多用户治理：user:{userId} 服务端覆写约定）
+    const resource =
+      typeof resourceOption === 'function'
+        ? resourceOption((request.passthrough ?? {}) as Record<string, unknown>)
+        : (resourceOption ?? 'ai-chat')
+    return { thread, resource }
   }
 
   /** stream / generate 共用的执行项；temperature 在 Mastra 1.60 走 modelSettings */
@@ -125,6 +131,8 @@ export class MastraAdapter implements IModelAdapter {
     const completedArgs = new Set<string>()
     /** streaming-end payload 不带 toolName，从 start 事件记录 */
     const toolNames = new Map<string, string>()
+    /** finish 事件携带的真实 token 用量（用于收尾 done 帧回传，网关记账消费） */
+    let usage: { inputTokens: number; outputTokens: number } | undefined
 
     for await (const part of streamResult.fullStream) {
       switch (part.type) {
@@ -136,6 +144,21 @@ export class MastraAdapter implements IModelAdapter {
         case 'reasoning-delta': {
           if (part.payload.text)
             yield { type: 'thinking', content: part.payload.text }
+          break
+        }
+        case 'finish': {
+          const raw = part.payload.output?.usage as
+            { inputTokens?: unknown; outputTokens?: unknown } | undefined
+          if (
+            raw &&
+            (typeof raw.inputTokens === 'number' ||
+              typeof raw.outputTokens === 'number')
+          ) {
+            usage = {
+              inputTokens: Number(raw.inputTokens ?? 0),
+              outputTokens: Number(raw.outputTokens ?? 0),
+            }
+          }
           break
         }
         case 'tool-call-input-streaming-start': {
@@ -235,6 +258,10 @@ export class MastraAdapter implements IModelAdapter {
         default:
           break
       }
+    }
+    // finish 事件带 usage 时收尾补 done 帧回传（无 usage 维持不发 done，由网关兜底补帧）
+    if (usage) {
+      yield { type: 'done', content: '', metadata: { usage } }
     }
   }
 
