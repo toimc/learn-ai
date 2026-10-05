@@ -93,6 +93,12 @@ fallback 语义：提供 `#fallback` 具名 slot（通常换成 [`ToolCall`](/co
 <GenUIRenderer :schema="schema" @adopt="onAdopt" />
 ```
 
+**快捷接线（MessageContent 的 `toolCalls` prop）**：不想手写 `v-for` + `GenUIRenderer` 组装时，直接把 `message.toolCalls` 传给 [`MessageContent`](/components/message)——`completed` 且带合法 `ui` 的工具调用自动走 GenUI 渲染（未注册 type / 非法 schema / 非 completed 一律落回 [`ToolCall`](/components/tool-call) 面板），渲染区位于正文之前。不传该 prop 时 `MessageContent` 行为与旧版完全一致：
+
+```vue
+<MessageContent :content="msg.content" :tool-calls="msg.toolCalls" />
+```
+
 ## props 消毒规则（sanitizeGenuiProps）
 
 纯函数，逐值递归，不修改入参：
