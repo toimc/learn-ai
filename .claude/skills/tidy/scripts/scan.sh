@@ -22,9 +22,11 @@ human() {
   }'
 }
 
-dir_bytes() { # 目录总字节（du -sk 换算）；不存在输出 0
+dir_bytes() { # 目录（du -sk 换算）或单文件的字节；不存在输出 0
   local kb
-  if [ -d "$1" ]; then
+  if [ -f "$1" ]; then
+    statfmt "$1" 2>/dev/null || echo 0
+  elif [ -d "$1" ]; then
     kb=$(du -sk "$1" 2>/dev/null | cut -f1)
     echo $(( ${kb:-0} * 1024 ))
   else
@@ -130,6 +132,66 @@ if [ -d "$CH/projects" ]; then
   printf '  B  projects 体积 top10（含全部数据，删前看上面 jsonl 口径）：\n'
   du -sm "$CH/projects"/*/ 2>/dev/null | sort -rn | head -10 | while read -r m p; do
     printf '     %-46s %6s MB\n' "${p#"$CH/projects"/}" "$m"
+  done
+fi
+
+# ---------- memory 与多 CLI 层 ----------
+echo
+echo "== memory 与多 CLI =="
+hr
+
+CM="$HOME/.claude-mem"
+if [ -d "$CM" ]; then
+  printf '  claude-mem：\n'
+  b=$(dir_bytes "$CM/logs"); row "A  logs/（观察者日志）" "$(human "$b")"; addA "$b"
+  b=$(dir_bytes "$CM/claude-mem.db"); row "-  claude-mem.db（记忆库本体，默认保留）" "$(human "$b")"
+  b=$(dir_bytes "$CM/chroma"); row "-  chroma/（向量索引，异常大再重建）" "$(human "$b")"
+fi
+
+CX="$HOME/.codex"
+if [ -d "$CX" ]; then
+  printf '  Codex：\n'
+  b=$(dir_bytes "$CX/memories"); row "M  memories/（内容压缩对象）" "$(human "$b")"
+  b=$(dir_bytes "$CX/log"); row "A  log/" "$(human "$b")"; addA "$b"
+  b=$(dir_bytes "$CX/tmp"); row "A  tmp/" "$(human "$b")"; addA "$b"
+  if [ -d "$CX/shell_snapshots" ]; then
+    b=$(find "$CX/shell_snapshots" -type f -mtime +7 -print0 2>/dev/null | find_bytes)
+    row "A  shell_snapshots/ (>7天)" "$(human "$b")"; addA "$b"
+  fi
+  if [ -d "$CX/sessions" ]; then
+    b=$(find "$CX/sessions" -name '*.jsonl' -mtime +30 -print0 2>/dev/null | find_bytes)
+    n=$(find "$CX/sessions" -name '*.jsonl' -mtime +30 -print0 2>/dev/null | tr -dc '\0' | wc -c | tr -d ' ')
+    row "B  sessions jsonl (>30天，${n}个)" "$(human "$b")"; addB "$b"
+  fi
+  nb=$(ls "$CX"/*.bak* 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$nb" -gt 0 ]; then
+    row "B  *.bak* 备份 ${nb} 个（auth 备份含凭证，删更安全）" ""
+  fi
+  sq=$(find "$CX" -maxdepth 1 -name '*.sqlite*' -print0 2>/dev/null | find_bytes)
+  row "-  thread_history/logs 等 sqlite（默认保留）" "$(human "$sq")"
+fi
+
+for d in "$HOME/.gemini" "$HOME/.cursor"; do
+  if [ -d "$d" ]; then
+    row "探测  ${d#"$HOME"/}（仅列体积，默认不动）" "$(human "$(dir_bytes "$d")")"
+  fi
+done
+
+if [ -d "$CH/projects" ]; then
+  printf '  Claude auto-memory（体积 top8 + 死链/孤儿检测）：\n'
+  du -sm "$CH/projects"/*/memory/ 2>/dev/null | sort -rn | head -8 | while read -r m p; do
+    proj="${p#"$CH/projects"/}"; proj="${proj%/memory/}"
+    dead=0; orph=0; idx="$p/MEMORY.md"
+    if [ -f "$idx" ]; then
+      while IFS= read -r f; do
+        [ -f "$p/$f" ] || dead=$((dead+1))
+      done < <(grep -o '\]([^)]*\.md)' "$idx" 2>/dev/null | sed 's/^](//;s/)$//' | sort -u)
+      for f in "$p"/*.md; do
+        b_=$(basename "$f"); [ "$b_" = "MEMORY.md" ] && continue
+        grep -q "($b_)" "$idx" 2>/dev/null || orph=$((orph+1))
+      done
+    fi
+    printf '     %-40s %5s MB  死链%s/孤儿%s\n' "$proj" "$m" "$dead" "$orph"
   done
 fi
 
