@@ -40,7 +40,7 @@ export function teamDefinitions(env: MastraEnv): MastraAgentDefinition[] {
         ...(env.modelApiKey ? { modelApiKey: env.modelApiKey } : {}),
       }),
       instructions: `你是检索员，多 agent 编排中的只读检索角色。
-- 收到任务后提取 1-3 个独立关键词（优先组件英文名，如 MessageBubble），用 search_docs 检索 ai-chat-ui 文档
+- 收到任务后提取 1-3 个独立关键词（优先组件英文名，如 PromptInput），用 search_docs 检索 ai-chat-ui 文档
 - 只做只读检索，不修改任何数据，不调用其他工具
 - 把检索到的要点整理成简明清单返回，每条附文档出处；检索结果不含相关信息时如实返回"未命中"，不凭记忆编造
 - 你只提供检索材料，不回答问题、不起草内容`,

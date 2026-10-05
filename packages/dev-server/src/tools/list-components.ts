@@ -10,7 +10,7 @@ const COMPONENTS_DIR = join(
   '../../../docs/components',
 )
 
-/** kebab 文件名 → Pascal 组件名：message-bubble → MessageBubble */
+/** kebab 文件名 → Pascal 组件名：prompt-input → PromptInput */
 function toPascalName(kebab: string): string {
   return kebab
     .split('-')

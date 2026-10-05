@@ -105,7 +105,8 @@ describe('POST /search', () => {
       const body = await res.json()
       expect(body.query).toBe('聊天气泡')
       expect(body.keyword.results.length).toBeGreaterThan(0)
-      expect(body.keyword.results[0].source).toContain('message-bubble')
+      // 关键词路靠 SYNONYMS（聊天气泡→气泡）命中气泡布局文档
+      expect(body.keyword.results[0].source).toContain('use-layout-config')
       expect(body.mode).toBe('keyword')
       // 链路耗时：未配置 embedding 时语义路 vectorMs=0（未尝试，非失败）
       expect(body.timing.hybrid.vectorMs).toBe(0)

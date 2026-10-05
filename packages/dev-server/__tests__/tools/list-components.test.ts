@@ -46,8 +46,8 @@ describe('list_components 工具', () => {
     const names = components.map((c) => c.name)
 
     expect(names).toContain('Button')
-    expect(names).toContain('MessageBubble')
-    expect(names).toContain('ChatWindow')
+    expect(names).toContain('Message')
+    expect(names).toContain('Conversation')
   })
 
   it('每项携带 Pascal 组件名、标题、摘要与文档路径', async () => {
@@ -59,10 +59,15 @@ describe('list_components 工具', () => {
     expect(button?.source).toBe('components/button.md')
   })
 
-  it('废弃组件带 deprecated 标记（MessageBubble 已废弃，迁移 Message）', async () => {
+  it('已删除的旧组件不得残留在清单（防 docs 目录回退 resurrect 死页）', async () => {
+    // 旧用例断言「废弃组件带 deprecated 标记」，其事实来源（docs 废弃页）
+    // 已随 deprecated 四件删除而消亡——改为防回归的「清单不含已删组件」
     const components = await listComponents()
-    const bubble = components.find((c) => c.name === 'MessageBubble')
+    const names = components.map((c) => c.name)
 
-    expect(bubble?.deprecated).toBe(true)
+    expect(names).not.toContain('ChatWindow')
+    expect(names).not.toContain('MessageList')
+    expect(names).not.toContain('MessageBubble')
+    expect(names).not.toContain('InputArea')
   })
 })

@@ -12,14 +12,14 @@ import { createDocsVectorStore, DOCS_INDEX_NAME } from '../rag/vector-store'
 
 /**
  * 领域同义词表：用户口语 → 文档词汇的映射层。
- * 文档词汇收敛（"消息气泡/bubble"），用户口语发散（"聊天气泡"），
- * 字面匹配跨不过这道沟——实测"聊天气泡"在 45 篇文档中出现 0 次。
+ * 文档词汇收敛（"气泡"），用户口语发散（"聊天气泡"），
+ * 字面匹配跨不过这道沟——实测"聊天气泡"在组件文档中出现 0 次。
  * 清单跟着真实失败案例长，不预先铺满。
  */
 const SYNONYMS: Record<string, readonly string[]> = {
-  聊天气泡: ['气泡', '消息气泡', 'bubble', 'message-bubble'],
-  气泡: ['聊天气泡', '消息气泡', 'bubble', 'message-bubble'],
-  消息气泡: ['聊天气泡', '气泡', 'bubble', 'message-bubble'],
+  聊天气泡: ['气泡', '消息气泡', 'bubble'],
+  气泡: ['聊天气泡', '消息气泡', 'bubble'],
+  消息气泡: ['聊天气泡', '气泡', 'bubble'],
   暗色: ['深色', '夜间', 'dark'],
   深色: ['暗色', '夜间', 'dark'],
   夜间: ['暗色', '深色', 'dark'],
@@ -27,8 +27,7 @@ const SYNONYMS: Record<string, readonly string[]> = {
   换肤: ['主题', '皮肤', 'theme'],
   皮肤: ['主题', '换肤', 'theme'],
   圆角: ['radius'],
-  输入框: ['input', 'input-area', 'prompt-input'],
-  消息列表: ['message-list'],
+  输入框: ['input', 'prompt-input'],
   弹窗: ['dialog', 'modal', 'toast'],
   提示: ['toast'],
   附件: ['attachment', '上传'],
@@ -81,7 +80,7 @@ interface DocIndexEntry {
   snippetSource: string
 }
 
-/** 每次执行全量读盘（47 篇文档 <1MB，dev 工具无需索引常驻） */
+/** 每次执行全量读盘（66 篇文档 <1MB，dev 工具无需索引常驻） */
 function buildIndex(): DocIndexEntry[] {
   return collectMdFiles(DOCS_ROOT).map((file) => {
     const content = readFileSync(file, 'utf-8')
@@ -100,7 +99,7 @@ function buildIndex(): DocIndexEntry[] {
 }
 
 const HINT_NO_HIT =
-  '未命中任何文档。建议：1) 调 list_components 查看全部组件清单；2) 换组件英文名（如 MessageBubble）或常用术语（如 主题、暗色、i18n）重试'
+  '未命中任何文档。建议：1) 调 list_components 查看全部组件清单；2) 换组件英文名（如 PromptInput）或常用术语（如 主题、暗色、i18n）重试'
 
 /** 向量路召回深度：融合前取 top8（同 source 多块取最高分），RRF 后再截 top5 */
 const VECTOR_TOP_K = 8
@@ -257,8 +256,8 @@ function keywordSearch(terms: string[]): SearchResultItem[] {
 
       const df = docFreq.get(term) ?? 0
       const idf = Math.log(1 + index.length / (1 + df))
-      // 标题命中 ×5：正文里的高频引用不得压过标题命中（实测查 ChatWindow
-      // 时 message-bubble.md 因正文引用 6 次反超 chat-window.md 的标题命中）
+      // 标题命中 ×5：正文里的高频引用不得压过标题命中（实测查 attachments
+      // 时 prompt-input.md 正文引用 18 次，无加权会反超 attachments.md 的标题命中）
       score += idf * (titleTf * 5 + bodyTf)
       matchedTerms.push(term)
     }
@@ -283,7 +282,7 @@ function keywordSearch(terms: string[]): SearchResultItem[] {
 export const searchDocsTool = createTool({
   id: 'search_docs',
   description:
-    '检索 ai-chat-ui 组件库文档（语义+关键词混合）。适用于：组件用法、props/events/slots 查询、主题定制、集成配置、报错排查。keywords 给 1-3 个关键词（优先组件英文名如 MessageBubble；语义检索已支持自然短语，如「聊天气泡怎么改圆角」），返回最相关的文档片段与出处。清单类问题（有哪些组件/基础组件）请改用 list_components。',
+    '检索 ai-chat-ui 组件库文档（语义+关键词混合）。适用于：组件用法、props/events/slots 查询、主题定制、集成配置、报错排查。keywords 给 1-3 个关键词（优先组件英文名如 PromptInput；语义检索已支持自然短语，如「聊天气泡怎么改圆角」），返回最相关的文档片段与出处。清单类问题（有哪些组件/基础组件）请改用 list_components。',
   inputSchema: z.object({
     keywords: z
       .array(z.string().min(1))

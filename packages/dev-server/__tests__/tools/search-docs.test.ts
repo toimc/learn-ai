@@ -48,66 +48,62 @@ describe('search_docs 工具', () => {
 
   it('inputSchema：keywords 数组必填，旧整串 query 形态拒绝（结构化杜绝整串字面匹配）', () => {
     expect(schema.safeParse({}).success).toBe(false)
-    expect(schema.safeParse({ query: 'InputArea' }).success).toBe(false)
-    expect(schema.safeParse({ keywords: ['InputArea'] }).success).toBe(true)
+    expect(schema.safeParse({ query: 'PromptInput' }).success).toBe(false)
+    expect(schema.safeParse({ keywords: ['PromptInput'] }).success).toBe(true)
     expect(schema.safeParse({ keywords: [] }).success).toBe(false)
     expect(
-      schema.safeParse({ keywords: ['InputArea'], component: 'InputArea' })
+      schema.safeParse({ keywords: ['PromptInput'], component: 'PromptInput' })
         .success,
     ).toBe(true)
   })
 
-  it('口语化多词检索：聊天气泡+圆角 命中气泡组件与主题文档（旧实现整串 0 命中）', async () => {
+  it('口语化多词检索：聊天气泡+圆角 命中气泡布局与主题文档（旧实现整串 0 命中）', async () => {
     const { results } = await search({ keywords: ['聊天气泡', '圆角'] })
 
     const sources = results.map((r) => r.source)
-    expect(sources).toContain('components/message-bubble.md')
+    expect(sources).toContain('composables/use-layout-config.md')
     expect(sources).toContain('guide/theming.md')
   })
 
-  it('同义词扩展：聊天气泡 命中 message-bubble 文档（文档只写"消息气泡/bubble"）', async () => {
+  it('同义词扩展：聊天气泡 命中 use-layout-config 文档（文档只写"气泡"，不写口语词）', async () => {
     const { results } = await search({ keywords: ['聊天气泡'] })
 
-    expect(
-      results.some((r) => r.source === 'components/message-bubble.md'),
-    ).toBe(true)
+    expect(results[0].source).toBe('composables/use-layout-config.md')
   })
 
-  it('标题加权：查 ChatWindow 时 chat-window.md 排第一（正文引用次数不得压过标题命中）', async () => {
-    const { results } = await search({ keywords: ['ChatWindow'] })
+  it('标题加权：查 Conversation 时 conversation.md 排第一（正文引用 18 次的 use-layout-config.md 不得压过标题命中）', async () => {
+    const { results } = await search({ keywords: ['Conversation'] })
 
-    expect(results[0].source).toBe('components/chat-window.md')
+    expect(results[0].source).toBe('components/conversation.md')
   })
 
-  it('命中查询：InputArea 命中两文件，组件文档以更高分排第一', async () => {
-    const { results } = await search({ keywords: ['InputArea'] })
+  it('命中查询：PromptInput 命中两文件，组件文档以更高分排第一', async () => {
+    const { results } = await search({ keywords: ['PromptInput'] })
 
-    expect(results[0].source).toBe('components/input-area.md')
-    expect(results[0].title).toBe('InputArea')
+    expect(results[0].source).toBe('components/prompt-input.md')
+    expect(results[0].title).toBe('PromptInput 系列')
     expect(results[0].score).toBeGreaterThan(0)
     expect(results.some((r) => r.source === 'guide/i18n.md')).toBe(true)
     expect(results[0].matchedTerms.length).toBeGreaterThan(0)
   })
 
   it('片段截取不超过 400 字，且包含检索词上下文', async () => {
-    const { results } = await search({ keywords: ['InputArea'] })
+    const { results } = await search({ keywords: ['PromptInput'] })
 
     expect(results[0].snippet.length).toBeLessThanOrEqual(400)
-    expect(results[0].snippet.toLowerCase()).toContain('inputarea')
+    expect(results[0].snippet.toLowerCase()).toContain('promptinput')
   })
 
   it('component 过滤词参与计分：keywords 不命中时组件文档仍因 component 入选', async () => {
-    // toast 在 input-area.md 中 0 次——入选只可能来自 component 'InputArea' 计分
+    // shimmer 在 toast.md 中 0 次——入选只可能来自 component 'Toast' 计分
     const { results } = await search({
-      keywords: ['Toast'],
-      component: 'InputArea',
+      keywords: ['Shimmer'],
+      component: 'Toast',
     })
 
-    const inputArea = results.find(
-      (r) => r.source === 'components/input-area.md',
-    )
-    expect(inputArea).toBeDefined()
-    expect(inputArea?.score).toBeGreaterThan(0)
+    const toast = results.find((r) => r.source === 'components/toast.md')
+    expect(toast).toBeDefined()
+    expect(toast?.score).toBeGreaterThan(0)
   })
 
   it('结果按 score 降序排序', async () => {
@@ -139,15 +135,16 @@ describe('search_docs 语义检索路（EMBEDDING_MODEL 门控）', () => {
     try {
       const { results } = await search({ keywords: ['聊天气泡'] })
       expect(results.length).toBeGreaterThan(0)
-      expect(results[0].source).toContain('message-bubble')
+      // 关键词路靠 SYNONYMS（聊天气泡→气泡）照常命中气泡布局文档
+      expect(results[0].source).toContain('use-layout-config')
     } finally {
       vi.unstubAllEnvs()
     }
   }, 20_000)
 
   it('EMBEDDING_MODEL 未配置时不尝试向量路（纯关键词行为，回归保护）', async () => {
-    const { results } = await search({ keywords: ['ChatWindow'] })
-    expect(results[0].source).toBe('components/chat-window.md')
+    const { results } = await search({ keywords: ['Toast'] })
+    expect(results[0].source).toBe('components/toast.md')
   })
 
   it('中英混排词按边界切分：「Message组件」关键词路可命中 message 文档', async () => {

@@ -150,7 +150,7 @@ describe('POST /api/workflows/:id/run 端到端（假 agent，零网络）', () 
     const res = await postRun(
       createWorkflowsRoutes(MASTRA_ENV),
       'docs-council-workflow',
-      { task: 'MessageBubble 怎么用' },
+      { task: 'Conversation 怎么用' },
     )
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toContain('text/event-stream')

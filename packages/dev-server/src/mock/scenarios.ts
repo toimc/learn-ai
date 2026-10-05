@@ -207,9 +207,9 @@ function orchestrationScript(options: {
 /** 委托编排：researcher 检索 → writer 起草，finalDraft 即 writer 稿 */
 function delegateScript(task: string): Script {
   const writerDraft = [
-    'InputArea（已演进为 PromptInputTextarea）的按键行为：\n',
-    '- 默认 `sendKey="enter"`：**Enter 发送**，Shift+Enter 插入换行\n',
-    '- `sendKey="alt-enter"`：Enter 原生换行，Alt/Cmd+Enter 才发送\n',
+    'PromptInput 的按键行为：\n',
+    '- `sendKey="enter"`：**Enter 发送**，Shift+Enter 插入换行\n',
+    '- `sendKey="alt-enter"`（默认）：Enter 原生换行，Alt/Cmd+Enter 才发送\n',
     '- 输入法组词期间的 Enter 被 `isComposing` / `keyCode 229` 守护，不会误发',
   ].join('')
   return orchestrationScript({
@@ -235,8 +235,8 @@ function delegateScript(task: string): Script {
           output: [
             '检索命中 3 处（packages/vue/src/prompt-input/PromptInputTextarea.vue、',
             'packages/docs/components/prompt-input.md）：\n',
-            '- 默认 sendKey="enter"：Enter 直接发送，Shift+Enter 插入换行\n',
-            '- sendKey="alt-enter"：Enter 原生换行，Alt/Cmd+Enter 发送\n',
+            '- sendKey="enter"：Enter 直接发送，Shift+Enter 插入换行\n',
+            '- sendKey="alt-enter"（默认）：Enter 原生换行，Alt/Cmd+Enter 发送\n',
             '- isComposing / keyCode 229 守护输入法组词期间的 Enter，不误发',
           ].join(''),
         },
@@ -259,7 +259,7 @@ function delegateScript(task: string): Script {
         300,
       ],
       [
-        '**按键行为**：默认 Enter 发送、Shift+Enter 换行；`sendKey="alt-enter"` 时改为 Alt/Cmd+Enter 发送；输入法组词中的 Enter 不会误发。',
+        '**按键行为**：`sendKey="enter"` 时 Enter 发送、Shift+Enter 换行；默认 `sendKey="alt-enter"` 为 Alt/Cmd+Enter 发送；输入法组词中的 Enter 不会误发。',
         120,
       ],
       ['两个阶段的检索原文与起草稿可在上方卡片内折叠查看。', 120],

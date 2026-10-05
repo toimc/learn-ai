@@ -66,11 +66,12 @@ function expectNonNegativeDuration(stage: { durationMs: number }): void {
   expect(stage.durationMs).toBeGreaterThanOrEqual(0)
 }
 
-const DELEGATE_TASK = 'InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？'
+const DELEGATE_TASK =
+  'PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？'
 const RESEARCHER_OUTPUT = '检索到：Enter 发送消息，Shift+Enter 插入换行'
 const WRITER_OUTPUT = 'Enter 发送消息，Shift+Enter 插入换行。'
 const RESEARCHER_USAGE: Usage = { inputTokens: 11, outputTokens: 7 }
-const DELEGATE_WRITER_PROMPT = `任务：InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？
+const DELEGATE_WRITER_PROMPT = `任务：PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？
 检索结果：
 检索到：Enter 发送消息，Shift+Enter 插入换行
 请基于以上检索结果起草回答。`

@@ -3,7 +3,7 @@ import { buildReply, scenarioNames } from '../../src/mock/scenarios'
 
 /** 预置问题（spec 16 §3.6）：演示页在原文前拼接形态前缀作为发送文本 */
 const DELEGATE_INPUT =
-  '【委托】InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？'
+  '【委托】PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？'
 const PARALLEL_INPUT = '【并行】主题定制有哪些方式？CSS 变量覆盖和预设怎么选？'
 const PIPELINE_INPUT = '【流水线】多会话管理的数据存在哪里？怎么持久化？'
 
@@ -108,7 +108,7 @@ describe('多 agent 剧本：tool_call 帧', () => {
       [
         DELEGATE_INPUT,
         'delegate',
-        'InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？',
+        'PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？',
       ],
       [
         PARALLEL_INPUT,
@@ -152,7 +152,7 @@ describe('多 agent 剧本：tool_result 的 OrchestrationResult 结构（委托
     const result = getResult()
     expect(result.pattern).toBe('delegate')
     expect(result.task).toBe(
-      'InputArea 的 Enter 键行为是什么？Shift+Enter 又是什么？',
+      'PromptInput 的 Enter 键行为是什么？Shift+Enter 又是什么？',
     )
     expect(result.stages.map((s) => s.role)).toEqual(['researcher', 'writer'])
     expect(result.stages.map((s) => s.agentId)).toEqual([
