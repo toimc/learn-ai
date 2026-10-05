@@ -58,4 +58,30 @@ describe('readDevServerEnv', () => {
       true,
     )
   })
+
+  it('auth 默认 static（现状零变化），AUTH_MODE=user 切用户态', () => {
+    const def = readDevServerEnv({}).auth
+    expect(def.mode).toBe('static')
+    expect(def.freeDailyQuota).toBe(20)
+    expect(def.proDailyQuota).toBe(200)
+
+    const user = readDevServerEnv({ AUTH_MODE: 'user' }).auth
+    expect(user.mode).toBe('user')
+    // jwtSecret 缺省为空串，由装配层（createDevApp）报错兜底
+    expect(user.jwtSecret).toBe('')
+  })
+
+  it('AUTH_JWT_SECRET / AUTH_DAILY_QUOTA_* / AUTH_DB_URL 按需解析，非法配额回退默认', () => {
+    const env = readDevServerEnv({
+      AUTH_MODE: 'user',
+      AUTH_JWT_SECRET: 's3cret',
+      AUTH_DAILY_QUOTA_FREE: '3',
+      AUTH_DAILY_QUOTA_PRO: 'not-a-number',
+      AUTH_DB_URL: 'file:/tmp/x/auth.db',
+    }).auth
+    expect(env.jwtSecret).toBe('s3cret')
+    expect(env.freeDailyQuota).toBe(3)
+    expect(env.proDailyQuota).toBe(200)
+    expect(env.dbUrl).toBe('file:/tmp/x/auth.db')
+  })
 })

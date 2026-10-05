@@ -130,7 +130,11 @@ model: myLanguageModel
 | `EMBEDDING_MODEL`      | 可选；存在即启用 `search_docs` 语义检索路（裸模型名走本地 Ollama，含 `provider/` 前缀走云端端点） | `bge-m3`                              |
 | `EMBEDDING_MODEL_URL`  | 可选；embedding 的 OpenAI 兼容端点，缺省 `http://localhost:11434/v1`（本地 Ollama） | `http://localhost:11434/v1`           |
 | `EMBEDDING_MODEL_API_KEY` | 可选；embedding 端点 key，本地 Ollama 缺省占位 `ollama`             | `sk-xxx`                              |
-| `MASTRA_TOKEN`         | 可选；网关 Bearer，设置后 `/api/chat` 与 `/api/models` 需携带（`/health` 公开） | `s3cret`                              |
+| `MASTRA_TOKEN`         | 可选；网关 Bearer（仅 `AUTH_MODE` 缺省的 static 模式生效），设置后 `/api/chat` 与 `/api/models` 需携带（`/health` 公开） | `s3cret`                              |
+| `AUTH_MODE`            | 可选；`static`（缺省，现状不变）/ `user`（用户态：注册登录 + API Key + 每日配额 + 会话隔离 + 用量记账，详见[服务端网关·多用户](/guide/server#多用户-认证与配额-identity-模式)） | `user`                               |
+| `AUTH_JWT_SECRET`      | `AUTH_MODE=user` 必填；JWT 签发密钥，缺省启动即报错                     | `jwt-s3cret`                          |
+| `AUTH_DAILY_QUOTA_FREE` / `AUTH_DAILY_QUOTA_PRO` | 可选；每用户每日对话配额（超额 402 引导升级） | `20` / `200`                          |
+| `AUTH_DB_URL`          | 可选；身份库文件 URL（users/api_keys/thread_owners/daily_usage/usage_log 五表） | `file:.temp/auth.db`                  |
 | `MASTRA_TELEMETRY`     | 可选；Studio 可观测性开关（traces/logs，默认开启，仅 `false` 显式关闭） | `false`                              |
 | `CONTEXT7_API_KEY`     | 可选；docs-agent 的 context7 工具 key（stdio 启动 `npx @upstash/context7-mcp`，失败自动降级为不挂载） | `ctx7sk-xxx`                          |
 | `DEV_SERVER_PORT`      | 可选；服务端口，缺省 `8787`                                            | `8787`                               |
