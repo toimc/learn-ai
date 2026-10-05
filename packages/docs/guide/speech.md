@@ -151,8 +151,10 @@ function handleSend() {
 
 ### UI 接线点
 
-- 输入区麦克风按钮：`packages/vue/src/prompt-input/` 的 PromptInput 系列工具区，`v-if="supported"` 显隐、录音中脉冲动效、`interimText` 实时字幕
-- 消息级朗读按钮：`packages/vue/src/message/actions/` 下与 `MessageActionCopy` / `MessageActionRetry` 并列，hover 出现、朗读中变"停止"（`speaking` 驱动），点击调 `speak(message.content)`
+两颗开箱组件已落地（也可参照它们直接消费 composable）：
+
+- **输入区麦克风按钮**：[`PromptInputMicButton`](/components/prompt-input#promptinputmicbutton)——放进 PromptInput 工具区即得完整语音输入体验：`supported` 驱动显隐、录音中脉冲动效、`interimText` 实时字幕、录音结束自动把识别文本追加进输入框、错误码翻译成人话文案（`speechErrors.unsupported` / `noSpeech` / `notAllowed`，未知码原样展示）
+- **消息级朗读按钮**：[`MessageActionSpeak`](/components/message-actions#messageactionspeak)——与 `MessageActionCopy` / `MessageActionRetry` 并列放进 `MessageActions`，hover 出现、朗读中变"停止"（`speaking` 驱动），点击调 `speak(message.content)`
 
 ### 云端方案对比
 

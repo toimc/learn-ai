@@ -111,6 +111,8 @@ export default {
   messageActions: {
     copy: 'Copy',
     retry: 'Regenerate',
+    speak: 'Read aloud',
+    stopSpeak: 'Stop reading',
     edit: 'Edit',
     saveEdit: 'Save & resend',
     cancelEdit: 'Cancel',

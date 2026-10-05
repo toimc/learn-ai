@@ -1,4 +1,5 @@
 export { default as MessageActionCopy } from './MessageActionCopy.vue'
 export { default as MessageActionRetry } from './MessageActionRetry.vue'
+export { default as MessageActionSpeak } from './MessageActionSpeak.vue'
 export { default as MessageActionEdit } from './MessageActionEdit.vue'
 export { default as MessageActionFeedback } from './MessageActionFeedback.vue'

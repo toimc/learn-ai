@@ -46,6 +46,7 @@ export {
 export {
   MessageActionCopy,
   MessageActionRetry,
+  MessageActionSpeak,
   MessageActionEdit,
   MessageActionFeedback,
 } from './message/actions'

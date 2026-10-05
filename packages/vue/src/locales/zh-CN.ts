@@ -110,6 +110,8 @@ const zhCN = {
   messageActions: {
     copy: '复制',
     retry: '重新生成',
+    speak: '朗读',
+    stopSpeak: '停止朗读',
     edit: '编辑',
     saveEdit: '保存并重发',
     cancelEdit: '取消',
