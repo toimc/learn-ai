@@ -35,3 +35,4 @@ __pycache__/
 
 # Mastra CLI 构建产物与本地缓存
 .mastra/
+demos/

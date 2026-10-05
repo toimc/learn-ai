@@ -6,13 +6,32 @@ export interface Attachment {
   size?: number
 }
 
+/** 工具调用生命周期（对齐 AI SDK 7 态的超集；旧三值是其子集，语义不变） */
+export type ToolCallStatus =
+  | 'pending' // 排队/参数流式组装中（input-streaming）
+  | 'calling' // 执行中（运行期）
+  | 'awaiting-approval' // 等待人工审批（approval-requested）
+  | 'completed' // 完成（output-available）
+  | 'denied' // 用户拒绝（output-denied）
+  | 'error' // 失败（output-error）
+
 export interface ToolCallInfo {
   id: string
   name: string
   arguments: Record<string, unknown>
   result?: unknown
   error?: string
-  status: 'calling' | 'completed' | 'error'
+  status: ToolCallStatus
+  duration?: number
+}
+
+/** 多步骤思维链单步（ThinkingChain 组件消费；ThinkingBlock 仍负责单块 content） */
+export interface ThinkingStep {
+  id: string
+  title: string
+  status: 'pending' | 'active' | 'complete' | 'error'
+  content?: string
+  /** 单步耗时 ms */
   duration?: number
 }
 
@@ -22,6 +41,21 @@ export interface ThinkingInfo {
   startTime?: Date // 思考开始时间
   /** 思考是否仍在进行：流式期间由 useChat 维护，首个非 thinking 内容帧到达即置 false */
   active?: boolean
+  /** 结构化多步骤思维链（RAG/Agent 场景服务端组装，可选渐进增强） */
+  steps?: ThinkingStep[]
+}
+
+/** 引用来源（RAG 检索/网页引用；对齐 AI SDK SourceUrl/SourceDocument 的并集形态） */
+export interface MessageSource {
+  id: string
+  type: 'url' | 'document'
+  title?: string
+  /** type==='url' 时由渲染组件校验 http(s) 白名单后渲染外链 */
+  url?: string
+  /** 原文引用片段（InlineCitation 卡片 quote 展示） */
+  snippet?: string
+  /** 附加：相关性分数/页码/作者/年份等 */
+  metadata?: Record<string, unknown>
 }
 
 // A/B 回复对比：由服务端响应指定，宿主据此渲染 ComparisonMessage 而非普通消息
@@ -39,6 +73,7 @@ export interface Message {
   attachments?: Attachment[]
   toolCalls?: ToolCallInfo[]
   thinking?: ThinkingInfo // 思考过程内容
+  sources?: MessageSource[] // RAG/检索引用来源（Sources/InlineCitation 消费）
   comparison?: ComparisonPayload // A/B 回复对比载荷
   metadata?: Record<string, unknown>
   createdAt: Date

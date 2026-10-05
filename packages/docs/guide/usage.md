@@ -73,6 +73,7 @@ interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   thinking?: ThinkingInfo      // 思考过程信息
+  sources?: MessageSource[]    // RAG/检索引用来源（Sources/InlineCitation 消费）
   comparison?: ComparisonPayload // A/B 回复对比载荷（消息类型驱动渲染）
   // ... 其他字段
 }
@@ -81,6 +82,24 @@ interface ThinkingInfo {
   content: string          // 思考内容
   duration?: number        // 思考耗时（毫秒）
   startTime?: Date         // 思考开始时间
+  steps?: ThinkingStep[]   // 结构化多步骤思维链（ThinkingChain 消费，可选渐进增强）
+}
+
+interface ThinkingStep {
+  id: string
+  title: string
+  status: 'pending' | 'active' | 'complete' | 'error'
+  content?: string         // 步骤详情
+  duration?: number        // 单步耗时（毫秒）
+}
+
+interface MessageSource {
+  id: string
+  type: 'url' | 'document'
+  title?: string
+  url?: string              // type==='url' 时由渲染组件校验 http(s) 白名单
+  snippet?: string          // 原文引用片段
+  metadata?: Record<string, unknown> // 相关性分数/页码/作者等附加信息
 }
 
 interface ComparisonPayload {
@@ -89,6 +108,20 @@ interface ComparisonPayload {
   leftLabel?: string       // 左列标题
   rightLabel?: string      // 右列标题
 }
+```
+
+#### 工具调用状态机
+
+`ToolCallInfo.status` 为六态生命周期（向后兼容，旧三值语义不变）：
+
+```typescript
+type ToolCallStatus =
+  | 'pending'            // 排队/参数流式组装中
+  | 'calling'            // 执行中
+  | 'awaiting-approval'  // 等待人工审批（ToolConfirmation 组件消费）
+  | 'completed'          // 完成
+  | 'denied'             // 用户拒绝
+  | 'error'              // 失败
 ```
 
 ### 自动计算思考耗时
