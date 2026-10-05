@@ -7,6 +7,7 @@ export { default as MultiAgentDemoPage } from './components/MultiAgentDemoPage.v
 export { default as WorkflowDemoPage } from './components/WorkflowDemoPage.vue'
 export { default as VectorSearchDemoPage } from './components/VectorSearchDemoPage.vue'
 export { default as MockApiPage } from './components/MockApiPage.vue'
+export { default as CitationDemoPage } from './components/CitationDemoPage.vue'
 export { default as MultimodalInputDemo } from './components/demos/MultimodalInputDemo.vue'
 export { default as ConversationLayoutDemo } from './components/demos/ConversationLayoutDemo.vue'
 export { default as MessageShowcaseDemo } from './components/demos/MessageShowcaseDemo.vue'
@@ -14,6 +15,7 @@ export { default as ConversationScrollDemo } from './components/demos/Conversati
 export { default as ThinkingMessageDemo } from './components/demos/ThinkingMessageDemo.vue'
 export { default as ComparisonFlowDemo } from './components/demos/ComparisonFlowDemo.vue'
 export { default as AttachmentsMessageDemo } from './components/demos/AttachmentsMessageDemo.vue'
+export { default as CitationDemo } from './components/demos/CitationDemo.vue'
 export { mockAdapter } from './mock/mock-adapter'
 export { mockMessages } from './mock/mock-messages'
 export {

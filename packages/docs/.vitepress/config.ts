@@ -131,7 +131,13 @@ export default defineConfig({
           { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
         ],
       },
-      { text: 'Playground', link: '/playground' },
+      {
+        text: 'Playground',
+        items: [
+          { text: '完整 Playground', link: '/playground' },
+          { text: 'RAG 引用演示', link: '/citation-demo' },
+        ],
+      },
       ...(isPages ? [] : mockOnlyNav),
       { text: '主题配置器', link: '/theme-builder' },
     ],

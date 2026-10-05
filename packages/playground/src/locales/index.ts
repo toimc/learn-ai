@@ -75,6 +75,28 @@ const zhCN = {
     replay: '重播',
     userQuestion: 'Vue 3 的响应式系统为什么用 Proxy 重写？',
   },
+  citationDemo: {
+    simulate: '模拟 RAG 检索链路',
+    replay: '重播链路',
+    userQuestion: 'InlineCitation 和 Sources 怎么配合展示 RAG 引用？',
+    hintIdle: '点击按钮模拟一次带思维链与引用来源的 RAG 回答',
+    hintRunning: '检索链路推进中：active / complete / error 状态依次呈现…',
+    hintDone: '完成：思维链自动折叠，正文角标悬浮可预览，来源列表可展开',
+    stepParse: '解析意图',
+    stepVector: '向量检索',
+    stepRerank: '混合重排',
+    stepFallback: '关键词降级重排',
+    toolTitle: '工具审批（ToolConfirmation）',
+    toolDesc:
+      'AI 要把本次回答写回知识库（覆盖同名文档），等待人工确认：点允许 / 拒绝观察状态流转。',
+    toolReason: '该操作会覆盖知识库同名文档，且不可自动撤销',
+    approved:
+      '✓ 已允许 kb_write —— 审批结果回传后端后，工具状态推进为 calling（见 ToolCall 六态）',
+    approvedHint: '审批结果：已允许。真实场景由宿主回传后端后推进工具状态。',
+    rejectedHint:
+      '审批结果：已拒绝。组件转为只读「已拒绝」态，工具名与参数保留可回溯。',
+    resetApproval: '重置审批演示',
+  },
   mockServer: {
     title: 'Mock 服务端演示',
     description:
@@ -340,6 +362,34 @@ const enUS: typeof zhCN = {
     simulate: 'Simulate streaming thinking',
     replay: 'Replay',
     userQuestion: 'Why was Vue 3 reactivity rewritten with Proxy?',
+  },
+  citationDemo: {
+    simulate: 'Simulate RAG retrieval chain',
+    replay: 'Replay chain',
+    userQuestion:
+      'How do InlineCitation and Sources work together for RAG citations?',
+    hintIdle:
+      'Click to simulate a RAG answer with a thinking chain and cited sources',
+    hintRunning:
+      'Chain running: active / complete / error states appear in turn…',
+    hintDone:
+      'Done: chain auto-collapses, hover the inline markers, expand the sources list',
+    stepParse: 'Parse intent',
+    stepVector: 'Vector search',
+    stepRerank: 'Hybrid rerank',
+    stepFallback: 'Keyword fallback rerank',
+    toolTitle: 'Tool approval (ToolConfirmation)',
+    toolDesc:
+      'The agent wants to write this answer back to the knowledge base (overwriting the same-name doc) and is awaiting human approval — click approve / reject to see the state flow.',
+    toolReason:
+      'This overwrites a same-name doc in the knowledge base and cannot be auto-undone',
+    approved:
+      '✓ kb_write approved — after the host reports the approval, the tool advances to calling (see ToolCall six states)',
+    approvedHint:
+      'Approval result: approved. In production the host reports it to the backend, which advances the tool state.',
+    rejectedHint:
+      'Approval result: rejected. The component switches to the read-only "denied" state; tool name and args stay reviewable.',
+    resetApproval: 'Reset approval demo',
   },
   mockServer: {
     title: 'Mock Server Demo',

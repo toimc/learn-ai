@@ -60,6 +60,7 @@ import {
   PlaygroundPage,
   ThemeBuilderPage,
   MultimodalDemoPage,
+  CitationDemoPage,
   ConversationLayoutDemo,
   MessageShowcaseDemo,
   ConversationScrollDemo,
@@ -142,6 +143,7 @@ export default {
     app.component('PlaygroundPage', PlaygroundPage)
     app.component('ThemeBuilderPage', ThemeBuilderPage)
     app.component('MultimodalDemoPage', MultimodalDemoPage)
+    app.component('CitationDemoPage', CitationDemoPage)
     if (!isPagesBuild) {
       const {
         MockServerDemoPage,
