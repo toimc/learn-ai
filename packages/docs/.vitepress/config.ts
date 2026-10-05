@@ -62,6 +62,17 @@ export default defineConfig({
   ],
 
   vite: {
+    server: {
+      watch: {
+        // 仓库根的 demos/（参考组件库克隆，164MB）与 .temp/（截图/调研产物）不参与
+        // 热更新监听——chokidar 扫描数万文件是文档站 dev 模式卡顿的根因
+        ignored: [
+          resolve(root, '../../demos/**'),
+          resolve(root, '../../.temp/**'),
+          '**/node_modules/**',
+        ],
+      },
+    },
     define: {
       // 构建期注入字面量：客户端组件（MockOnly）与 theme 的条件分支据此做常量折叠
       'import.meta.env.DOCS_TARGET': JSON.stringify(
@@ -127,9 +138,15 @@ export default defineConfig({
         text: 'Composables',
         items: [
           { text: 'useChat', link: '/composables/use-chat' },
+          { text: 'useScrollAnchor', link: '/composables/use-scroll-anchor' },
           { text: 'useTheme', link: '/composables/use-theme' },
           { text: 'useThemePreset', link: '/composables/use-theme-preset' },
           { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
+          {
+            text: 'useMarkdownRenderer',
+            link: '/composables/use-markdown-renderer',
+          },
+          { text: 'useClipboard', link: '/composables/use-clipboard' },
         ],
       },
       {
@@ -178,6 +195,8 @@ export default defineConfig({
           ],
         },
       ],
+      // 分组对齐 x.ant.design 的「按使用场景分区 + 全部展开直览」：
+      // 不设 collapsed（VitePress 缺省即不可折叠），每个组件只归一组
       '/components/': [
         {
           text: '对话容器',
@@ -187,10 +206,11 @@ export default defineConfig({
               text: 'ConversationScrollBtn',
               link: '/components/conversation-scroll-btn',
             },
+            { text: 'ChatWindow（旧版）', link: '/components/chat-window' },
           ],
         },
         {
-          text: '消息组件',
+          text: '消息展示',
           items: [
             { text: 'Message', link: '/components/message' },
             {
@@ -203,78 +223,70 @@ export default defineConfig({
             },
             { text: 'MessageFeedback', link: '/components/message-feedback' },
             { text: 'BranchPicker', link: '/components/branch-picker' },
+            { text: 'MessageList（旧版）', link: '/components/message-list' },
+            {
+              text: 'MessageBubble（旧版）',
+              link: '/components/message-bubble',
+            },
           ],
         },
         {
-          text: '引用组件',
+          text: 'AI 过程展示',
+          items: [
+            { text: 'ThinkingChain', link: '/components/thinking-chain' },
+            { text: 'ToolCall', link: '/components/tool-call' },
+            { text: 'ToolConfirmation', link: '/components/tool-confirmation' },
+          ],
+        },
+        {
+          text: 'RAG 引用',
           items: [
             { text: 'InlineCitation', link: '/components/inline-citation' },
             { text: 'Sources', link: '/components/sources' },
           ],
         },
         {
-          text: '思维链',
-          items: [
-            { text: 'ThinkingChain', link: '/components/thinking-chain' },
-          ],
-        },
-        {
-          text: '输入组件',
+          text: '输入与附件',
           items: [
             { text: 'PromptInput', link: '/components/prompt-input' },
             {
               text: 'PromptInputSuggestion',
               link: '/components/prompt-input-suggestion',
             },
+            { text: 'Attachments', link: '/components/attachments' },
+            { text: 'ImageLightbox', link: '/components/image-lightbox' },
+            { text: 'InputArea（旧版）', link: '/components/input-area' },
           ],
         },
         {
-          text: '工具调用',
-          items: [
-            { text: 'ToolCall', link: '/components/tool-call' },
-            { text: 'ToolConfirmation', link: '/components/tool-confirmation' },
-          ],
-        },
-        {
-          text: '欢迎页',
+          text: '欢迎与引导',
           items: [
             { text: 'Welcome', link: '/components/welcome' },
             { text: 'Prompts', link: '/components/prompts' },
           ],
         },
         {
-          text: '模型元数据',
+          text: '模型与数据',
           items: [
             { text: 'ModelIcon', link: '/components/model-icon' },
             { text: 'JsonDiffView', link: '/components/json-diff-view' },
+            {
+              text: 'ProviderSettingsDialog',
+              link: '/components/provider-settings-dialog',
+            },
           ],
         },
         {
-          text: '附件组件',
-          items: [
-            { text: 'Attachments', link: '/components/attachments' },
-            { text: 'ImageLightbox', link: '/components/image-lightbox' },
-          ],
-        },
-        {
-          text: '基础组件',
+          text: '基础元素',
           items: [
             { text: 'Button', link: '/components/button' },
             { text: 'Input', link: '/components/input' },
             { text: 'Select', link: '/components/select' },
             { text: 'Radio', link: '/components/radio' },
-          ],
-        },
-        {
-          text: '通用组件',
-          items: [
-            { text: 'LanguageToggle', link: '/components/language-toggle' },
             { text: 'Shimmer', link: '/components/shimmer' },
             { text: 'Toast', link: '/components/toast' },
-            {
-              text: 'ProviderSettingsDialog',
-              link: '/components/provider-settings-dialog',
-            },
+            { text: 'StreamText', link: '/components/stream-text' },
+            { text: 'LanguageToggle', link: '/components/language-toggle' },
           ],
         },
         {
@@ -288,13 +300,33 @@ export default defineConfig({
       ],
       '/composables/': [
         {
-          text: 'Composables',
+          text: '会话与滚动',
           items: [
             { text: 'useChat', link: '/composables/use-chat' },
+            {
+              text: 'useScrollAnchor',
+              link: '/composables/use-scroll-anchor',
+            },
+          ],
+        },
+        {
+          text: '视图与主题',
+          items: [
+            {
+              text: 'useLayoutConfig',
+              link: '/composables/use-layout-config',
+            },
             { text: 'useTheme', link: '/composables/use-theme' },
             { text: 'useThemePreset', link: '/composables/use-theme-preset' },
-            { text: 'useLayoutConfig', link: '/composables/use-layout-config' },
+            {
+              text: 'useMarkdownRenderer',
+              link: '/composables/use-markdown-renderer',
+            },
           ],
+        },
+        {
+          text: '实用工具',
+          items: [{ text: 'useClipboard', link: '/composables/use-clipboard' }],
         },
       ],
     },
