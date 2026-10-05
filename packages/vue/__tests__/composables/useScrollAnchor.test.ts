@@ -216,6 +216,7 @@ describe('useScrollAnchor ResizeObserver 自动跟随', () => {
     })
     MockResizeObserver.instances[0].trigger()
     await nextFrame()
+    await nextFrame()
     expect(el.scrollTop).toBe(1400)
   })
 
@@ -238,6 +239,7 @@ describe('useScrollAnchor ResizeObserver 自动跟随', () => {
     })
     MockResizeObserver.instances[0].trigger()
     await nextFrame()
+    await nextFrame()
     expect(el.scrollTop).toBe(100)
   })
 })
@@ -248,7 +250,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
     expect(anchor.unreadCount.value).toBe(0)
   })
 
-  it('正常：离底时内容高度增加，逐次递增计数', () => {
+  it('正常：离底时内容高度增加，逐次递增计数', async () => {
     const anchor = useScrollAnchor()
     const el = makeScrollEl({
       scrollTop: 100,
@@ -265,6 +267,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(1)
 
     Object.defineProperty(el, 'scrollHeight', {
@@ -273,6 +276,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(2)
   })
 
@@ -294,12 +298,13 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
     })
     MockResizeObserver.instances[0].trigger()
     await nextFrame()
+    await nextFrame()
 
     expect(anchor.unreadCount.value).toBe(0)
     expect(el.scrollTop).toBe(1400)
   })
 
-  it('正常：scrollToBottom 调用后计数立即清零', () => {
+  it('正常：scrollToBottom 调用后计数立即清零', async () => {
     const anchor = useScrollAnchor()
     const el = makeScrollEl({
       scrollTop: 100,
@@ -315,13 +320,14 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(1)
 
     anchor.scrollToBottom()
     expect(anchor.unreadCount.value).toBe(0)
   })
 
-  it('正常：手动滚回贴底（scroll 事件判定贴底）计数清零', () => {
+  it('正常：手动滚回贴底（scroll 事件判定贴底）计数清零', async () => {
     const anchor = useScrollAnchor()
     const el = makeScrollEl({
       scrollTop: 100,
@@ -337,6 +343,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(1)
 
     // 手动滚到距底 10px（< 阈值 50）→ 判定贴底并清零
@@ -350,7 +357,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
     expect(anchor.unreadCount.value).toBe(0)
   })
 
-  it('边界：内容高度不变时触发 ResizeObserver 不计数', () => {
+  it('边界：内容高度不变时触发 ResizeObserver 不计数', async () => {
     const anchor = useScrollAnchor()
     const el = makeScrollEl({
       scrollTop: 100,
@@ -361,10 +368,11 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
     el.dispatchEvent(new Event('scroll'))
 
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(0)
   })
 
-  it('边界：内容高度收缩时离底不计数', () => {
+  it('边界：内容高度收缩时离底不计数', async () => {
     const anchor = useScrollAnchor()
     const el = makeScrollEl({
       scrollTop: 100,
@@ -380,10 +388,11 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(0)
   })
 
-  it('正常：重新绑定容器时计数清零且以新容器当前高度为基线', () => {
+  it('正常：重新绑定容器时计数清零且以新容器当前高度为基线', async () => {
     const anchor = useScrollAnchor()
     const first = makeScrollEl({
       scrollTop: 100,
@@ -398,6 +407,7 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
       configurable: true,
     })
     MockResizeObserver.instances[0].trigger()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(1)
 
     const second = makeScrollEl({
@@ -411,6 +421,82 @@ describe('useScrollAnchor unreadCount 未读计数', () => {
     // 新容器高度未变时触发回调，不应把绑定时高度误判为新增
     second.dispatchEvent(new Event('scroll'))
     MockResizeObserver.instances[1].trigger()
+    await nextFrame()
+    expect(anchor.unreadCount.value).toBe(0)
+  })
+})
+
+describe('useScrollAnchor 内容变化兜底（真实浏览器行为）', () => {
+  it('红灯场景：定高容器内容增高不派发容器 RO，子节点新增仍计未读', async () => {
+    // 真实浏览器：overflow 容器自身尺寸不变，内容增长不触发容器 ResizeObserver。
+    // 此前实现只 observe(container)，生产中 unreadCount 永不增长（仅测试 mock RO 掩盖）。
+    const el = makeScrollEl({
+      scrollTop: 0,
+      scrollHeight: 300,
+      clientHeight: 200,
+    })
+    const anchor = useScrollAnchor()
+    anchor.bindContainer(el)
+
+    // 用户上滑离底（scrollHeight 300 - scrollTop 0 - clientHeight 200 = 100 > 50）
+    el.dispatchEvent(new Event('scroll'))
+    expect(anchor.isAtBottom.value).toBe(false)
+
+    // 内容增高 + 子节点新增，但容器 RO 不触发（模拟浏览器真实行为）
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 500,
+      writable: true,
+      configurable: true,
+    })
+    el.appendChild(document.createElement('p'))
+    await nextFrame()
+    await nextFrame()
+    expect(anchor.unreadCount.value).toBe(1)
+  })
+
+  it('文本内容变化（不增节点）也感知：characterData 路径', async () => {
+    const el = makeScrollEl({
+      scrollTop: 0,
+      scrollHeight: 300,
+      clientHeight: 200,
+    })
+    const anchor = useScrollAnchor()
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+    expect(anchor.isAtBottom.value).toBe(false)
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 600,
+      writable: true,
+      configurable: true,
+    })
+    el.appendChild(document.createTextNode('流式增长的长文本'))
+    await nextFrame()
+    el.firstChild!.textContent = '流式增长的长文本（更长）'
+    await nextFrame()
+    await nextFrame()
+    expect(anchor.unreadCount.value).toBeGreaterThanOrEqual(1)
+  })
+
+  it('解绑后内容变化不再计数', async () => {
+    const el = makeScrollEl({
+      scrollTop: 0,
+      scrollHeight: 300,
+      clientHeight: 200,
+    })
+    const anchor = useScrollAnchor()
+    anchor.bindContainer(el)
+    el.dispatchEvent(new Event('scroll'))
+    anchor.bindContainer(null)
+
+    Object.defineProperty(el, 'scrollHeight', {
+      value: 800,
+      writable: true,
+      configurable: true,
+    })
+    el.appendChild(document.createElement('p'))
+    await nextFrame()
+    await nextFrame()
     expect(anchor.unreadCount.value).toBe(0)
   })
 })

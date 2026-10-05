@@ -82,6 +82,7 @@ function addMessage() {
 - 用户离底期间，滚动容器内容每增高一次，计数 +1（贴底时恒为 0，跟随滚动不计数）。
 - 点击按钮（`scrollToBottom`）或用户手动滚回贴底，计数清零。
 - 角标出现时按钮带 `aria-label`，文案走 i18n `conversation.scrollUnread`（默认 `{count} 条新消息` / `{count} new messages`）。
+- 内容变化检测为双通道：`ResizeObserver`（容器自身尺寸变化）+ `MutationObserver`（子树节点/文本变化）。后者是必需兜底——浏览器对 overflow 定高滚动容器的内容增高**不派发容器 ResizeObserver**，仅靠 RO 时计数在生产环境永不增长。高频变化经 rAF 合并，每帧只做一次高度对比。
 
 > **语义局限**：「新消息」以内容高度增加近似，无法区分真正的消息新增与已有消息的流式文本追加——流式回复期间离底，计数会随内容增高持续上涨。需要精确按消息条数计数时，通过 `badge` prop 自行传入。
 

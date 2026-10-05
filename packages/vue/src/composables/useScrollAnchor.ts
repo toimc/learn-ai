@@ -13,7 +13,9 @@ export function useScrollAnchor(threshold = 50): ScrollAnchorContext {
   const unreadCount = ref(0)
   let container: HTMLElement | null = null
   let observer: ResizeObserver | null = null
+  let mutationObserver: MutationObserver | null = null
   let lastContentHeight = 0
+  let growthScheduled = false
 
   function checkBottom() {
     if (!container) return
@@ -30,10 +32,37 @@ export function useScrollAnchor(threshold = 50): ScrollAnchorContext {
     })
   }
 
+  function handleGrowth() {
+    if (!container) return
+    const contentHeight = container.scrollHeight
+    const grew = contentHeight > lastContentHeight
+    lastContentHeight = contentHeight
+    if (isAtBottom.value) {
+      scrollToBottom()
+    } else if (grew) {
+      // 「新消息」= 内容高度增加：无法区分新增与文本替换，语义局限见文档
+      unreadCount.value++
+    }
+  }
+
+  /** rAF 合并：流式期间 MO/RO 高频回调每帧只做一次 scrollHeight 对比 */
+  function scheduleGrowthCheck() {
+    if (growthScheduled) return
+    growthScheduled = true
+    requestAnimationFrame(() => {
+      growthScheduled = false
+      handleGrowth()
+    })
+  }
+
   function bindContainer(el: HTMLElement | null) {
     if (observer) {
       observer.disconnect()
       observer = null
+    }
+    if (mutationObserver) {
+      mutationObserver.disconnect()
+      mutationObserver = null
     }
     container = el
     if (!container) return
@@ -44,19 +73,17 @@ export function useScrollAnchor(threshold = 50): ScrollAnchorContext {
 
     container.addEventListener('scroll', checkBottom, { passive: true })
 
-    observer = new ResizeObserver(() => {
-      if (!container) return
-      const contentHeight = container.scrollHeight
-      const grew = contentHeight > lastContentHeight
-      lastContentHeight = contentHeight
-      if (isAtBottom.value) {
-        scrollToBottom()
-      } else if (grew) {
-        // 「新消息」= 内容高度增加：无法区分新增与文本替换，语义局限见文档
-        unreadCount.value++
-      }
-    })
+    // 容器自身尺寸变化（窗口缩放等）
+    observer = new ResizeObserver(scheduleGrowthCheck)
     observer.observe(container)
+    // 内容变化兜底：overflow 定高容器的内容增高不改变容器自身尺寸，浏览器不派发
+    // 容器 RO——必须监听子树节点/文本变化（修复生产中 unreadCount 永不增长）
+    mutationObserver = new MutationObserver(scheduleGrowthCheck)
+    mutationObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
   }
 
   return { isAtBottom, unreadCount, scrollToBottom, bindContainer }
