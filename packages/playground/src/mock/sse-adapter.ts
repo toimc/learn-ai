@@ -45,6 +45,26 @@ export interface ConversationMessageDTO {
   createdAt: string
 }
 
+/** OpenAI 兼容多模态 content part（与 @toimc/agents 的 ChatContentPart 同形） */
+export type SseContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
+/**
+ * 消息 → 线协议 content（18-02 多模态链路）：
+ * 带 dataUrl 图片附件时组装为 parts 数组（text 正文在前、图片按附件顺序），
+ * 否则原样字符串——纯文本会话的线协议形状不变。
+ */
+export function toWireContent(message: Message): string | SseContentPart[] {
+  const images = (message.attachments ?? []).flatMap((a) =>
+    a.dataUrl
+      ? [{ type: 'image_url' as const, image_url: { url: a.dataUrl } }]
+      : [],
+  )
+  if (images.length === 0) return message.content
+  return [{ type: 'text', text: message.content }, ...images]
+}
+
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
   if (!res.ok) throw new Error(await httpErrorMessage(res))
@@ -110,7 +130,7 @@ export function createSseAdapter(options: SseAdapterOptions = {}): ChatAdapter {
             conversationId: options.getConversationId?.(),
             messages: opts.messages.map((m: Message) => ({
               role: m.role,
-              content: m.content,
+              content: toWireContent(m),
             })),
             model: options.getModel?.() ?? opts.model,
           }),

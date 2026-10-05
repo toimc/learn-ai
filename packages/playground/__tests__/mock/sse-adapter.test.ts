@@ -1,6 +1,10 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { StreamChunk } from '@toimc/core'
-import { createSseAdapter, parseSseStream } from '../../src/mock/sse-adapter'
+import {
+  createSseAdapter,
+  parseSseStream,
+  toWireContent,
+} from '../../src/mock/sse-adapter'
 
 function sseBody(frames: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder()
@@ -258,5 +262,162 @@ describe('createSseAdapter', () => {
         })
         .next(),
     ).rejects.toThrow('HTTP 400: unknown model: custom-1')
+  })
+})
+
+describe('toWireContent（多模态 parts 组装）', () => {
+  it('无附件时 content 原样字符串', () => {
+    const msg = {
+      id: 'a',
+      role: 'user' as const,
+      content: '纯文本',
+      createdAt: new Date(),
+    }
+    expect(toWireContent(msg)).toBe('纯文本')
+  })
+
+  it('附件无 dataUrl（纯文件）时 content 仍为字符串', () => {
+    const msg = {
+      id: 'a',
+      role: 'user' as const,
+      content: '看下这份文档',
+      createdAt: new Date(),
+      attachments: [
+        {
+          id: 'att-1',
+          name: '报告.pdf',
+          mediaType: 'application/pdf',
+          size: 1024,
+        },
+      ],
+    }
+    expect(toWireContent(msg)).toBe('看下这份文档')
+  })
+
+  it('带 dataUrl 图片附件时组装为 parts（text 正文在前，图片按附件顺序）', () => {
+    const msg = {
+      id: 'a',
+      role: 'user' as const,
+      content: '这张截图里的报错怎么解决',
+      createdAt: new Date(),
+      attachments: [
+        {
+          id: 'att-1',
+          name: '截图.png',
+          mediaType: 'image/png',
+          size: 2048,
+          dataUrl: 'data:image/jpeg;base64,AAA',
+        },
+        {
+          id: 'att-2',
+          name: '第二张.jpg',
+          mediaType: 'image/jpeg',
+          size: 4096,
+          dataUrl: 'data:image/jpeg;base64,BBB',
+        },
+      ],
+    }
+    expect(toWireContent(msg)).toEqual([
+      { type: 'text', text: '这张截图里的报错怎么解决' },
+      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,AAA' } },
+      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,BBB' } },
+    ])
+  })
+
+  it('混合附件只取 dataUrl 项进 parts', () => {
+    const msg = {
+      id: 'a',
+      role: 'user' as const,
+      content: '图文混合',
+      createdAt: new Date(),
+      attachments: [
+        {
+          id: 'att-1',
+          name: '文档.pdf',
+          mediaType: 'application/pdf',
+          size: 1024,
+        },
+        {
+          id: 'att-2',
+          name: '图.png',
+          mediaType: 'image/png',
+          size: 2048,
+          dataUrl: 'data:image/jpeg;base64,CCC',
+        },
+      ],
+    }
+    expect(toWireContent(msg)).toEqual([
+      { type: 'text', text: '图文混合' },
+      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,CCC' } },
+    ])
+  })
+})
+
+describe('createSseAdapter 多模态发送', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('带 dataUrl 附件的消息在线协议 content 为 parts 数组', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          sseBody([
+            'data: {"type":"done","content":""}\n\n',
+          ]) as unknown as BodyInit,
+          { status: 200 },
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const adapter = createSseAdapter()
+    const gen = adapter.sendMessage({
+      messages: [
+        {
+          id: 'a',
+          role: 'user',
+          content: '这张图是什么',
+          createdAt: new Date(),
+          attachments: [
+            {
+              id: 'att-1',
+              name: '图.png',
+              mediaType: 'image/png',
+              size: 2048,
+              dataUrl: 'data:image/jpeg;base64,ZZZ',
+            },
+          ],
+        },
+      ],
+    })
+    await gen.next()
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.messages[0].content).toEqual([
+      { type: 'text', text: '这张图是什么' },
+      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,ZZZ' } },
+    ])
+  })
+
+  it('纯文本消息在线协议 content 仍为字符串（回归）', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          sseBody([
+            'data: {"type":"done","content":""}\n\n',
+          ]) as unknown as BodyInit,
+          { status: 200 },
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const adapter = createSseAdapter()
+    const gen = adapter.sendMessage({
+      messages: [
+        { id: 'a', role: 'user', content: '普通问题', createdAt: new Date() },
+      ],
+    })
+    await gen.next()
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.messages[0].content).toBe('普通问题')
   })
 })

@@ -26,7 +26,7 @@ RAG 引用链路（思维链多步骤 + 正文角标 + 来源列表 + 工具审�
 
 ### 基础功能
 - **发送 / 中止**：输入框 **Enter 直接发送**、Shift+Enter 换行（问答场景对齐主流 AI 聊天习惯；`PromptInput` 组件默认 `alt-enter` 键位，本页按场景传 `send-key="enter"`）；发送按钮在输入区右下（Footer 右侧），流式输出中可中止。
-- **多模态附件**：工具栏「上传图片 / 上传附件」按钮选择文件，也可直接在输入框**粘贴**（⌘V/Ctrl+V）或**拖拽**文件进来；发送前经 mock 上传（模拟 800ms 延迟），附件随消息一并展示。超限（数量/大小）会 Toast 提示拒绝原因。输入行由 `PromptInputBody` 包裹（Textarea 占满宽度、弹性增高、发送按钮靠右）。独立的多模态输入演示（含 `send` 事件 payload 实时展示）见 [多模态输入演示](/multimodal-demo)。
+- **多模态附件**：工具栏「上传图片 / 上传附件」按钮选择文件，也可直接在输入框**粘贴**（⌘V/Ctrl+V）或**拖拽**文件进来；发送前经 mock 上传（模拟 800ms 延迟），附件随消息一并展示。超限（数量/大小）会 Toast 提示拒绝原因。输入行由 `PromptInputBody` 包裹（Textarea 占满宽度、弹性增高、发送按钮靠右）。独立的多模态输入演示（含 `send` 事件 payload 实时展示）见 [多模态输入演示](/multimodal-demo)；SSE 链路（dev-server 会话）发送时带 `dataUrl` 的图片附件会自动组装为 OpenAI 兼容 parts 数组（`toWireContent`，见[多模态发送指南](/guide/multimodal)）。
 - **多会话**：侧边栏新建 / 切换 / 重命名 / 删除会话；移动端为抽屉式。
 - **⌘K / Ctrl+K**：新建对话（已接入全局快捷键，捕获阶段拦截避免被站点搜索抢占）。
 - **明暗主题**：顶部 ☀/🌙 切换，由 [`useTheme`](/composables/use-theme) 驱动，状态持久化。
