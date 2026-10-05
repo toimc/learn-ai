@@ -14,12 +14,26 @@ export const openApiSpec = {
   openapi: '3.1.0',
   info: {
     title: 'ai-chat-ui Mock Server',
-    version: '0.1.0',
+    version: '0.2.0',
     description: [
-      '本地 mock 服务端：为组件库 Playground 与文档站提供多会话数据源与 SSE 流式响应。',
+      '本地开发服务端：为组件库 Playground 与文档站提供多会话数据源、SSE 流式对话与用户体系演示。',
       runNote,
-      '\n\n**SSE 线格式**：`POST /api/chat` 的每个事件为 `event: chunk` + `data: <StreamChunk JSON>`，',
+      '\n\n## 运行模式（由环境变量门控）',
+      '\n\n- **mock 模式（默认）**：未配置 `MASTRA_MODEL` 时，按消息关键词回放剧本（思考 / 工具 / 错误 / 慢速 / markdown），零外部依赖。',
+      '\n- **真实 agent 模式**：配置 `MASTRA_MODEL`（如 `deepseek/deepseek-chat`）后注册 docs-agent 等真实模型，支持工具调用、会话记忆与 RAG 检索；`/api/models` 列表随之扩展。',
+      '\n\n## 认证模式（`AUTH_MODE`）',
+      '\n\n- **`static`（默认）**：配置 `MASTRA_TOKEN` 时 `/api/chat` 与 `/api/models` 校验静态 Bearer 白名单；不配置则完全开放。',
+      '\n- **`user`**：启用「认证」分组的用户体系——注册 / 登录签发短时效 JWT（15 分钟），可签发 `sk-aichat-` 前缀 API Key；`/api/chat` 与 `/api/models` 要求 `Authorization: Bearer <JWT|API Key>`，叠加**每用户每日配额**（free 20 / pro 200，超额 402 引导升级）与 **thread 归属隔离**（会话首次使用即归属，他人访问 403），并按用户记账 token 用量。',
+      '\n\n## SSE 线格式',
+      '\n\n`POST /api/chat` 与 `POST /api/workflows/{id}/run` 的每个事件为 `event: chunk` + `data: <StreamChunk JSON>`，',
       '与 `@toimc/core` 的 `StreamChunk` 同构（text / thinking / tool_call / tool_result / error / done）。',
+      '收尾 `done` 帧在 `metadata.usage` 回传本轮 token 用量（`inputTokens` / `outputTokens`，mock 与真实模型均携带）。',
+      '\n\n## 多模态消息',
+      '\n\n`POST /api/chat` 的 user 消息 `content` 支持字符串或 OpenAI 兼容 parts 数组（`text` + `image_url`）：',
+      'mock 模式提取文字部分匹配剧本；配置 `MASTRA_MODEL` 后透传给多模态模型。',
+      '\n\n## 向量检索',
+      '\n\n「向量检索」分组三端点（`/api/vector/*`）是 docs-agent 语义检索的运维与调试面：',
+      '索引统计、关键词/语义双路对比、向量库分页浏览。未配置 `EMBEDDING_MODEL` 时语义路自动降级为关键词。',
     ].join(''),
   },
   servers: [{ url: serverUrl, description: '本地 mock 服务' }],
@@ -30,6 +44,15 @@ export const openApiSpec = {
     {
       name: 'Provider',
       description: '运行时注册真实模型：注册为带工具与会话记忆的 Mastra Agent',
+    },
+    {
+      name: '认证',
+      description:
+        '用户体系（AUTH_MODE=user）：注册登录签发 JWT、API Key 签发与撤销',
+    },
+    {
+      name: '工作流',
+      description: '多 Agent 协作编排（需配置 MASTRA_MODEL）：列表与 SSE 运行',
     },
     {
       name: '向量检索',
@@ -213,19 +236,63 @@ export const openApiSpec = {
         responses: {
           200: {
             description:
-              'SSE 流：每个事件为 `event: chunk`，data 为 StreamChunk JSON，最后一块 type=done',
+              'SSE 流：每个事件为 `event: chunk`，data 为 StreamChunk JSON，最后一块 type=done（metadata.usage 回传 token 用量）',
             content: {
               'text/event-stream': {
                 schema: { $ref: '#/components/schemas/StreamChunk' },
                 example: [
                   'event: chunk\ndata: {"type":"thinking","content":"先把问题拆开…"}',
                   'event: chunk\ndata: {"type":"text","content":"流式回复正文"}',
-                  'event: chunk\ndata: {"type":"done","content":""}',
+                  'event: chunk\ndata: {"type":"done","content":"","metadata":{"usage":{"inputTokens":18,"outputTokens":96}}}',
                 ].join('\n\n'),
               },
             },
           },
-          400: { description: 'messages 缺失或为空' },
+          400: { description: 'messages 缺失或为空，或 model 未注册' },
+          401: {
+            description:
+              '未认证：static 模式配置 MASTRA_TOKEN 后需 Bearer；user 模式（AUTH_MODE=user）需 Bearer JWT 或 API Key',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'Unauthorized' },
+              },
+            },
+          },
+          402: {
+            description:
+              '每日配额用完（仅 user 模式）：引导升级而非报错，retry-after 为距 UTC 次日零点的秒数',
+            headers: {
+              'retry-after': {
+                schema: { type: 'integer' },
+                description: '距配额重置（UTC 次日零点）的秒数',
+              },
+            },
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/QuotaExceededBody' },
+                example: {
+                  error: '今日免费额度已用完，明日重置或升级套餐',
+                  code: 'QUOTA_EXCEEDED',
+                  quota: 20,
+                  upgradeUrl: '/pricing',
+                },
+              },
+            },
+          },
+          403: {
+            description:
+              '会话归属校验失败（仅 user 模式）：conversationId 已归属其他用户（IDOR 防线）',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: {
+                  error: 'Forbidden thread',
+                  code: 'THREAD_FORBIDDEN',
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -362,6 +429,58 @@ export const openApiSpec = {
       },
     },
     '/api/providers/{id}': {
+      put: {
+        tags: ['Provider'],
+        summary: '原位更新运行时注册的模型',
+        description:
+          '按完整表单覆盖更新指定 `custom-{n}` 模型：id 不变，重新组装 Mastra Agent（工具与记忆配置同 POST）。编辑场景使用——GET 列表回传的 baseURL 供表单预填。',
+        operationId: 'updateProvider',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'custom-1',
+            description: '注册时服务端生成的 id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ProviderFormPayload' },
+              example: {
+                name: 'DeepSeek',
+                provider: 'openai-compat',
+                baseURL: 'https://api.deepseek.com/v1',
+                apiKey: 'sk-new-api-key',
+                model: 'deepseek-reasoner',
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: '更新成功，返回脱敏的 ProviderOption',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ProviderOption' },
+              },
+            },
+          },
+          400: {
+            description: '校验失败（同 POST：name / apiKey / model 非空等）',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'apiKey is required' },
+              },
+            },
+          },
+          404: { description: 'id 不存在' },
+        },
+      },
       delete: {
         tags: ['Provider'],
         summary: '删除运行时注册的模型',
@@ -396,6 +515,303 @@ export const openApiSpec = {
         },
       },
     },
+    '/api/auth/register': {
+      post: {
+        tags: ['认证'],
+        summary: '注册新用户',
+        description: [
+          '邮箱 + 密码注册，成功即登录态（201 直接签发 access token，无需再登录）。',
+          '\n\n- 密码长度 8-128 字符；邮箱需合法格式',
+          '\n- IP 维度限流：每小时 5 次，超限 429',
+          '\n- 该端点仅在 `AUTH_MODE=user` 时挂载（static 模式 404）',
+        ].join(''),
+        operationId: 'register',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CredentialsPayload' },
+              example: {
+                email: 'demo@example.com',
+                password: 'at-least-8-chars',
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: '注册成功，返回登录态（userId + access token）',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthTokenResponse' },
+              },
+            },
+          },
+          400: {
+            description: '邮箱格式不正确 / 密码长度不在 8-128 之间',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: '密码长度需在 8-128 字符之间' },
+              },
+            },
+          },
+          409: {
+            description: '该邮箱已被注册',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: '该邮箱已被注册' },
+              },
+            },
+          },
+          429: {
+            description: '注册限流（IP 维度每小时 5 次）',
+            headers: {
+              'retry-after': {
+                schema: { type: 'integer' },
+                description: '距限流窗口重置的秒数',
+              },
+            },
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'Too Many Requests' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/auth/login': {
+      post: {
+        tags: ['认证'],
+        summary: '登录',
+        description:
+          '邮箱 + 密码登录，签发 15 分钟 access token（JWT）。失败一律返回「邮箱或密码错误」，不泄漏哪个字段错。仅在 `AUTH_MODE=user` 时挂载。',
+        operationId: 'login',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CredentialsPayload' },
+              example: {
+                email: 'demo@example.com',
+                password: 'at-least-8-chars',
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: '登录成功',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthTokenResponse' },
+              },
+            },
+          },
+          401: {
+            description: '邮箱或密码错误',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: '邮箱或密码错误' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/auth/keys': {
+      post: {
+        tags: ['认证'],
+        summary: '签发 API Key',
+        description: [
+          '为当前用户签发程序化调用用的 API Key（`sk-aichat-` 前缀）。',
+          '\n\n- **明文 key 只在本响应出现一次**：服务端只存哈希与展示前缀，丢了只能撤销重发',
+          '\n- API Key 面向程序（长效），JWT 面向人（15 分钟）；两者同入口 `Authorization: Bearer`',
+          '\n- 本端点只认 JWT（API Key 不能繁殖 key）',
+        ].join(''),
+        operationId: 'issueApiKey',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          201: {
+            description: '签发成功（明文 key 只此一次）',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiKeyCreated' },
+              },
+            },
+          },
+          401: {
+            description: '缺少有效 JWT',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'Unauthorized' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/auth/keys/{keyId}': {
+      delete: {
+        tags: ['认证'],
+        summary: '撤销 API Key',
+        description:
+          '撤销自己的 API Key（下一秒全端点生效）。目标不存在或不属于当前用户返回 404。',
+        operationId: 'revokeApiKey',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'keyId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '签发时返回的 keyId',
+          },
+        ],
+        responses: {
+          204: { description: '撤销成功（无响应体）' },
+          401: {
+            description: '缺少有效 JWT',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'Unauthorized' },
+              },
+            },
+          },
+          404: {
+            description: 'key 不存在或不属于当前用户',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: 'key 不存在或不属于当前用户' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/workflows': {
+      get: {
+        tags: ['工作流'],
+        summary: '工作流列表',
+        description:
+          '列出已注册的多 Agent 协作工作流（id + 描述）。未配置 MASTRA_MODEL（纯 mock 模式）返回空列表——前端据此落 mock 轨。',
+        operationId: 'listWorkflows',
+        responses: {
+          200: {
+            description: '工作流列表',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    workflows: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          description: { type: 'string' },
+                        },
+                        required: ['id', 'description'],
+                      },
+                    },
+                  },
+                  required: ['workflows'],
+                },
+                example: {
+                  workflows: [
+                    {
+                      id: 'docs-pipeline-workflow',
+                      description: '多步文档处理流水线',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/workflows/{id}/run': {
+      post: {
+        tags: ['工作流'],
+        summary: '运行工作流（SSE 流式）',
+        description: [
+          '运行指定工作流，与 `POST /api/chat` **同线协议**：`event: chunk` 逐帧输出 StreamChunk，前端零改动复用渲染。',
+          '\n\n- 工作流事件（步骤开始 / 委派 / 完成）映射为 text / thinking / tool_result 等 chunk 形态',
+          '\n- 未配置 MASTRA_MODEL 时返回 404（提示配置后重启）',
+        ].join(''),
+        operationId: 'runWorkflow',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'docs-pipeline-workflow',
+            description: '工作流 id（从列表获取）',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  task: { type: 'string', description: '任务描述（非空）' },
+                },
+                required: ['task'],
+              },
+              example: { task: '整理 Vue 组件库的发布流程文档' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'SSE 流：与 /api/chat 同线协议，done 帧收尾',
+            content: {
+              'text/event-stream': {
+                schema: { $ref: '#/components/schemas/StreamChunk' },
+                example: [
+                  'event: chunk\ndata: {"type":"thinking","content":"拆解任务步骤…"}',
+                  'event: chunk\ndata: {"type":"text","content":"步骤一完成"}',
+                  'event: chunk\ndata: {"type":"done","content":""}',
+                ].join('\n\n'),
+              },
+            },
+          },
+          400: {
+            description: 'task 缺失或为空',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: {
+                  error:
+                    'task 不能为空（body 需为 JSON：{ "task": "非空字符串" }）',
+                },
+              },
+            },
+          },
+          404: {
+            description: '工作流不存在，或未配置 MASTRA_MODEL',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorBody' },
+                example: { error: '未找到工作流：docs-pipeline' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/api/health': {
       get: {
         tags: ['元信息'],
@@ -418,7 +834,7 @@ export const openApiSpec = {
         },
       },
     },
-    '/vector/stats': {
+    '/api/vector/stats': {
       get: {
         tags: ['向量检索'],
         summary: '向量索引统计',
@@ -450,7 +866,7 @@ export const openApiSpec = {
         },
       },
     },
-    '/vector/search': {
+    '/api/vector/search': {
       post: {
         tags: ['向量检索'],
         summary: '双路对比检索',
@@ -479,7 +895,7 @@ export const openApiSpec = {
         },
       },
     },
-    '/vector/chunks': {
+    '/api/vector/chunks': {
       get: {
         tags: ['向量检索'],
         summary: '向量库浏览（分页）',
@@ -542,7 +958,83 @@ export const openApiSpec = {
     },
   },
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        description:
+          'AUTH_MODE=user 时：短时效 JWT（/api/auth/login 签发）或 API Key（sk-aichat- 前缀）；key 管理端点只认 JWT',
+      },
+    },
     schemas: {
+      ErrorBody: {
+        type: 'object',
+        properties: {
+          error: { type: 'string', description: '面向调用方的错误信息' },
+          code: {
+            type: 'string',
+            description:
+              '机器可读错误码（THREAD_FORBIDDEN / QUOTA_EXCEEDED 等，可选）',
+          },
+        },
+        required: ['error'],
+      },
+      QuotaExceededBody: {
+        type: 'object',
+        description: '402 配额超额响应：引导升级而非报错',
+        properties: {
+          error: { type: 'string' },
+          code: { type: 'string', const: 'QUOTA_EXCEEDED' },
+          quota: { type: 'integer', description: '当前套餐的每日配额上限' },
+          upgradeUrl: {
+            type: 'string',
+            description: '升级落地页（前端渲染升级卡片的跳转目标）',
+          },
+        },
+        required: ['error', 'code', 'quota', 'upgradeUrl'],
+      },
+      CredentialsPayload: {
+        type: 'object',
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: {
+            type: 'string',
+            description: '明文密码（8-128 字符，仅在 HTTPS/本地环境传输）',
+          },
+        },
+        required: ['email', 'password'],
+      },
+      AuthTokenResponse: {
+        type: 'object',
+        description: '注册（201）/ 登录（200）共用响应：新号即登录态',
+        properties: {
+          userId: { type: 'string' },
+          email: { type: 'string' },
+          accessToken: {
+            type: 'string',
+            description: 'JWT（HS256），默认 900 秒有效',
+          },
+          expiresIn: { type: 'integer', description: '有效期（秒）' },
+        },
+        required: ['userId', 'email', 'accessToken', 'expiresIn'],
+      },
+      ApiKeyCreated: {
+        type: 'object',
+        description: 'API Key 签发响应：明文 key 只出现这一次',
+        properties: {
+          keyId: { type: 'string', description: '撤销时使用的 id' },
+          key: {
+            type: 'string',
+            description:
+              'sk-aichat- 前缀明文 key（服务端只存哈希，丢失只能撤销重发）',
+          },
+          keyPrefix: {
+            type: 'string',
+            description: '展示前缀（如 sk-aichat-ab12），后台列表展示用',
+          },
+        },
+        required: ['keyId', 'key', 'keyPrefix'],
+      },
       ConversationSummary: {
         type: 'object',
         properties: {
@@ -605,12 +1097,18 @@ export const openApiSpec = {
       },
       ProviderOption: {
         type: 'object',
-        description: '运行时注册项的公开视图（脱敏：无 apiKey / baseURL）',
+        description:
+          '运行时注册项的公开视图（脱敏：无 apiKey；baseURL 非密钥，编辑表单预填需要回传）',
         properties: {
           id: { type: 'string', example: 'custom-1' },
           name: { type: 'string', example: 'DeepSeek' },
           provider: { type: 'string', enum: ['openai-compat', 'anthropic'] },
           model: { type: 'string', example: 'deepseek-chat' },
+          baseURL: {
+            type: 'string',
+            example: 'https://api.deepseek.com/v1',
+            description: 'openai-compat 注册时的端点（编辑预填用）',
+          },
         },
         required: ['id', 'name', 'provider'],
       },
@@ -713,7 +1211,8 @@ export const openApiSpec = {
           content: { type: 'string' },
           metadata: {
             type: 'object',
-            description: 'tool_call / tool_result 携带的工具元信息',
+            description:
+              'tool_call / tool_result 携带的工具元信息；done 帧携带 usage',
             properties: {
               toolCallId: { type: 'string' },
               toolName: { type: 'string' },
@@ -721,6 +1220,15 @@ export const openApiSpec = {
               toolResult: {},
               toolError: { type: 'string' },
               duration: { type: 'integer' },
+              usage: {
+                type: 'object',
+                description:
+                  'done 帧回传的本轮 token 用量（mock 估算与真实模型回传均携带）',
+                properties: {
+                  inputTokens: { type: 'integer' },
+                  outputTokens: { type: 'integer' },
+                },
+              },
             },
           },
         },
