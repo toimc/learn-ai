@@ -10,6 +10,9 @@ packages/docs/.vitepress/dist/
 # Claude Code 本地配置和缓存
 .claude/settings.local.json
 
+# ppt-master skill 为指向本机 clone 的符号链接，不入库
+.claude/skills/ppt-master
+
 # Playwright MCP 测试日志和截图
 .playwright-mcp/
 playwright-report/
