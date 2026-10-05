@@ -6,3 +6,5 @@ export { default as MessageAttachments } from './MessageAttachments.vue'
 
 // Thinking process display
 export { default as ThinkingBlock } from '../thinking/ThinkingBlock.vue'
+export { default as MessageFeedback } from './MessageFeedback.vue'
+export { default as BranchPicker } from './BranchPicker.vue'

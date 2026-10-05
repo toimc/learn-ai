@@ -251,6 +251,23 @@ const chat = useChat(adapter, {
 
 ## 组件组装
 
+### AI 场景组件总览（v0.x 新增）
+
+18 个 AI 场景组件已全部从 `@toimc/vue` 主入口导出，按能力域分组：
+
+| 能力域 | 组件 | 文档 |
+|---|---|---|
+| RAG 引用 | `InlineCitation`（行内角标轮播卡）、`Sources`（来源列表/徽标） | [inline-citation](../components/inline-citation.md) / [sources](../components/sources.md) |
+| 思维链 | `ThinkingChain`（多步骤时间线，与 `ThinkingBlock` 单块互补） | [thinking-chain](../components/thinking-chain.md) |
+| 工具审批 | `ToolConfirmation`（approve/reject 审批卡）、六态 `ToolCallHeader` | [tool-confirmation](../components/tool-confirmation.md) |
+| 欢迎引导 | `Welcome`（富欢迎页）、`Prompts`（提示词面板） | [welcome](../components/welcome.md) / [prompts](../components/prompts.md) |
+| 消息操作 | `MessageFeedback`（点赞点踩+评论）、`MessageActionCopy/Retry/Edit/Feedback`、`BranchPicker`（分支翻页） | [message-feedback](../components/message-feedback.md) / [message-actions](../components/message-actions.md) / [branch-picker](../components/branch-picker.md) |
+| 模型元数据 | `ModelIcon`（15 厂商品牌图标）、`JsonDiffView`（JSON 差异） | [model-icon](../components/model-icon.md) / [json-diff-view](../components/json-diff-view.md) |
+| 输入增强 | `PromptInputSuggestion`（@/斜杠内联建议浮层）、`useClipboard`（复制降级） | [prompt-input-suggestion](../components/prompt-input-suggestion.md) |
+| markdown | `CodeBlock` 行号/折叠、`formula-guard` 公式容错（内部管线自动生效） | [code-block](../components/code-block.md) |
+
+配套 core 纯函数（`@toimc/core` 导出）：`detectModelVendor`/`groupModelsByVendor`（厂家识别）、`formatPerMillion`/`formatTokenCost`/`pricingTier`（定价格式化）、`copyText`（剪贴板降级）、`splitAtoms`/`joinAtoms`（md 原子化字节保真）。
+
 ```vue
 <template>
   <ChatWindow>
