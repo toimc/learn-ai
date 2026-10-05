@@ -120,6 +120,8 @@ model: myLanguageModel
 
 本仓库 `packages/dev-server` 即 `createMastraGateway` 的完整示例（[Mock 服务端演示](/mock-server-demo)）：**env 门控、随装随卸**——`MASTRA_MODEL` 存在才注册 `chat-agent`、`docs-agent` 与 `orchestrator-agent` 三个 agent（`docs-agent` 是组件库助手，挂 `search_docs` 文档检索工具，配置 `EMBEDDING_MODEL` 后检索升级为「语义 + 关键词」混合，配置 `CONTEXT7_API_KEY` 后额外获得 context7 外部库文档查询工具；`orchestrator-agent` 是多 Agent 编排演示，经 `orchestrate` 工具调度检索员/起草员/审查员子 agent，支持委托/并行/流水线三种协作形态），缺省时是纯 mock 模式（零 mastra 依赖启动）。
 
+`chat-agent` 的 `get_weather` 工具结果额外携带 `ui` 字段（`{ type: 'weather-card', props: { city, temperatureC, description } }`）——生成式 UI 的服务端半边：schema 由工具代码确定性生成（模型只决策不渲染），原始字段仍供模型生成回复，前端经 `tool_result` 帧拿到后可渲染天气卡片（组件注册表由 `@toimc/vue` 的 GenUI 能力提供）。
+
 | 环境变量               | 说明                                                                   | 示例                                  |
 | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------- |
 | `MASTRA_MODEL`         | 存在才注册 `chat-agent` / `docs-agent` / `orchestrator-agent`；缺省时行为与纯 mock 完全一致  | `deepseek/deepseek-chat`              |
