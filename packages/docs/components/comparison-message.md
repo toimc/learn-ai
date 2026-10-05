@@ -2,35 +2,110 @@
 
 A/B 偏好对比组件：左右双列并排展示两个候选回复，每列底部各一个「我更喜欢这个回复」按钮，用于收集用户偏好（如 RLHF 偏好数据）。窄屏（< 640px）自动堆叠为上下排列。
 
-## 基础用法
+## 代码演示
 
-<DemoContainer>
-  <ComparisonMessage
-    left="**回复 A**：一律用 ref，心智模型统一，访问走 .value，解构与整体替换都安全。"
-    right="**回复 B**：按场景分工——composable 对外返回 ref，组件内聚合状态用 reactive 减少样板。"
-  />
-</DemoContainer>
-
-点击任一列骑在底边上的按钮即可选中并高亮该列；按钮在消息卡下边界正中、主题色圆角，文案可经 `buttonLabel` 配置（默认「喜欢这个」）。列内容经 `MessageContent` 走 markdown-it 渲染，支持代码高亮、公式等。
-
-```vue
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ComparisonMessage } from '@toimc/vue'
 
-const last = ref<{ chosen: 'A' | 'B'; left: string; right: string } | null>(null)
+interface PreferPayload {
+  chosen: 'A' | 'B'
+  left: string
+  right: string
+}
+
+const lastChoice = ref('（尚未选择）')
+
+function onPrefer(p: PreferPayload) {
+  lastChoice.value = p.chosen
+}
+
+const chosen = ref<'A' | 'B' | null>(null)
 </script>
 
-<template>
-  <ComparisonMessage
-    left="候选回复 A 的 markdown 内容"
-    right="候选回复 B 的 markdown 内容"
-    @prefer="(p) => (last = p)"
-  />
-</template>
-```
+### 点击选择
 
-点击任一列底部的按钮即触发 `prefer` 事件，`chosen` 标识用户偏好的那一列。
+点击任一列骑在底边上的按钮即可选中并高亮该列，`prefer` 事件回传 `{ chosen, left, right }`：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <ComparisonMessage
+      left="**回复 A**：一律用 ref，心智模型统一，访问走 .value，解构与整体替换都安全。"
+      right="**回复 B**：按场景分工——composable 对外返回 ref，组件内聚合状态用 reactive 减少样板。"
+      @prefer="onPrefer"
+    />
+    <p
+      style="
+        margin: 0;
+        font-size: 12px;
+        color: var(--ai-chat-color-text-muted);
+      "
+    >
+      当前偏好：{{ lastChoice }}
+    </p>
+  </div>
+</DemoContainer>
+
+### 受控选中
+
+`chosen` 非 `null` 时高亮由父组件控制（如回放历史偏好数据）；外部按钮可随时切换或清除：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; gap: 8px; align-items: center">
+      <button
+        style="
+          padding: 4px 12px;
+          font-size: 13px;
+          border: 1px solid var(--vp-c-divider);
+          border-radius: 6px;
+          background: var(--vp-c-bg);
+          cursor: pointer;
+        "
+        @click="chosen = 'A'"
+      >
+        选中 A
+      </button>
+      <button
+        style="
+          padding: 4px 12px;
+          font-size: 13px;
+          border: 1px solid var(--vp-c-divider);
+          border-radius: 6px;
+          background: var(--vp-c-bg);
+          cursor: pointer;
+        "
+        @click="chosen = 'B'"
+      >
+        选中 B
+      </button>
+      <button
+        style="
+          padding: 4px 12px;
+          font-size: 13px;
+          border: 1px solid var(--vp-c-divider);
+          border-radius: 6px;
+          background: var(--vp-c-bg);
+          cursor: pointer;
+        "
+        @click="chosen = null"
+      >
+        清除
+      </button>
+      <span style="font-size: 12px; color: var(--ai-chat-color-text-muted)">
+        chosen = {{ chosen === null ? 'null' : `'${chosen}'` }}
+      </span>
+    </div>
+    <ComparisonMessage
+      left="**回复 A**：先写实现再补测试，快速验证方向。"
+      right="**回复 B**：先写测试锁定行为，再动手实现。"
+      :chosen="chosen"
+      button-label="喜欢这个"
+    />
+  </div>
+</DemoContainer>
+
+列内容经 `MessageContent` 走 markdown-it 渲染，支持代码高亮、公式等；按钮在消息卡下边界正中、主题色圆角，文案可经 `buttonLabel` 配置（默认「喜欢这个」）。
 
 ## 消息类型驱动渲染
 

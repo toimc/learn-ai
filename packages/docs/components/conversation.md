@@ -7,46 +7,103 @@
 - **ConversationEmpty** — 欢迎屏（空对话占位）
 - **ConversationScrollBtn** — 回到底部浮动按钮
 
-## 基础用法
+## 代码演示
 
-`Conversation` 作为根容器包裹消息区与输入区，`ConversationContent` 负责滚动，空对话时用 `ConversationEmpty` 展示欢迎屏。
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { Message as ChatMessage } from '@toimc/core'
+import {
+  Button,
+  Conversation,
+  ConversationContent,
+  ConversationEmpty,
+  Message,
+  MessageContent,
+} from '@toimc/vue'
+
+let seq = 0
+const draft = ref('')
+const messages = ref<ChatMessage[]>([])
+
+function send() {
+  const text = draft.value.trim()
+  if (!text) return
+  seq += 1
+  const userMsg: ChatMessage = {
+    id: `m${seq}`,
+    role: 'user',
+    content: text,
+    createdAt: new Date(),
+  }
+  messages.value.push(userMsg)
+  draft.value = ''
+  const replyId = seq + 1
+  setTimeout(() => {
+    messages.value.push({
+      id: `m${replyId}`,
+      role: 'assistant',
+      content: `（模拟回复）你说的是：「${text}」。清空消息后会回到欢迎屏空态。`,
+      createdAt: new Date(),
+    })
+    seq = replyId
+  }, 600)
+}
+
+function reset() {
+  messages.value = []
+}
+</script>
+
+`Conversation` 作为根容器包裹消息区与输入区，`ConversationContent` 负责滚动与自动吸底，空对话时用 `ConversationEmpty` 展示欢迎屏。发送一条消息体验完整链路（消息追加、模拟回复、自动滚到底部）：
 
 <DemoContainer>
-  <div style="height: 320px; border-radius: 12px; overflow: hidden; border: 1px solid var(--vp-c-divider);">
-    <Conversation>
+  <div
+    style="
+      height: 360px;
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--vp-c-divider);
+    "
+  >
+    <Conversation style="flex: 1">
       <ConversationContent>
-        <ConversationEmpty>
-          <div style="text-align: center; padding: 48px 24px;">
-            <h3 style="margin-bottom: 8px;">欢迎使用 AI Chat UI</h3>
-            <p style="color: var(--vp-c-text-2);">发送一条消息开始对话</p>
+        <ConversationEmpty v-if="messages.length === 0">
+          <div style="text-align: center; padding: 48px 24px">
+            <h3 style="margin-bottom: 8px">欢迎使用 AI Chat UI</h3>
+            <p style="color: var(--vp-c-text-2)">发送一条消息开始对话</p>
           </div>
         </ConversationEmpty>
+        <Message v-for="msg in messages" :key="msg.id" :from="msg.role">
+          <MessageContent :content="msg.content" />
+        </Message>
       </ConversationContent>
+      <div
+        style="
+          display: flex;
+          gap: 8px;
+          padding: 12px;
+          border-top: 1px solid var(--vp-c-divider);
+        "
+      >
+        <input
+          v-model="draft"
+          placeholder="输入消息，回车发送"
+          style="
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--vp-c-divider);
+            border-radius: 6px;
+            outline: none;
+          "
+          @keyup.enter="send"
+        />
+        <Button type="primary" size="small" @click="send">发送</Button>
+        <Button type="secondary" size="small" @click="reset">清空</Button>
+      </div>
     </Conversation>
   </div>
 </DemoContainer>
-
-<details>
-<summary>查看源码</summary>
-
-```vue
-<template>
-  <Conversation>
-    <ConversationContent>
-      <ConversationEmpty v-if="messages.length === 0">
-        <h3>欢迎使用 AI Chat UI</h3>
-        <p>发送一条消息开始对话</p>
-      </ConversationEmpty>
-
-      <Message v-for="msg in messages" :key="msg.id" :from="msg.role">
-        <MessageContent>{{ msg.content }}</MessageContent>
-      </Message>
-    </ConversationContent>
-  </Conversation>
-</template>
-```
-
-</details>
 
 ## 消息布局
 

@@ -2,59 +2,89 @@
 
 独立代码块组件，带可选的语言标签头部、行号与长代码折叠。
 
-## 基础用法
+## 代码演示
 
-<DemoContainer>
-  <CodeBlock language="typescript" code="interface ChatAdapter {
+<script setup lang="ts">
+import { ref } from 'vue'
+import { CodeBlock } from '@toimc/markdown'
+
+const showLineNumbers = ref(true)
+
+const adapterCode = `interface ChatAdapter {
   sendMessage(options: SendMessageOptions): AsyncGenerator<StreamChunk>
-}" />
-</DemoContainer>
+}`
 
-## 无语言标签
-
-不传 `language` 时隐藏语言标签（头部仍承载复制按钮）：
-
-<DemoContainer>
-  <CodeBlock code="console.log('Hello World')" />
-</DemoContainer>
-
-## 显示行号
-
-`showLineNumbers` 开启逐行渲染，行号列在横向滚动时固定于左侧：
-
-<DemoContainer>
-  <CodeBlock
-    language="typescript"
-    show-line-numbers
-    code="const a = 1
+const sumCode = `const a = 1
 const b = 2
 const c = a + b
-console.log(c)"
-  />
-</DemoContainer>
+console.log(c)`
 
-## 折叠长代码
-
-`collapsibleAfter` 指定阈值行数：实际行数超过它时初始只显示前 N 行，
-底部提供「展开 / 收起」按钮；`0`（默认）表示不折叠。流式输出期间
-（`streaming` 为 `true`）折叠被禁用——尾部行尚未定稿：
-
-<DemoContainer>
-  <CodeBlock
-    language="typescript"
-    :collapsible-after="3"
-    code="function fibonacci(n: number): number[] {
+const fibonacciCode = `function fibonacci(n: number): number[] {
   const seq = [0, 1]
   for (let i = 2; i < n; i++) {
     seq.push(seq[i - 1] + seq[i - 2])
   }
   return seq.slice(0, n)
 }
-console.log(fibonacci(10))"
-  />
+console.log(fibonacci(10))`
+</script>
+
+### 带语言标签
+
+头部显示语言标签与复制按钮，点击复制按钮拷贝整段代码：
+
+<DemoContainer>
+  <CodeBlock language="typescript" :code="adapterCode" />
 </DemoContainer>
 
-行号与折叠可同时启用。
+### 无语言标签
+
+不传 `language` 时隐藏语言标签（头部仍承载复制按钮），适合无需标注语言的短命令：
+
+<DemoContainer>
+  <CodeBlock code="console.log('Hello World')" />
+</DemoContainer>
+
+### 行号开 / 关
+
+`showLineNumbers` 开启逐行渲染，行号列在横向滚动时固定于左侧；点击按钮实时切换两种形态：
+
+<DemoContainer>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <button
+      style="
+        align-self: flex-start;
+        padding: 4px 12px;
+        font-size: 13px;
+        border: 1px solid var(--vp-c-divider);
+        border-radius: 6px;
+        background: var(--vp-c-bg);
+        cursor: pointer;
+      "
+      @click="showLineNumbers = !showLineNumbers"
+    >
+      行号：{{ showLineNumbers ? '开（点击关闭）' : '关（点击开启）' }}
+    </button>
+    <CodeBlock
+      language="typescript"
+      :show-line-numbers="showLineNumbers"
+      :code="sumCode"
+    />
+  </div>
+</DemoContainer>
+
+### 折叠长代码
+
+`collapsibleAfter` 指定阈值行数：实际行数超过它时初始只显示前 N 行，底部提供「展开 / 收起」按钮，适合控制长输出占屏；`0`（默认）表示不折叠。流式输出期间（`streaming` 为 `true`）折叠被禁用——尾部行尚未定稿。行号与折叠可同时启用：
+
+<DemoContainer>
+  <CodeBlock
+    language="typescript"
+    show-line-numbers
+    :collapsible-after="3"
+    :code="fibonacciCode"
+  />
+</DemoContainer>
 
 ## API
 

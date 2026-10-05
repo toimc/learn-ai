@@ -2,6 +2,66 @@
 
 内置图片大图预览（灯箱）组件，Teleport 到 `body` 全屏遮罩展示附件图片。支持左右方向键/按钮切换多图（首尾回绕）、Esc 或点击遮罩/关闭按钮退出，层级由 `--ai-chat-z-popup` 令牌控制。
 
+## 代码演示
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { Attachment } from '@toimc/core'
+import { ImageLightbox } from '@toimc/vue'
+
+// 缩略图用内联 SVG data URI，离线可见
+function svgThumb(bg: string, label: string) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><rect width='96' height='96' rx='10' fill='${bg}'/><text x='48' y='42' font-size='12' fill='white' text-anchor='middle' font-family='sans-serif'>ai-chat-ui</text><text x='48' y='60' font-size='10' fill='white' text-anchor='middle' font-family='sans-serif'>${label}</text></svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+const images: Attachment[] = [
+  { id: 'a1', url: svgThumb('%236366f1', '架构图'), name: 'architecture.png', mediaType: 'image/png' },
+  { id: 'a2', url: svgThumb('%238b5cf6', '令牌表'), name: 'theme-tokens.png', mediaType: 'image/png' },
+  { id: 'a3', url: svgThumb('%230891b2', '流程图'), name: 'flow.png', mediaType: 'image/png' },
+]
+
+const visible = ref(false)
+const currentIndex = ref(0)
+
+function open(i: number) {
+  currentIndex.value = i
+  visible.value = true
+}
+</script>
+
+点击任一缩略图打开灯箱（从该图开始），方向键 / 左右按钮切换（首尾回绕），Esc 或点击遮罩空白处退出：
+
+<DemoContainer>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap">
+    <button
+      v-for="(img, i) in images"
+      :key="img.id"
+      style="
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: zoom-in;
+        border-radius: 10px;
+      "
+      :aria-label="`查看 ${img.name}`"
+      @click="open(i)"
+    >
+      <img
+        :src="img.url"
+        :alt="img.name"
+        style="width: 96px; height: 96px; border-radius: 10px; display: block"
+      />
+    </button>
+  </div>
+  <ImageLightbox
+    v-if="visible"
+    :attachments="images"
+    :index="currentIndex"
+    @close="visible = false"
+  />
+</DemoContainer>
+
 ## 基础用法
 
 `attachments` 传入图片附件数组，`index` 指定初始展示的下标，`@close` 中清理 `v-if` 状态：
