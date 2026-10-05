@@ -219,11 +219,19 @@ const listFiles = ref<AttachmentData[]>([
 |--------|------|--------|------|
 | variant | `'grid' \| 'inline' \| 'list'` | `'grid'` | 布局模式 |
 
+| 插槽名 | 说明 |
+|--------|------|
+| default | 附件项（Attachment 系列子组件，可混入 AttachmentEmpty 空态） |
+
 ### Attachment
 
 | 属性名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | data | `Attachment` | — | 附件数据（必填） |
+
+| 插槽名 | 说明 |
+|--------|------|
+| default | 附件项内容（AttachmentPreview / AttachmentInfo / AttachmentRemove） |
 
 ### AttachmentPreview / AttachmentInfo / AttachmentRemove
 

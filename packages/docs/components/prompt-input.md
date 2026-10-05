@@ -219,7 +219,7 @@ onUnmounted(() => {
     <PromptInputFooter>
       <template #tools>
         <PromptInputTools>
-          <PromptInputButton title="上传">
+          <PromptInputButton tooltip="上传">
             <!-- 图标 -->
           </PromptInputButton>
         </PromptInputTools>
@@ -323,7 +323,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 | 属性名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | disabled | `boolean` | `false` | 禁用输入与发送 |
-| placeholder | `string` | `'给 AI Chat UI 发送消息...'` | 输入框占位文本 |
+| placeholder | `string` | i18n `promptInput.placeholder` | 输入框占位文本 |
 | maxHeight | `number` | `200` | 输入框最大高度（px） |
 | accept | `string` | `''` | 允许的文件类型（同 `<input accept>`），空为不限 |
 | multiple | `boolean` | `false` | 是否允许多文件 |
@@ -335,7 +335,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 | 事件名 | 参数 | 说明 |
 |--------|------|------|
 | send | `(payload: { text: string; files?: File[]; attachments?: Attachment[] })` | 提交消息；无 beforeSend 时携带原始 `files`，有则携带上传后的 `attachments` |
-| abort | `()` | 点击停止按钮 |
+| abort | `()` | 点击停止按钮；由内部 `status` 驱动，当前无公开驱动入口（见下方 PromptInputSubmit 注记） |
 | error | `(payload: { files: File[]; reason: string })` | 附件校验拒绝 / 上传失败 |
 
 响应式：容器宽度 < 640px（容器查询）时自动紧凑——减小外边距并隐藏底部 disclaimer；输入框 `max-height` 跟随 `--ai-chat-input-max-height`（桌面 200px），窄屏可由 `--ai-chat-input-max-height-mobile`（默认 120px）覆盖收窄。
@@ -348,6 +348,7 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 |--------|------|
 | default | 输入主体（Textarea + Submit） |
 | footer | 底部工具栏 |
+| disclaimer | 底部免责声明文案，缺省渲染 i18n `promptInput.disclaimer`（窄屏自动隐藏） |
 
 ### PromptInputTextarea
 
@@ -355,18 +356,27 @@ provide 输入上下文给子组件，并承载附件管道（选择 / 粘贴 / 
 
 ### PromptInputSubmit
 
-无 Props。**圆形主题色发送按钮**（`--ai-chat-color-accent` 背景 + 白色上箭头），置于 `PromptInputFooter` 的 `hint` 右侧动作区（输入框右下方）；流式输出中自动切换为停止方块，颜色跟随主题预设变化。
+无 Props。**圆形主题色发送按钮**（`--ai-chat-color-accent` 背景 + 白色上箭头），置于 `PromptInputFooter` 的 `hint` 右侧动作区（输入框右下方）；颜色跟随主题预设变化。
 
 | 插槽名 | 说明 |
 |--------|------|
-| default | 自定义图标/内容（覆盖默认上箭头与停止方块） |
+| default | 自定义图标/内容（覆盖默认上箭头） |
+
+::: warning status 尚无公开驱动入口
+按钮的发送/停止两态由 PromptInput 输入上下文的内部 `status`（`'ready' | 'streaming'`）驱动，但当前版本 **PromptInput 未暴露 `status` / `streaming` prop**，`status` 恒为 `'ready'`——停止方块与 `abort` 事件从公开 API 侧不可达。流式中需切换停止按钮时，按上方「流式中」演示的做法：默认插槽自绘两态图标 + `@click.capture` 拦截后自行中断。
+:::
 
 ### PromptInputButton
 
 | 属性名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
-| title | `string` | — | 按钮 title |
+| tooltip | `string` | `''` | 悬停提示（写入按钮 `title`） |
 | active | `boolean` | `false` | 激活状态 |
+| disabled | `boolean` | `false` | 禁用按钮 |
+
+| 事件名 | 参数 | 说明 |
+|--------|------|------|
+| click | `()` | 点击按钮 |
 
 ### PromptInputUploadButton
 

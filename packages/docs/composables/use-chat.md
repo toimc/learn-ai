@@ -128,6 +128,10 @@ interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   attachments?: Attachment[]
+  toolCalls?: ToolCallInfo[] // 工具调用（tool_call / tool_result chunk 累积）
+  thinking?: ThinkingInfo // 思考过程（thinking chunk 累积）
+  sources?: MessageSource[] // RAG/检索引用来源（Sources / InlineCitation 消费）
+  comparison?: ComparisonPayload // A/B 回复对比载荷（ComparisonMessage 消费）
   metadata?: Record<string, unknown>
   createdAt: Date
 }
@@ -137,9 +141,17 @@ interface Message {
 
 ```typescript
 interface StreamChunk {
-  type: 'text' | 'tool_call' | 'thinking' | 'error' | 'done'
+  type: 'text' | 'tool_call' | 'tool_result' | 'thinking' | 'error' | 'done'
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: {
+    toolCallId?: string
+    toolName?: string
+    toolArguments?: Record<string, unknown>
+    toolResult?: unknown
+    toolError?: string
+    duration?: number
+    [key: string]: unknown
+  }
 }
 ```
 
@@ -147,10 +159,10 @@ interface StreamChunk {
 
 ```typescript
 interface Attachment {
-  type: 'image' | 'file' | 'audio'
-  url: string
+  id: string
+  url?: string // 图片/可下载文件的访问地址
   name: string
-  mimeType: string
+  mediaType: string // MIME 类型，如 'image/png'
   size?: number
 }
 ```

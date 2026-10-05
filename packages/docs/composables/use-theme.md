@@ -53,7 +53,7 @@ function useTheme(options?: UseThemeOptions): {
 }
 ```
 
-模块同时导出单例计算属性 `resolvedTheme`，可在非组件场景直接读取当前生效明暗。
+模块同时导出单例计算属性 `resolvedTheme`（非组件场景直接读取当前生效明暗）与 `componentTheme`（`target: 'component'` 时的组件根 `data-theme` 绑定值，html 模式下为 `undefined`）。
 
 ## 类型
 

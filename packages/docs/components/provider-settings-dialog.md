@@ -140,7 +140,6 @@ onMounted(refresh)
 | create | `(payload: ProviderFormPayload)` | 新增模式校验通过后提交表单时触发，`apiKey` 在此刻交宿主 |
 | update | `(id: string, payload: ProviderFormPayload)` | 编辑模式提交时触发：预填来自列表项「编辑」（apiKey 不回传须重填），宿主 PUT 原位更新 |
 | remove | `(id: string)` | 点击已注册项的删除按钮时触发 |
-| cancel-edit | — | 编辑模式点「取消编辑」时触发（组件已自行复位表单，宿主可不做处理） |
 | update:open | `(value: boolean)` | `v-model:open` 更新事件 |
 
 ### 类型

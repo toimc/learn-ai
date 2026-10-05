@@ -55,6 +55,12 @@ const loading = ref(true)
 | as | `string` | `'span'` | 渲染的 HTML 标签名 |
 | duration | `number` | `2000` | 单次扫光动画周期（ms） |
 
+### Slots
+
+| 插槽名 | 说明 |
+|--------|------|
+| default | 占位内容（加载完成后被真实内容替换的那段文本） |
+
 ### CSS 变量
 
 | 变量名 | 默认值 | 说明 |

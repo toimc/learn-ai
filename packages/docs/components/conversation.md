@@ -281,6 +281,10 @@ const chat = useChat(adapter)
 | customTheme | `Record<string, string>` | — | 自定义 CSS 变量键值对象 |
 | darkMode | `boolean \| 'auto'` | `'auto'` | 容器级明暗：`true` / `false` 强制，`'auto'` 跟随全局 |
 
+| 插槽名 | 说明 |
+|--------|------|
+| default | 消息内容区域（ConversationContent / ConversationScrollBtn 等） |
+
 通过 `provide` 把滚动上下文与消息布局上下文下发给子组件。
 
 ### ConversationContent
@@ -305,6 +309,6 @@ const chat = useChat(adapter)
 
 | 事件名 | 说明 |
 |--------|------|
-| click | 用户点击回到底部按钮 |
+| click | 原生 click 透传（非组件声明事件）。点击回底已由组件内置完成（调用滚动上下文的 `scrollToBottom`），宿主仅在需要附加逻辑时监听 |
 
 未读角标：用户离底期间内容高度每增加一次计数 +1（贴底恒为 0），点击按钮或手动滚回贴底即清零；角标 `aria-label` 走 i18n `conversation.scrollUnread`。「新消息」以内容高度增加近似，无法区分消息新增与流式文本追加，精确计数请传 `badge` 覆盖。详见 [ConversationScrollBtn](/components/conversation-scroll-btn)。

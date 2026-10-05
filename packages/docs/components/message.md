@@ -228,6 +228,14 @@ const files: Attachment[] = [
 |--------|------|--------|------|
 | from | `'user' \| 'assistant' \| 'system'` | — | 消息角色（必填） |
 
+| 插槽名 | 说明 |
+|--------|------|
+| default | 消息体（MessageContent / MessageActions 等） |
+| avatar | 整个头像区，覆盖默认头像（用户 U 字圆标 / AI 闪电徽标） |
+| avatar-text | 用户头像文字（默认 `U`） |
+| avatar-icon | AI 头像图标（默认闪电 svg） |
+| role | 角色名（默认 i18n `message.you` / `message.assistant`） |
+
 消息的水平对齐由父级 `Conversation` 的 `layout` / `messageAlign` 控制（经 provide/inject 下发）：
 
 - `layout='stacked'`（默认）：保持现状，所有消息统一靠左。

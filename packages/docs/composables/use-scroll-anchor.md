@@ -102,11 +102,12 @@ interface ScrollAnchorContext {
 ## 行为
 
 - 贴底判定基于 `scrollHeight - scrollTop - clientHeight < threshold`，滚动监听为 passive。
-- 内容高度增长通过 `ResizeObserver` 观察：贴底时自动 `scrollToBottom`，离底且增长时 `unreadCount++`（无法区分「新增消息」与「文本替换」，语义局限）。
-- `bindContainer` 会解绑旧容器并重设未读基线，容器卸载时传 `null` 清理 observer。
+- 内容高度增长走**双通道检测**：`ResizeObserver`（容器自身尺寸变化，如窗口缩放）+ `MutationObserver`（子树节点/文本变化）。后者是必需兜底——浏览器对 overflow 定高滚动容器的内容增高**不派发容器 ResizeObserver**，仅靠 RO 时计数在生产环境永不增长。贴底时自动 `scrollToBottom`，离底且增长时 `unreadCount++`（无法区分「新增消息」与「文本替换」，语义局限）。
+- 高频变化经 `requestAnimationFrame` 合并，每帧只做一次高度对比。
+- `bindContainer` 会解绑旧容器（含两类 observer）并重设未读基线，容器卸载时传 `null` 清理。
 
-::: warning 未读计数的浏览器局限
-`ResizeObserver` 观察的是**容器自身**的盒子尺寸。定高（或被 flex / grid 约束高度）的滚动容器在内容增高时盒子尺寸不变，浏览器不会派发 Resize 回调——此场景下 `unreadCount` 不增长，组件测试因 mock 了 ResizeObserver 也无法覆盖该行为。精确按消息条数计数时，请像上面演示那样由宿主自行维护计数，经 [ConversationScrollBtn](/components/conversation-scroll-btn) 的 `badge` prop 传入。
+::: warning 未读计数的语义局限
+双通道检测覆盖了定高容器内容增高的场景，但「新消息」仍以**内容高度增加**近似——流式回复期间离底，计数会随文本追加持续上涨，也无法区分消息新增与替换。组件测试若 mock 掉了 ResizeObserver / MutationObserver 则无法覆盖该行为。精确按消息条数计数时，请像上面演示那样由宿主自行维护计数，经 [ConversationScrollBtn](/components/conversation-scroll-btn) 的 `badge` prop 传入。
 :::
 
 ## 相关
