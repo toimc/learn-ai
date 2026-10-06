@@ -267,6 +267,12 @@ function onComment(text: string) {
 </template>
 
 <style scoped>
+.feedback-demo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+
 .feedback-demo__section {
   margin-bottom: 30px;
 }

@@ -259,6 +259,12 @@ const newArgs = {
 </template>
 
 <style scoped>
+.model-meta-demo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+
 .model-meta-demo__section {
   margin-bottom: 32px;
 }
