@@ -53,6 +53,18 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        localStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+        IntersectionObserver: 'readonly',
+        matchMedia: 'readonly',
       },
     },
     rules: {

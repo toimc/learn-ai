@@ -9,7 +9,7 @@
       "@toimc/markdown": ["../markdown/src"],
       "@toimc/playground": ["../playground/src"]
     },
-    "types": ["vitepress"]
+    "types": ["vitepress", "vite/client"]
   },
   "include": [
     ".vitepress/**/*.ts",

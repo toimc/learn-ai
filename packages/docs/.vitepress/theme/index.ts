@@ -68,6 +68,7 @@ import {
 } from '@toimc/playground'
 
 import './style.css'
+import Layout from './Layout.vue'
 
 // Pages 构建剔除 mock 页面组件：config.ts 的 vite.define 把该值替换为字面量，
 // 分支被常量折叠后动态 import 不进产物，Scalar standalone（~1MB+）不进 Pages bundle
@@ -75,6 +76,7 @@ const isPagesBuild = import.meta.env.DOCS_TARGET === 'pages'
 
 export default {
   extends: DefaultTheme,
+  Layout,
   async enhanceApp({ app }) {
     // Shared
     app.component('StreamText', StreamText)

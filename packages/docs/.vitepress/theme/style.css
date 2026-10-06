@@ -24,3 +24,129 @@
   margin: 16px 0;
   background: var(--vp-c-bg-soft);
 }
+
+/* ---------- 响应式导航补丁 ---------- */
+/* 存量问题：顶级菜单 6 项在 768-899px 平板区间装不下导致横向溢出。
+   提前收起菜单换汉堡按钮（VitePress 自身只在 <768 切换） */
+@media (min-width: 768px) and (max-width: 899px) {
+  .VPNavBar .VPNavBarMenu {
+    display: none !important;
+  }
+  .VPNavBar .VPNavBarHamburger {
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
+/* ---------- 首页（layout: home）视觉 ---------- */
+
+/* hero：蓝图网格底纹 + 品牌色氛围光，网格经径向遮罩向边缘淡出 */
+.VPHero {
+  background-image:
+    radial-gradient(
+      680px 300px at 82% 8%,
+      rgba(37, 99, 235, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      520px 280px at 6% 88%,
+      rgba(14, 165, 233, 0.07),
+      transparent 70%
+    ),
+    linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    32px 32px,
+    32px 32px;
+  -webkit-mask-image: radial-gradient(
+    120% 100% at 50% 40%,
+    #000 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(120% 100% at 50% 40%, #000 55%, transparent 100%);
+}
+
+.dark .VPHero {
+  background-image:
+    radial-gradient(
+      680px 300px at 82% 8%,
+      rgba(96, 165, 250, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      520px 280px at 6% 88%,
+      rgba(56, 189, 248, 0.08),
+      transparent 70%
+    ),
+    linear-gradient(rgba(96, 165, 250, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.06) 1px, transparent 1px);
+}
+
+/* hero 元素阶梯式入场 */
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.VPHero .heading,
+.VPHero .tagline,
+.VPHero .actions {
+  animation: home-fade-up 0.6s ease both;
+}
+
+.VPHero .tagline {
+  animation-delay: 0.1s;
+}
+
+.VPHero .actions {
+  animation-delay: 0.2s;
+}
+
+.VPHero .image {
+  animation: home-fade-up 0.7s 0.28s ease both;
+}
+
+/* 首页内容区：容器放宽到 1152，正文段落收窄保证可读性 */
+.VPHome .content {
+  max-width: 1152px;
+  padding-bottom: 88px;
+}
+
+.VPHome .vp-doc {
+  max-width: 100%;
+}
+
+.VPHome .vp-doc > p,
+.VPHome .vp-doc > ul,
+.VPHome .vp-doc > ol {
+  max-width: 820px;
+}
+
+.VPHome .vp-doc > div[class*='language-'] {
+  max-width: 920px;
+}
+
+/* 首页章节标题：去掉文档页的顶部分隔线，收紧节奏 */
+.VPHome .vp-doc h2 {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 52px;
+  letter-spacing: 0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .VPHero .heading,
+  .VPHero .tagline,
+  .VPHero .actions,
+  .VPHero .image {
+    animation: none;
+  }
+}
