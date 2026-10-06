@@ -188,6 +188,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.pg-demo-card {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+
 .pg-genui-static {
   margin: 16px 0;
   padding: 16px;

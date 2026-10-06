@@ -188,6 +188,12 @@ function formatBytes(bytes?: number) {
 </template>
 
 <style scoped>
+.pg-demo-card {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+
 .pg-multimodal-thumb {
   width: 96px;
   height: 96px;
