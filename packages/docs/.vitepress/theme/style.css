@@ -114,10 +114,15 @@
   animation: home-fade-up 0.7s 0.28s ease both;
 }
 
-/* 首页内容区：容器放宽到 1152，正文段落收窄保证可读性 */
-.VPHome .content {
-  max-width: 1152px;
-  padding-bottom: 88px;
+/* 首页内容区：收窄居中，大屏左右留呼吸空间；hero 同宽对齐同一中轴。
+   home 布局的正文容器是 .vp-doc.container（默认 100% 宽仅 64px 内边距） */
+.VPHero .container {
+  max-width: 1040px;
+}
+
+.VPContent.is-home .vp-doc.container {
+  max-width: 1088px;
+  margin: 0 auto;
 }
 
 .VPHome .vp-doc {
@@ -131,7 +136,7 @@
 }
 
 .VPHome .vp-doc > div[class*='language-'] {
-  max-width: 920px;
+  max-width: 860px;
 }
 
 /* 首页章节标题：去掉文档页的顶部分隔线，收紧节奏 */
