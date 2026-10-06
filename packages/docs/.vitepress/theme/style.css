@@ -114,12 +114,8 @@
   animation: home-fade-up 0.7s 0.28s ease both;
 }
 
-/* 首页内容区：收窄居中，大屏左右留呼吸空间；hero 同宽对齐同一中轴。
-   home 布局的正文容器是 .vp-doc.container（默认 100% 宽仅 64px 内边距） */
-.VPHero .container {
-  max-width: 1040px;
-}
-
+/* 首页宽度编排：hero 顶部占满（VitePress 默认 1152 容器）；
+   正文收窄居中留呼吸空间；横幅型区块（stats 数据带）突破到 1152 与 hero 同宽 */
 .VPContent.is-home .vp-doc.container {
   max-width: 1088px;
   margin: 0 auto;
@@ -127,6 +123,19 @@
 
 .VPHome .vp-doc {
   max-width: 100%;
+}
+
+/* 横幅型区块 breakout（02 数据带 / 04 特性网格 / 05 架构图 / 06 对比表 / 07 演示画廊）：
+   宽屏扩到 1152 与 hero 同宽，窄屏自动收敛为容器宽；
+   min() 保证元素半宽 ≤ 50vw - 24px，任何档位都不会撑出横向滚动。
+   阅读型区块（01/03/08/09）保持 960 居中，形成宽窄节奏 */
+.VPHome .home-stats,
+.VPHome .home-fgrid,
+.VPHome .home-arch,
+.VPHome .home-cmp,
+.VPHome .home-demos {
+  width: min(1152px, calc(100vw - 48px));
+  margin-inline: calc(50% - min(576px, 50vw - 24px));
 }
 
 .VPHome .vp-doc > p,

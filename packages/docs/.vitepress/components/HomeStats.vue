@@ -79,7 +79,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 1px;
-  margin: 0 auto;
+  /* 宽度与外边距由全局 .VPHome .home-stats breakout 规则接管（hero 同宽 1152） */
   background: var(--vp-c-divider);
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
