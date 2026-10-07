@@ -17,7 +17,7 @@ hero:
       link: /playground
     - theme: alt
       text: GitHub
-      link: https://github.com/ai-chat-ui/ai-chat-ui
+      link: https://github.com/toimc/learn-ai
 ---
 
 <script setup>
@@ -167,7 +167,7 @@ pnpm add @toimc/core @toimc/vue
 <div class="home-cta">
   <a class="home-cta__btn home-cta__btn--brand" href="/guide/getting-started">读快速开始</a>
   <a class="home-cta__btn" href="/playground">先去 Playground 玩</a>
-  <a class="home-cta__btn" href="https://github.com/ai-chat-ui/ai-chat-ui">GitHub · MIT</a>
+  <a class="home-cta__btn" href="https://github.com/toimc/learn-ai">GitHub · MIT</a>
 </div>
 
 <style scoped>

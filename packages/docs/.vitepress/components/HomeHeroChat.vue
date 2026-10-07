@@ -36,7 +36,7 @@ const DEMO_SOURCES: MessageSource[] = [
     id: 'src-guide',
     type: 'url',
     title: '快速开始 · ChatAdapter 接入指南',
-    url: 'https://github.com/ai-chat-ui/ai-chat-ui',
+    url: 'https://github.com/toimc/learn-ai',
   },
 ]
 

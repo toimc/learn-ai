@@ -345,7 +345,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/ai-chat-ui/ai-chat-ui' },
+      { icon: 'github', link: 'https://github.com/toimc/learn-ai' },
     ],
 
     search: {
